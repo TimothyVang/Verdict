@@ -5,10 +5,16 @@
 # Pinned per CONTRIBUTING.md Step 2 ("no `latest`"). Bumps require a PR.
 
 PyYAML==6.0.2
-# Anthropic SDK + Claude Agent SDK arrive in Phase-1 (open question §14:
-# "token budget per task" must be ratified first). Pinning here as a
-# placeholder for the diff to come:
-#   anthropic==0.40.0
-#   claude-agent-sdk==<TBD>
+python-frontmatter==1.1.0
+
+# Claude Agent SDK + Anthropic SDK pinned for the live-mode dispatch path
+# in swarm/worker.py. Live mode is gated behind VERDICT_SWARM_LIVE=1; the
+# default dry-run path does not import these. Token-budget per task
+# ($5 vs $20) and per-role model-tier (Opus 4.7 / Sonnet 4.6 / Haiku 4.5)
+# are still §14 open questions and must be ratified before flipping the
+# flag.
+claude-agent-sdk==0.1.72
+anthropic==0.97.0
+# langfuse / gitpython arrive when observability + git automation land.
 #   langfuse==2.x
 #   gitpython==3.1.x
