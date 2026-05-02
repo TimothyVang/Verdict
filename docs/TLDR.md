@@ -270,8 +270,9 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│ TIM ── Gateway / Microsandbox / Ledger / Hooks         │
+│ TIM (VANG) ── Gateway / Microsandbox / Ledger / Hooks  │
 │         ~22 teammate-days                              │
+│  GIAC: GCFA · Solo lead, sole git author to date.      │
 │                                                        │
 │  • Schema bundle (Mode, ArtifactClass, CaveatID,       │
 │    Finding, LedgerEntry, EvidenceManifest, ToolOutput) │
@@ -286,7 +287,8 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ┌────────────────────────────────────────────────────────┐
 │ BEAVER ── LangGraph / Verifiers / Agent loop           │
-│            ~22 teammate-days                            │
+│           ~22 teammate-days                            │
+│  GIAC: GNFA, GCFA, GMLE · runs HW+local LLMs at home   │
 │                                                        │
 │  • Plan-then-Execute LangGraph topology (9 nodes)      │
 │  • Three verifier strategies (Cloud/Airgap/Dual)       │
@@ -302,6 +304,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 ┌────────────────────────────────────────────────────────┐
 │ HALEY ── SGLang / Qwen3 / GLM-4.5-Air / vLLM           │
 │           ~10 teammate-days (5 reserved as slack)      │
+│  GIAC: GXPEN, GNFA · Hermes/agents + local LLM + CC    │
 │                                                        │
 │  • SGLang serving both models with proper parsers      │
 │  • 100-call tool-call parse rate ≥98% (gate)           │
@@ -311,7 +314,8 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ┌────────────────────────────────────────────────────────┐
 │ KP ── Forensics / Tools / Eval / Content               │
-│        ~21 teammate-days                                │
+│        ~21 teammate-days                               │
+│  GIAC: GREM · new to stack; installing Claude Code     │
 │                                                        │
 │  • Three playbook YAMLs (memory/disk/triage)           │
 │  • examiner_caveats.md + hunt_evil.yml + lolbins.yml   │
@@ -324,6 +328,31 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │  • ACCURACY_REPORT.md                                  │
 └────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## First pickups — tasks matched to background
+
+Each ID is from [`BUILD_PLAN.md`](BUILD_PLAN.md). Pick the one that lines up with what you already know — track ownership stays as above, but **the first PR should ride your strongest asymmetry**, not the hardest open task. Vang has the rest of his track in flight (`W1.B`, `W2.A`, `W1.G.6`); the entries below are the **suggested first commits for everyone else** so that the first green CI run is also a domain-fit win.
+
+| Owner | Task ID | What it is | Why this fits |
+|-------|---------|------------|---------------|
+| **Vang** *(in flight)* | `W1.B.5` | `Hypothesis` + `InvestigationPlan` + `PlannerCritiqueVerdict` schemas | Continues the schema bundle he's been driving since `W1.B.1`/`W1.B.7`. |
+| **Vang** | `W2.A.1` | `vol3.pslist` MCP tool wrapper | First vol3 wrapper — exercises the `ToolWrapper` base just landed (`W1.E.2`) and the composed `executor_work` (`W2.C.4`). |
+| **Vang** | `W1.G.6` | HMAC key handling (TPM-backed, gpg fallback) | Closes the ledger trust chain alongside the `LedgerEmitter` (`W2.C.3`). GCFA discipline keeps the chain-of-custody story honest. |
+| **Beaver** | `W1.A.4` | SGLang + Qwen3 + GLM-4.5-Air on the dev rig | Runs HW + local LLMs at home — bring-up is his strongest asymmetry. Unblocks every air-gap and dual-mode task downstream. |
+| **Beaver** | `W1.C.1` → `W1.C.3` | `derive_seeds(case_id)` + `CloudSelfConsistency` + `VerifierStrategy` Protocol | Verifier track is his ownership; seed-derivation fix is a one-day schema-touching warmup before the bigger nodes. |
+| **Beaver** | `W4.G.1` | Measure Qwen3-vs-GLM disagreement-correlation across 50 findings | GMLE cert + dual-model home rig = he can run both engines and produce the stats. The single number that lets the demo claim "true cross-family verification". |
+| **Beaver** | `W3.E.6` | Kill-9 chaos test (100/100 zero-loss) | Bare-metal chaos beats VM chaos — his home rig is the correct test environment. |
+| **Haley** | `W2.D.1` → `W2.D.3` | CoVe (Chain-of-Verification) planner critique node + CoT capture | Hermes/agents background + Claude Code fluency align with planner-side agent design. CoVe is `planner_critique_node` from `ARCHITECTURE.md` §1. |
+| **Haley** | `W4.F.1` → `W4.F.3` | Negative-hypothesis few-shot, adversarial-reasoning prompt, prompt-budget CI assertion | GXPEN red-team thinking fits adversarial prompt design — most teams skip this and lose hallucination-rate budget. |
+| **Haley** | `W2.G.3` | SGLang client uses OpenAI-compat path (for OTel) | Small, well-scoped wiring task in her primary track — good week-1 ramp before agent work. |
+| **KP** | `W1.B.2` | `CaveatID` enum | Smallest schema-only first PR — green CI, first `[W#.#.#]` commit, no Claude Code wrestling. |
+| **KP** | `W1.F.7` + `W1.F.9` | `examiner_caveats.md` + `hunt_evil.yml` | Pure forensic-discipline content, zero infra friction. The seven Tier-1 caveats are CLAUDE.md §3.3; this codifies them. |
+| **KP** | `W2.A.18` | `capa` MCP tool wrapper | **GREM-shape directly.** capa is malware capability detection — exactly his cert. |
+| **KP** | `W4.A.3` | `malware-static/` skill (1 of 6 agentskills) | GREM informs the skill's `KNOWLEDGE.md` (PE structure, packers, anti-analysis). No LangGraph touchpoints; pure content. |
+
+**Rule of thumb:** if a teammate's first PR doesn't ride a domain strength, swap it for one that does. Hackathon time is the wrong context to learn a track *and* a stack *and* the conventions in `CLAUDE.md` §3 simultaneously.
 
 ---
 
