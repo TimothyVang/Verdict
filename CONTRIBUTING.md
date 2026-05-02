@@ -6,6 +6,7 @@ New-contributor setup guide. If you've already done the SANS Find Evil! 2026 tea
 **Default branch:** `main`
 **License:** MIT
 **Deadline gate:** 2026-06-15 22:45 CDT (team-internal target: 2026-06-14 EOD = ~28 h buffer)
+**Recommended platform:** SANS **SIFT Workstation VM** (canonical — all forensic tools, Microsandbox, SGLang, evidence mounts work out-of-box) **or** any modern **Linux box** (Ubuntu 22.04+ / Debian 12+ / Fedora 39+ / Arch). **macOS host is acceptable** for schema/planner/MCP/unit-test work that doesn't shell out to forensic tools — but the moment your task touches `verdict/sandboxes/`, `verdict/tools/vol3/`, or anything that runs in Microsandbox, switch into the SIFT VM. **Windows host is not supported** for development; use WSL2 + Ubuntu or pull the SIFT VM (it runs under Hyper-V / VMware / VirtualBox).
 
 Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this file. Code + lockfiles win over docs (per `CLAUDE.md`); update the doc, don't roll back the code, unless the code is wrong.
 
@@ -39,7 +40,7 @@ You need all four before you can push:
 
 ## Step 1 — Authenticate with the `gh` CLI
 
-`gh` is the canonical auth path for VERDICT. It handles token issuance under the hood, wires git transparently, and gives you the same surface (`gh pr create`, `gh issue list`, `gh repo view`) that your reviewers use. No manual token copy-paste, no credential-helper conflicts, no `pat.txt` files lying around.
+`gh` is the canonical auth path for VERDICT — and the only one. It handles token issuance under the hood, wires git transparently, and gives you the same surface (`gh pr create`, `gh issue list`, `gh repo view`) that your reviewers use.
 
 ### 1a. Install `gh` (skip if `gh --version` already prints something)
 
@@ -67,7 +68,7 @@ gh auth login --hostname github.com --git-protocol https --web
 # Opens a browser tab. Accept the requested scopes (repo, read:org, workflow).
 
 gh auth setup-git
-# Configures git to delegate auth to gh. No PAT to manage.
+# Configures git to delegate auth to gh. No tokens to manage.
 ```
 
 ### 1c. Verify access
@@ -80,25 +81,11 @@ gh repo view TimothyVang/Verdict --json viewerPermission
 
 If `viewerPermission` is `READ` or `null`, ping PUG to add you to the repo before continuing.
 
-### When you actually need a fine-grained PAT
-
-The web UI / fine-grained PAT flow is only needed for non-interactive contexts:
-
-- **CI runners** that can't do a browser login (use `gh auth login --with-token < pat.txt`).
-- **Scripts** that need a different scope than what `gh auth setup-git` gives you.
-- **Shared team services** (uncommon; prefer a deploy key or GitHub App).
-
-For those cases:
-
-1. https://github.com/settings/tokens?type=beta → **Generate new token** (fine-grained).
-2. **Token name:** `verdict-<purpose>-<your-handle>`. **Expiration:** 90 days (covers the whole sprint).
-3. **Repository access:** *Only select repositories* → `TimothyVang/Verdict`.
-4. **Permissions:** Contents R/W, Pull requests R/W, Issues R/W, Workflows R/W, Metadata R-only.
-5. Store the token in a credential manager. Do **not** paste it into a `.env` that ships with the repo.
-
-`gh auth token` prints the token currently in use; `gh auth refresh -s <scope>` adds scopes to your existing auth without round-tripping through the web UI.
+`gh auth token` prints the token `gh` is currently using if you ever need the raw value. `gh auth refresh -s <scope>` adds scopes to your existing auth without re-doing the browser flow.
 
 ### SSH alternative
+
+If you'd rather use an SSH remote:
 
 ```bash
 gh auth login --hostname github.com --git-protocol ssh --web
@@ -129,12 +116,15 @@ Idempotent. Installs uv + Python 3.11, Rust 1.88, Node 20 + pnpm, and Microsandb
 | Microsandbox | v0.4.x | `curl -fsSL https://install.microsandbox.dev \| sh` (Linux/SIFT VM only) |
 | Linters | `ruff`, `cargo clippy`, `eslint` | wired via pre-commit; see Step 5 |
 
-**Where to develop.** Two supported configurations:
+**Where to develop.** Three supported configurations, in order of preference:
 
-- **Inside the SIFT VM** (canonical). All forensic tools, microsandbox, SGLang resolve here. Required for any work touching the executor branches, the microsandbox layer, or evidence I/O.
-- **On the host with the SIFT VM as a runtime target** (faster edit loop). Use VS Code Remote-SSH or `Develop on a Container` into the VM. Acceptable for schema, planner, MCP gateway, and unit-test work that doesn't actually shell out to forensic tools.
+1. **Inside the SIFT VM** (canonical, recommended for everyone). All forensic tools, Microsandbox, SGLang, and the evidence mounts resolve here without setup. **Required** for any work touching the executor branches, the Microsandbox layer, evidence I/O, or anything under `verdict/sandboxes/`, `verdict/tools/vol3/`, or `services/mcp/src/tools/`. Pull the OVA from `downloads/README.md`; snapshot it as `clean-install` before installing anything.
+2. **A modern Linux box** (Ubuntu 22.04+ / Debian 12+ / Fedora 39+ / Arch). Acceptable for the full stack as long as you can install Microsandbox (Linux-only) and run the SIFT toolchain (`apt install sleuthkit volatility ...`). Faster I/O than the VM. Take a `pre-verdict` snapshot of your home before installing forensic tools — they leave state.
+3. **macOS host with the SIFT VM as a runtime target** (faster edit loop, smaller surface). Use VS Code Remote-SSH or `Develop on a Container` into the VM. Acceptable for schema, planner, MCP gateway, and unit-test work that doesn't shell out to forensic tools or Microsandbox. The moment your task touches a Microsandbox path or a forensic CLI, switch into the VM.
 
-If your work touches `services/mcp/src/tools/`, `services/agent_mcp/`, or anything under a microsandbox path, you must run integration tests inside the VM before opening a PR.
+**Windows host is not supported** for development. Either use WSL2 + Ubuntu (treat as configuration #2) or run the SIFT VM under Hyper-V / VMware / VirtualBox (configuration #1). Native Windows breaks Microsandbox (libkrun is Linux-only), pre-commit hooks (path/exec semantics), and several SIFT tools.
+
+If your work touches `services/mcp/src/tools/`, `services/agent_mcp/`, or anything under a Microsandbox path, you **must** run integration tests inside the SIFT VM (or your Linux box with Microsandbox installed) before opening a PR. macOS-only test runs do not satisfy the gate.
 
 ---
 
@@ -254,7 +244,7 @@ If your PR touches code but not the doc the code refers to, expect the reviewer 
 `ruff check . && ruff format --check .` for Python. `cargo clippy --all-targets --all-features -- -D warnings` for Rust. `eslint .` for Node. Pre-commit runs all three; CI re-runs them. No `# noqa` without an inline justification.
 
 ### Secrets in commits
-The `.gitignore` already covers `.env*`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`, `*.gpg`, `cases/`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit. Never paste PATs, OAuth tokens, or HMAC keys into PR descriptions or commit messages.
+The `.gitignore` already covers `.env*`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`, `*.gpg`, `cases/`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit. Never paste auth tokens, OAuth tokens, or HMAC keys into PR descriptions or commit messages.
 
 ---
 
@@ -285,7 +275,7 @@ Authority order (escalate left-to-right):
 3. **Team chat** — PUG / Beaver / Haley / KP. Use the appropriate thread; don't DM PUG for things the team should see.
 4. **Devpost platform issues only:** https://help.devpost.com/
 
-Do not paste PAT tokens, OAuth tokens, case data, or HMAC keys into any of the above. NotebookLM and chat are *not* secret-cleared channels.
+Do not paste auth tokens, OAuth tokens, case data, or HMAC keys into any of the above. NotebookLM and chat are *not* secret-cleared channels.
 
 If you see a PR authored by a `swarm:*` worker, read [`docs/AGENT_SWARM.md`](docs/AGENT_SWARM.md) — it explains the build swarm, the reviewer/auditor agents, and the human merge gate that makes those PRs land safely. Swarm PRs follow the same branch + commit + signing rules you do; the only difference is that they have agent reviews stacked under your human approval.
 
