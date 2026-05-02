@@ -9,9 +9,17 @@
 # subagents to drive RED→GREEN→commit→push→draft-PR per BUILD_PLAN.md task.
 #
 # Usage:
-#   bash scripts/run-swarm.sh                  # foreground, watch live
+#   bash scripts/run-swarm.sh                  # foreground, watch live (autonomous)
 #   nohup bash scripts/run-swarm.sh &          # overnight, detached
-#   bash scripts/run-swarm.sh --skip-perms     # autonomous, no prompts (only after smoke)
+#
+# Permission model: claude -p (non-interactive) has no TTY and cannot prompt.
+# --permission-mode=acceptEdits only auto-accepts file edits AT a prompt point;
+# without a TTY it silently denies every Read/Bash that isn't already in the
+# default allowlist (effectively nothing for this project), so the swarm stalls.
+# The only working autonomous mode is --dangerously-skip-permissions. Safety
+# moves to the prompt's "Never run" deny-list (git push --force, gh pr merge,
+# rm -rf, edit CLAUDE.md/.env), GitHub branch protection on main (draft PRs
+# only, no auto-merge), and the in-prompt kill switches below.
 #
 # Kill switches inside the prompt: 50 tasks max, 60 turns/task, halt on 3
 # consecutive failures, exit at 4h wall-clock.
@@ -44,14 +52,12 @@ echo "${MAX_SECONDS}"            >  "${RUN_DIR}/MAX_SECONDS"
 echo "$(date -Iseconds)"         >  "${RUN_DIR}/START_ISO"
 
 # ─── Permission mode ──────────────────────────────────────────────────────
-PERM_MODE="acceptEdits"
-EXTRA_FLAGS=()
-if [[ "${1:-}" == "--skip-perms" ]]; then
-  EXTRA_FLAGS+=("--dangerously-skip-permissions")
-  echo "WARNING: --dangerously-skip-permissions enabled — gh pr create / git push run unattended"
-else
-  EXTRA_FLAGS+=("--permission-mode" "${PERM_MODE}")
-fi
+# claude -p has no TTY → cannot prompt → --permission-mode=acceptEdits silently
+# denies every non-allowlisted Read/Bash and the swarm stalls. Autonomous mode
+# requires --dangerously-skip-permissions; safety lives in the prompt's "Never
+# run" deny-list, GitHub branch protection, and the in-prompt kill switches.
+EXTRA_FLAGS=("--dangerously-skip-permissions")
+echo "INFO: --dangerously-skip-permissions enabled (required for unattended -p mode)"
 
 # ─── Prompt ───────────────────────────────────────────────────────────────
 PROMPT=$(cat <<EOF
