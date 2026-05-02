@@ -25,7 +25,6 @@ import pytest
 # ---------------------------------------------------------------------------
 # Shared helpers — the real interfaces under test
 # ---------------------------------------------------------------------------
-
 from verdict.graph.checkpoint import (
     ModeLockedError,
     SqliteCheckpointer,
@@ -33,7 +32,6 @@ from verdict.graph.checkpoint import (
     open_checkpointer,
     verify_mode_lock,
 )
-
 
 # ---------------------------------------------------------------------------
 # W3.E.1 — WAL + synchronous=FULL pragma assertions
