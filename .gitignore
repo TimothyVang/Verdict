@@ -25,6 +25,7 @@ cases/
 # Secrets
 .env
 .env.*
+!.env.example
 *.gpg
 ~/.verdict/key.gpg
 .claude/settings.local.json
