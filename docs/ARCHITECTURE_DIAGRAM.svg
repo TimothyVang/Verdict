@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">VERDICT architecture diagram</title>
+  <desc id="desc">Examiner CLI connects to FastMCP gateway, mode detection, planner, LangGraph execution, microsandbox tools, ledger, checkpoints, and Langfuse.</desc>
+  <style>
+    .box{fill:#f8fafc;stroke:#1f2937;stroke-width:2;rx:8}
+    .core{fill:#e0f2fe}
+    .guard{fill:#fef3c7}
+    .data{fill:#dcfce7}
+    .obs{fill:#ede9fe}
+    .text{font-family:Arial,sans-serif;font-size:18px;fill:#111827}
+    .small{font-family:Arial,sans-serif;font-size:14px;fill:#374151}
+    .line{stroke:#374151;stroke-width:2;fill:none;marker-end:url(#arrow)}
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#374151"/>
+    </marker>
+  </defs>
+  <rect x="40" y="45" width="180" height="70" class="box core"/>
+  <text x="70" y="88" class="text">Examiner CLI</text>
+  <rect x="280" y="45" width="210" height="70" class="box core"/>
+  <text x="315" y="75" class="text">FastMCP Gateway</text>
+  <text x="318" y="98" class="small">case_init, export, doctor</text>
+  <rect x="550" y="45" width="210" height="70" class="box core"/>
+  <text x="590" y="75" class="text">Mode Detect</text>
+  <text x="575" y="98" class="small">cloud / airgap / dual</text>
+  <rect x="830" y="45" width="250" height="70" class="box core"/>
+  <text x="880" y="75" class="text">Planner Protocol</text>
+  <text x="865" y="98" class="small">CloudPlanner / LocalPlanner</text>
+
+  <rect x="95" y="185" width="210" height="70" class="box guard"/>
+  <text x="135" y="215" class="text">planner_critique</text>
+  <text x="125" y="238" class="small">CoVe before execution</text>
+  <rect x="365" y="185" width="210" height="70" class="box guard"/>
+  <text x="405" y="215" class="text">comprehension</text>
+  <text x="430" y="238" class="small">gate</text>
+  <rect x="635" y="185" width="240" height="70" class="box core"/>
+  <text x="685" y="215" class="text">executor_fanout</text>
+  <text x="665" y="238" class="small">memory / disk / logs / triage</text>
+
+  <rect x="70" y="320" width="250" height="90" class="box guard"/>
+  <text x="110" y="352" class="text">DenyRuleWrapper</text>
+  <text x="105" y="378" class="small">evidence write deny</text>
+  <rect x="370" y="320" width="250" height="90" class="box core"/>
+  <text x="425" y="352" class="text">ToolExecutor</text>
+  <text x="398" y="378" class="small">SIFT tools in microVMs</text>
+  <rect x="670" y="320" width="250" height="90" class="box guard"/>
+  <text x="725" y="352" class="text">LedgerEmitter</text>
+  <text x="705" y="378" class="small">HMAC JSONL + fsync</text>
+
+  <rect x="980" y="300" width="170" height="130" class="box data"/>
+  <text x="1012" y="333" class="text">Evidence</text>
+  <text x="1002" y="358" class="small">read-only mount</text>
+  <text x="1015" y="381" class="small">hash recheck</text>
+  <text x="1008" y="404" class="small">chattr +i vault</text>
+
+  <rect x="130" y="500" width="220" height="70" class="box core"/>
+  <text x="172" y="530" class="text">pivot_node</text>
+  <text x="167" y="553" class="small">cheap local adjustment</text>
+  <rect x="420" y="500" width="220" height="70" class="box core"/>
+  <text x="465" y="530" class="text">quorum_node</text>
+  <text x="450" y="553" class="small">cross-engine verdict</text>
+  <rect x="710" y="500" width="220" height="70" class="box core"/>
+  <text x="755" y="530" class="text">replan_node</text>
+  <text x="740" y="553" class="small">contested correction</text>
+
+  <rect x="130" y="635" width="230" height="70" class="box obs"/>
+  <text x="185" y="665" class="text">SqliteSaver</text>
+  <text x="168" y="688" class="small">checkpoint resume</text>
+  <rect x="475" y="635" width="230" height="70" class="box obs"/>
+  <text x="540" y="665" class="text">Langfuse</text>
+  <text x="510" y="688" class="small">trace tree and spans</text>
+  <rect x="820" y="635" width="230" height="70" class="box data"/>
+  <text x="875" y="665" class="text">Findings</text>
+  <text x="852" y="688" class="small">narrative + hashes</text>
+
+  <path class="line" d="M220 80 H280"/>
+  <path class="line" d="M490 80 H550"/>
+  <path class="line" d="M760 80 H830"/>
+  <path class="line" d="M955 115 C955 150 200 150 200 185"/>
+  <path class="line" d="M305 220 H365"/>
+  <path class="line" d="M575 220 H635"/>
+  <path class="line" d="M755 255 V320"/>
+  <path class="line" d="M320 365 H370"/>
+  <path class="line" d="M620 365 H670"/>
+  <path class="line" d="M980 365 H920"/>
+  <path class="line" d="M795 410 C795 455 530 455 530 500"/>
+  <path class="line" d="M640 535 H710"/>
+  <path class="line" d="M710 535 H640"/>
+  <path class="line" d="M530 570 C530 600 245 600 245 635"/>
+  <path class="line" d="M590 570 V635"/>
+  <path class="line" d="M820 570 C820 600 935 600 935 635"/>
+</svg>
+
