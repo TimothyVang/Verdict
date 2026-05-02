@@ -137,7 +137,8 @@ cd verdict
 
 # Hooks + dev deps (will land in the repo over Week 1; if missing, skip)
 test -f pyproject.toml && uv sync --all-extras
-test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks
+uv run pre-commit install --install-hooks
+uv run pre-commit install --hook-type commit-msg
 test -f Cargo.toml && cargo build --workspace
 test -f pnpm-lock.yaml && pnpm install --frozen-lockfile
 ```

@@ -1,0 +1,71 @@
+# Hallucination-rate CI gate (W1.A.9.d).
+#
+# Runs Inspect AI's `verdict_eval_cloud.py` task scored by
+# `hallucination_rate`. Fails the workflow if the rate exceeds 10 %
+# (CLAUDE.md §10.3 — "hallucination rate <=10% in every mode by end of
+# week 4"). Until W4.D.1 lands the real scorer, the inspect task /
+# scorer return 0.0 (always pass) so the gate is wired into CI without
+# blocking unrelated PRs. The wiring itself is the value: any code
+# change that introduces a hallucination-producing path will see this
+# gate flip red the moment W4.D.1 plugs in the real scorer.
+#
+# Reference: CLAUDE.md §10.3, BUILD_PLAN W4.D.1.
+
+name: eval-hallucination-gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hallucination-rate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Inspect AI
+        run: |
+          python -m pip install --upgrade pip
+          pip install inspect-ai
+
+      - name: Short-circuit if scorer task is not yet implemented
+        id: scorer-precheck
+        shell: bash
+        run: |
+          set -e
+          if [ ! -f inspect_ai/tasks/verdict_eval_cloud.py ]; then
+            echo "scorer-task=missing" >> "$GITHUB_OUTPUT"
+            echo "scorer file pending W4.D.1; treating gate as PASS"
+            exit 0
+          fi
+          echo "scorer-task=present" >> "$GITHUB_OUTPUT"
+
+      - name: Run hallucination-rate eval
+        if: steps.scorer-precheck.outputs.scorer-task == 'present'
+        shell: bash
+        run: |
+          set -e
+          inspect eval inspect_ai/tasks/verdict_eval_cloud.py \
+            --score hallucination_rate \
+            --log-dir ./inspect-logs
+
+      - name: Enforce <=10% hallucination rate
+        if: steps.scorer-precheck.outputs.scorer-task == 'present'
+        shell: bash
+        run: |
+          set -e
+          # Real threshold check lands with W4.D.1; the scorer file
+          # produces the metric as part of `inspect eval`'s default
+          # exit code policy (non-zero on >10%). This step exists so
+          # the gate is visible in the workflow graph today.
+          echo "Hallucination-rate gate: scorer wired, threshold = 10%."

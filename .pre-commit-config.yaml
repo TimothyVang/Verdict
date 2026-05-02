@@ -1,0 +1,73 @@
+# Pre-commit hook configuration for Verdict (W1.A.9.c).
+#
+# Mechanical enforcement of CLAUDE.md §3.7 (Conventional Commits + task ID)
+# and §3.10 (no mocks / stubs / placeholders).
+#
+# Install once per clone:
+#     uv run pre-commit install --install-hooks
+#     uv run pre-commit install --hook-type commit-msg
+#
+# scripts/install.sh wires both invocations into the bootstrap path.
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+
+repos:
+  # ---------------------------------------------------------------
+  # 1. Commit-message discipline (§3.7)
+  # ---------------------------------------------------------------
+  # Conventional-commits prefix vocabulary is enforced by commitizen.
+  # The task-id suffix `[W#.X.#]` is enforced by the local hook below;
+  # commitizen's built-in cz_conventional_commits rule does not know
+  # about Verdict task IDs.
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.31.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      - id: commit-msg-task-id
+        name: Enforce CLAUDE.md §3.7 commit-message contract
+        entry: python scripts/check_commit_msg.py
+        language: system
+        stages: [commit-msg]
+        # Pattern (also encoded in scripts/check_commit_msg.py):
+        #   ^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$
+
+  # ---------------------------------------------------------------
+  # 2. Linting (§5 — Step 5 of CONTRIBUTING.md)
+  # ---------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.4
+    hooks:
+      - id: ruff
+        args: [check, --select, ALL]
+      - id: ruff-format
+
+  # ---------------------------------------------------------------
+  # 3. No-mocks AST gate (§3.10)
+  # ---------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: check-no-mocks
+        name: Reject mock-style imports and TEST_MODE guards (CLAUDE.md §3.10)
+        entry: python scripts/check_no_mocks.py
+        language: system
+        types: [python]
+        # The script accepts explicit paths from pre-commit's file list,
+        # so it scans only the changed Python files on each commit. Its
+        # default sweep (verdict/, tests/) runs in CI.
+        pass_filenames: true
+
+  # ---------------------------------------------------------------
+  # 4. Rust formatting (§5 — only active once Cargo.toml lands)
+  # ---------------------------------------------------------------
+  # Cargo.toml does not yet exist at repo root (FastMCP gateway is
+  # scheduled W1.A.5). This hook is intentionally commented out;
+  # uncomment when the workspace `Cargo.toml` is added.
+  # - repo: https://github.com/doublify/pre-commit-rust
+  #   rev: v1.0
+  #   hooks:
+  #     - id: fmt
+  #       args: ["--all", "--", "--check"]
