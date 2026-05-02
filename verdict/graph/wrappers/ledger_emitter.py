@@ -37,10 +37,7 @@ function.
 
 from __future__ import annotations
 
-import hashlib
 import uuid
-from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Callable
 
 from verdict.ledger.hmac_key import HMACKeyProvider
