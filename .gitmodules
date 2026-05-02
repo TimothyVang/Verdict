@@ -1,0 +1,3 @@
+[submodule "protocol-sift"]
+	path = protocol-sift
+	url = https://github.com/teamdfir/protocol-sift.git

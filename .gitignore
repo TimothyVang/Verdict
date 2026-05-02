@@ -1,0 +1,75 @@
+# --- VERDICT workspace gitignore ---
+
+# Large binaries — manual fetch only (see downloads/README.md)
+downloads/sift-workstation/*
+!downloads/sift-workstation/.gitkeep
+downloads/evidence-samples/*
+!downloads/evidence-samples/.gitkeep
+
+# Case data + ledgers (per-investigation, never committed)
+cases/
+*.jsonl.bak
+
+# Evidence (must never be committed — chain of custody)
+*.E01
+*.raw
+*.dd
+*.mem
+*.vmem
+*.vmdk
+*.pcap
+*.pcapng
+*.ova
+*.iso
+
+# Secrets
+.env
+.env.*
+*.gpg
+~/.verdict/key.gpg
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Rust
+target/
+**/*.rs.bk
+
+# Node (deferred v2)
+node_modules/
+.pnpm-store/
+
+# uv
+.uv-cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Docker / Langfuse self-host volumes
+postgres-data/
+clickhouse-data/
+
+# Microsandbox runtime
+.microsandbox/
+
+# Inspect AI logs
+inspect_logs/
+
+# Plan / scratch
+*.scratch.md
+.plans/
