@@ -1,28 +1,28 @@
 # VERDICT
 
-Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS Find Evil! hackathon (deadline Jun 15, 2026 11:45 PM EDT).
+Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS *FIND EVIL!* hackathon (deadline **Jun 15 2026 11:45 PM EDT**; team-internal target **Jun 14 EOD** = ~28 h buffer).
 
 **One sentence:** Two AI models cross-check each other against forensic evidence, encoding SANS investigative discipline as schema rules (not prompts), producing a tamper-evident HMAC-signed audit trail that maps every finding back to a specific tool execution.
 
+**Hackathon context:** *FIND EVIL!* is the SANS Institute's 2,447-participant DFIR-AI hackathon. Sponsor: SANS Institute. Judge: Rob T. Lee (CAIO). The goal is to "make Protocol SIFT a fully autonomous incident response agent" — IR agents that go from initial access to verdict in under 8 minutes, the same window an AI-powered adversary needs to reach domain control.
+
 ---
 
-## Doc map — read in this order
+## Where to read what
 
-```
-verdict/
-├── README.md                ← you are here. Entry point, diagrams, judging criteria.
-├── ARCHITECTURE.md          ← Current authoritative architecture. Read second.
-├── BUILD_PLAN.md            ← 6-week TDD execution plan. Read third (when starting work).
-├── DEVPOST_COMPLIANCE.md    ← Submission rule-to-artifact mapping. Read before submitting.
-└── archive/                 ← Audit history. Reference for "why did we decide X?"
-    ├── 01-audit-v4.3.md     ← Initial audit (pre-research-pass)
-    ├── 02-audit-v4.4.md     ← After agentic + DFIR research passes
-    ├── 03-audit-v4.5.md     ← After system-design review (mock layer removed)
-    ├── 04-spec-plan-v4.6.md ← Schema patches for week 1
-    └── 05-tldr-original.md  ← Earlier TL;DR (superseded by this README)
-```
+| If you're working on… | Read in this order |
+|---|---|
+| **Anything for the first time** | this README → `CLAUDE.md` §3 (hard rules) → `docs/ARCHITECTURE.md` |
+| **Schemas / validators** | `CLAUDE.md` §3.2–3.6 → `docs/ARCHITECTURE.md` §4 → `docs/BUILD_PLAN.md` W1.B–W1.E |
+| **Planner / orchestration** | `CLAUDE.md` §4 → `docs/ARCHITECTURE.md` §2 → `docs/BUILD_PLAN.md` W2.B–W2.C |
+| **Tool wrappers** | `docs/ARCHITECTURE.md` §6 → `docs/BUILD_PLAN.md` W2.A + W2.F |
+| **Verifier strategies** | `CLAUDE.md` §8 → `docs/ARCHITECTURE.md` §1 → `docs/BUILD_PLAN.md` W3.A–W3.C |
+| **Ledger / audit trail** | `CLAUDE.md` §9 → `docs/ARCHITECTURE.md` §5 → `docs/BUILD_PLAN.md` W2.D |
+| **CLI / submission** | `CLAUDE.md` §10 → `docs/BUILD_PLAN.md` W6.* → `docs/DEVPOST_COMPLIANCE.md` |
+| **Setting up your machine** | `CONTRIBUTING.md` §0–4 → `downloads/README.md` |
+| **Why a decision was made** | `docs/spec/` (`README.md` then the relevant `0N-*.md`) |
 
-**Authority order:** Devpost rules (always win) → DEVPOST_COMPLIANCE.md → ARCHITECTURE.md → BUILD_PLAN.md. Archive is reference, not authority.
+**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md` → `spec/` archive. Code wins over docs; if code is right, fix the doc.
 
 ---
 
@@ -34,7 +34,6 @@ verdict/
                  ▼
    ┌───────────────────────────────┐
    │  VERDICT Gateway              │
-   │                               │
    │  1. Plans the investigation   │   "Where would evil hide?"
    │  2. Runs forensic tools       │   vol3, hayabusa, plaso, MFTECmd...
    │  3. Two models cross-check    │   Qwen3 vs GLM-4.5-Air
@@ -43,228 +42,50 @@ verdict/
    └───────────────────────────────┘
                  │
                  ▼
-   ┌───────────────────────────────┐
-   │  Findings + Audit Trail       │
-   │  - Each finding cites ≥2      │
-   │    artifact classes (FOR500)  │
-   │  - Caveats acknowledged       │
-   │    (Amcache ≠ execution etc.) │
-   │  - MITRE sub-technique IDs    │
-   │  - Tamper-evident HMAC chain  │
-   │  - Trace tree in Langfuse     │
-   └───────────────────────────────┘
+   Findings + Audit Trail
+   - Each finding cites ≥2 artifact classes (FOR500)
+   - Caveats acknowledged (Amcache ≠ execution etc.)
+   - MITRE sub-technique IDs
+   - Tamper-evident HMAC chain
+   - Trace tree in Langfuse
 ```
 
----
-
-## Three modes — pick by environment, not config
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
-│  │ CLOUD ONLY   │    │ AIR-GAP ONLY │    │ DUAL         │      │
-│  ├──────────────┤    ├──────────────┤    ├──────────────┤      │
-│  │ SOC analyst  │    │ DCO operator │    │ Forensic lab │      │
-│  │ on laptop    │    │ on classified│    │ full rig     │      │
-│  │              │    │ network      │    │              │      │
-│  │ Internet ✓   │    │ Internet ✗   │    │ Both ✓       │      │
-│  │ GPU      ✗   │    │ GPU      ✓   │    │              │      │
-│  └──────┬───────┘    └──────┬───────┘    └──────┬───────┘      │
-│         │                   │                    │              │
-│         ▼                   ▼                    ▼              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐      │
-│  │ Claude n=3   │    │ Qwen3 + GLM  │    │ Claude +     │      │
-│  │ self-        │    │ cross-engine │    │ Qwen3 + GLM  │      │
-│  │ consistency  │    │ quorum       │    │ three-way    │      │
-│  │              │    │              │    │              │      │
-│  │ → VETTED     │    │ → VERIFIED_  │    │ → VERIFIED_  │      │
-│  │   _CLOUD     │    │   AIRGAP     │    │   DUAL       │      │
-│  │ (best-effort)│    │ (true cross- │    │ (strongest)  │      │
-│  │              │    │   family)    │    │              │      │
-│  └──────────────┘    └──────────────┘    └──────────────┘      │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-
-  Gateway autodetects mode at startup. Mode locks at case_init —
-  no mid-investigation switching. Audit trail stays consistent.
-```
-
----
-
-## The agent loop (Plan-then-Execute)
-
-```
-                START
-                  │
-                  ▼
-        ┌──────────────────┐
-        │  Planner         │   "Investigate process injection.
-        │  (Claude/Qwen3)  │    Negative: rule out persistence.
-        │                  │    Use vol3.malfind, RECmd."
-        └────────┬─────────┘
-                 │
-                 ▼
-        ┌──────────────────┐
-        │ Planner Critique │   CoVe — same model checks its own
-        │ (CoVe)           │   plan against evidence summary
-        └────────┬─────────┘
-                 │
-                 ▼
-        ┌──────────────────┐
-        │ Comprehension    │   "Do all 4 executors agree on
-        │ Gate             │    what the plan said?"
-        └────────┬─────────┘
-                 │
-            ┌────┴────┬────────┬────────┐
-            ▼         ▼        ▼        ▼
-         ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐
-         │vol3 │  │haya │  │plaso│  │MFTec│   FANOUT — 4 parallel
-         │exec │  │busa │  │exec │  │ exec│   executor branches
-         │     │  │exec │  │     │  │     │   running in microVMs
-         └──┬──┘  └──┬──┘  └──┬──┘  └──┬──┘
-            │        │        │        │
-            └────────┴───┬────┴────────┘
-                         ▼
-                ┌──────────────────┐
-                │ Pivot Node       │   "Tool output suggests a new
-                │ (cheap follow-   │    hypothesis — add 1, re-run."
-                │  up; max 15)     │
-                └────────┬─────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Quorum           │   "Do both engines agree on
-                │                  │    artifact set + technique?"
-                └────────┬─────────┘
-                         │
-              ┌──────────┼──────────┐
-              ▼          ▼          ▼
-        ┌─────────┐ ┌─────────┐ ┌─────────┐
-        │VERIFIED │ │CONTESTED│ │UNVERIFI-│
-        │         │ │         │ │ ABLE    │
-        │ HMAC-   │ │ Replan  │ │ Agent   │
-        │ sign &  │ │ (max 3) │ │ gives up│
-        │ finalize│ │ then    │ │ explicit│
-        │         │ │ unverif.│ │ ly      │
-        └─────────┘ └─────────┘ └─────────┘
-```
-
----
-
-## Three-layer immutability defense
-
-```
-   ┌─────────────────────────────────────────────────────┐
-   │  Agent attempts tool call                            │
-   │  e.g. "vol3 -f /evidence/mem.vmem windows.malfind"  │
-   └──────────────────┬──────────────────────────────────┘
-                      ▼
-   ┌─────────────────────────────────────────────────────┐
-   │  LAYER 1 — Claude PreToolUse hook                    │
-   │  (cloud + dual modes only; air-gap = no Claude)     │
-   │                                                      │
-   │  ⚠️  Best-effort: anthropics/claude-code #33106     │
-   │      means deny is buggy for MCP tools. Logged but  │
-   │      not the architectural guarantee.               │
-   └──────────────────┬──────────────────────────────────┘
-                      ▼
-   ┌─────────────────────────────────────────────────────┐
-   │  LAYER 2 — LangGraph DenyRuleWrapper                 │
-   │  (fires in ALL modes, regardless of model)          │
-   │  ✓  Architectural guarantee.                        │
-   └──────────────────┬──────────────────────────────────┘
-                      ▼
-   ┌─────────────────────────────────────────────────────┐
-   │  LAYER 3 — Microsandbox read-only mount              │
-   │  (kernel-enforced, even if Layers 1-2 bypassed)     │
-   │  ✓  /evidence mounted read-only at libkrun level.   │
-   └──────────────────┬──────────────────────────────────┘
-                      ▼
-              Tool runs in ephemeral
-              microVM, dies after call
-```
+Three modes auto-detected by environment (Internet ✓/✗, GPU ✓/✗) and **locked at case_init**: `cloud-only` (SOC laptop), `airgap-only` (DCO), `dual` (forensic lab). Full mode tables, agent-loop topology, and three-layer immutability defense in `docs/ARCHITECTURE.md` §1–§3.
 
 ---
 
 ## What makes us different (the moat)
 
 ```
-  Valhuntir (the bar to beat):              VERDICT:
-  ────────────────────────────              ──────────────
-  Single LLM                       VS       Two engines cross-check
-  Human gates AFTER AI             VS       AI gates AGAINST AI
-  No verification                  VS       Cross-family quorum
-  No durable checkpointing         VS       Kill-9 resilient resume
-  No trace observability           VS       Langfuse trace tree UI
-  Forensic rules in prompts        VS       Forensic rules in TYPES
-  Single mode                      VS       Cloud / air-gap / dual
+  Single LLM                       VS  Two engines cross-check
+  Human gates AFTER AI             VS  AI gates AGAINST AI
+  No verification                  VS  Cross-family quorum
+  No durable checkpointing         VS  Kill-9 resilient resume
+  No trace observability           VS  Langfuse trace tree UI
+  Forensic rules in prompts        VS  Forensic rules in TYPES
+  Single mode                      VS  Cloud / air-gap / dual
 ```
 
 **Three things competitors don't have:**
 
 1. **Forensic discipline encoded in code, not prompts.** Schema *rejects* a Finding citing Amcache without acknowledging the LastModified caveat. Schema *rejects* an execution claim with only one artifact class. Hunt Evil baselines + DKOM divergence detection fire automatically.
-
 2. **Bidirectional audit trail.** Ledger entry → Langfuse trace → tool call → microsandbox version → file hash. And reverse: trace → ledger entry → finding. Judges can drill in either direction.
-
 3. **Mode-locked verification.** No mid-case mode switching. Resume always uses original mode. Mode upgrades happen via explicit `verdict reverify` producing a parallel verdict chain.
 
 ---
 
-## 6-week roadmap
+## 6-week roadmap (summary; full plan in `docs/BUILD_PLAN.md`)
 
 ```
-WEEK 1 ── May 2-8 ── FOUNDATIONS + SCHEMAS
-─────────────────────────────────────────────────────
- Tim    │████████████████│  Infra + schemas + ops docs
- Beaver │████│             Seed-fix + Planner Protocol
- Haley  │██████│           SGLang + Qwen3 + GLM
- KP     │████████████████│ Playbooks + caveats + hunt_evil
-
-  ★ HARD GATE: Schemas freeze May 8. No slip allowed.
-
-WEEK 2 ── May 9-15 ── TOOL SURFACE + LANGGRAPH
-─────────────────────────────────────────────────────
- Tim    │████████████████│  9 vol3 wrappers + ledger
- Beaver │████████████████│  Plan-then-Execute + critique
- Haley  │████│             OpenLLMetry wiring
- KP     │██████████│       9 non-vol3 wrappers
-
-WEEK 3 ── May 16-22 ── VERIFIERS + TSI + CHECKPOINTING
-─────────────────────────────────────────────────────
- Tim    │████████████████│  TSI + ledger writer + /health
- Beaver │████████████████│  3 verifier strategies + pivot
- Haley  │████│             Inference monitoring
- KP     │██████│           Tool wrapper polish
-
-WEEK 4 ── May 23-29 ── SKILLS + EVALS
-─────────────────────────────────────────────────────
- Tim    │██████████│       CI gates per mode
- Beaver │████████│         Prompt engineering iteration
- Haley  │██│               Inspect AI under-load tuning
- KP     │████████████████│ 6 skills + 50 indicators + 5 scorers
-
-  ★ HARD GATE: Case 001 produces engineered Qwen3-vs-GLM
-    disagreement by week-end (otherwise demo is a probability bet)
-
-WEEK 5 ── May 30-Jun 5 ── MODE AUTODETECT + POLISH
-─────────────────────────────────────────────────────
- Tim    │████████████│     Mode detect + adapters + docs
- Beaver │████│             Time-travel demo
- Haley  │██│               Demo rehearsal inference
- KP     │██████│           Accuracy report
-
-  ★ Rough demo cut May 30 — find the shot before week 6
-
-WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
-─────────────────────────────────────────────────────
- Tim    │██████████████│   README + ARCHITECTURE + Devpost
- Beaver │██████│           Final cut + dry runs
- Haley  │██│               Demo support
- KP     │████│             Final accuracy polish
-
-  ★ Submit Jun 14 EOD (~28h before Jun 15 11:45 PM EDT deadline)
+WEEK 1 ── May 2–8  ── FOUNDATIONS + SCHEMAS                ★ Schemas freeze May 8
+WEEK 2 ── May 9–15 ── TOOL SURFACE + LANGGRAPH
+WEEK 3 ── May 16–22── VERIFIERS + TSI + CHECKPOINTING
+WEEK 4 ── May 23–29── SKILLS + EVALS                       ★ Case 001 disagreement
+WEEK 5 ── May 30–Jun 5 ── MODE AUTODETECT + POLISH         ★ Rough demo cut May 30
+WEEK 6 ── Jun 6–14 ── DEMO + DOCS + SUBMIT                 ★ Submit Jun 14 EOD
 ```
+
+Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (inference, observability), KP (playbooks, skills, evals).
 
 ---
 
@@ -272,84 +93,32 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ```
 0:00 ─┬─ Cold open + architecture flash
-       │
-0:30 ─┤ CLOUD-ONLY MODE (60s)
-       │  • Three Claude samples, three seeds, temp=0.7
-       │  • Langfuse pane: 3 sibling spans converging
-       │  • 2-of-3 agree → VETTED_CLOUD (honest framing)
-       │
+0:30 ─┤ CLOUD-ONLY MODE (60s) — three Claude samples → 2-of-3 → VETTED_CLOUD
 1:30 ─┤ AIR-GAP MODE (90s) — THE HERO SHOT
-       │  Pull network cable on camera. Mode → airgap.
-       │
-       │  ⓵ DKOM divergence (pslist+psscan) → T1014.001 auto
+       │  ⓵ DKOM divergence (pslist+psscan) → T1014 auto
        │  ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
        │  ⓷ Amcache caveat acknowledged in rationale
        │  ⓸ Pivot in action (1 pivot, 0 replans)
-       │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★
-       │     (this beat is Devpost-required: "at least one
-       │      self-correction sequence")
+       │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★ (Devpost-required self-correction)
        │  ⓺ TSI tcpdump proof (key never enters VM)
        │  ⓻ Kill -9 + verdict resume
-       │
-3:00 ─┤ DUAL MODE (60s)
-       │  • New case (mode locked at init)
-       │  • Three-way verification → VERIFIED_DUAL
-       │
+3:00 ─┤ DUAL MODE (60s) — three-way verification → VERIFIED_DUAL
 4:00 ─┤ Architecture recap + per-mode accuracy table
-       │
 5:00 ─┴─ End card: repo URL + MIT license
 ```
 
 ---
 
-## Mapped to all 6 Devpost judging criteria
+## Mapped to the 6 Devpost judging criteria
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│   1. AUTONOMOUS EXECUTION QUALITY                          │
-│      Mode-aware verifier strategy. Plan-then-Execute       │
-│      with planner_critique CoVe + comprehension_gate +     │
-│      pivot vs replan + unverifiable_finalize.              │
-│      Self-correction via cross-engine quorum.              │
-│                                                            │
-│   2. IR ACCURACY                                           │
-│      Artifact-pair rule, Tier-1 caveats, MITRE sub-        │
-│      techniques, VETTED_CLOUD vs VERIFIED honesty,         │
-│      Hunt Evil masquerade, DKOM auto-detection.            │
-│      Five Inspect AI scorers per mode.                     │
-│                                                            │
-│   3. BREADTH AND DEPTH OF ANALYSIS                         │
-│      "Depth on fewer types beats shallow coverage of       │
-│      many" — Devpost rubric line we lean on directly.      │
-│      Windows-DFIR-depth-first; v2 extension points         │
-│      named (5th net_executor + live_executor branches).    │
-│                                                            │
-│   4. CONSTRAINT IMPLEMENTATION                             │
-│      Three-layer immutability (PreToolUse + DenyRule       │
-│      + microsandbox kernel mount). HMAC ledger. TSI.       │
-│      Mode lock at case_init. Architectural, not prompt.    │
-│                                                            │
-│   5. AUDIT TRAIL QUALITY                                   │
-│      HMAC ledger ↔ Langfuse bidirectional. Three-tier      │
-│      ID hierarchy. Per-output-file SHA-256. Exam-          │
-│      environment metadata (NIST SP 800-86).                │
-│                                                            │
-│   6. USABILITY AND DOCUMENTATION                           │
-│      Reproducible from fresh SIFT VM. verdict doctor       │
-│      pre-flight. 16 doc files. Conventional Commits        │
-│      with task IDs. agentskills.io portable skills.        │
-│                                                            │
-│  Cost: ~76 teammate-days over 6 weeks, 4 people.           │
-│  Risk: ~4 days slack. Microsandbox is beta.                │
-│                                                            │
-│  Hard deadline: Jun 15, 2026 11:45 PM EDT.                 │
-│  Team target:   Jun 14 EOD = ~28h buffer.                  │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-```
+1. **Autonomous Execution Quality** *(tiebreaker)* — Mode-aware verifier strategy. Plan-then-Execute with planner_critique CoVe + comprehension_gate + pivot vs replan + unverifiable_finalize. Self-correction via cross-engine quorum.
+2. **IR Accuracy** — Artifact-pair rule, Tier-1 caveats, MITRE sub-techniques, VETTED_CLOUD vs VERIFIED honesty, Hunt Evil masquerade, DKOM auto-detection. Five Inspect AI scorers per mode.
+3. **Breadth and Depth of Analysis** — "Depth on fewer types beats shallow coverage of many" — Devpost rubric line we lean on directly. Windows-DFIR-depth-first; v2 extension points named (5th `net_executor` + `live_executor` branches).
+4. **Constraint Implementation** — Three-layer immutability (PreToolUse + DenyRule + microsandbox kernel mount). HMAC ledger. TSI. Mode lock at case_init. **Architectural, not prompt.**
+5. **Audit Trail Quality** — HMAC ledger ↔ Langfuse bidirectional. Three-tier ID hierarchy. Per-output-file SHA-256. Examination-environment metadata (NIST SP 800-86).
+6. **Usability and Documentation** — Reproducible from a fresh SIFT VM. `verdict doctor` pre-flight. Conventional Commits with task IDs. agentskills.io portable skills.
 
-**Tie-breaker awareness:** rules break ties by criterion order. Push hardest on Autonomous Execution Quality (criterion #1) — the self-correction beat must land cleanly in the demo.
+**Tie-breaker awareness:** rules break ties by criterion order. Push hardest on Autonomous Execution Quality (#1) — the self-correction beat must land cleanly.
 
 ---
 
@@ -357,18 +126,15 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ```
 RISK #1 — Microsandbox hits a blocker week 4+
-  Likelihood: MEDIUM (it's beta)
-  Impact:     HIGH (kills TSI hero shot)
+  Likelihood: MEDIUM (it's beta).  Impact: HIGH (kills TSI hero shot).
   Mitigation: Test it HARD in week 2, not week 4.
 
 RISK #2 — Case 001 doesn't disagree by end of week 4
-  Likelihood: MEDIUM
-  Impact:     HIGH (no air-gap demo without disagreement)
+  Likelihood: MEDIUM.  Impact: HIGH (no air-gap demo without disagreement).
   Mitigation: KP starts engineering W1; engineer Case 002 if 001 fails.
 
 RISK #3 — Schemas slip past May 8
-  Likelihood: MEDIUM
-  Impact:     EXTREME (cascades into every later week)
+  Likelihood: MEDIUM.  Impact: EXTREME (cascades into every later week).
   Mitigation: Hard descope on May 6 if Phase W1.B not 80% done.
 ```
 
@@ -380,14 +146,13 @@ RISK #3 — Schemas slip past May 8
 
 ## Quick reference
 
-```
-  Need:                                  Read:
-  ─────                                  ─────
-  Architecture details                   ARCHITECTURE.md
-  Day-by-day TDD task plan               BUILD_PLAN.md
-  Devpost rule-to-artifact mapping       DEVPOST_COMPLIANCE.md
-  Decision history (why we chose X)      archive/
-  Tier-1 examiner caveats                ../agent-config/MEMORY.md
-  Tool sequencing playbooks              ../agent-config/PLAYBOOK.md
-  Project conventions                    ../CLAUDE.md
-```
+| Need | Read |
+|---|---|
+| Architecture details, schemas, threat model | `docs/ARCHITECTURE.md` |
+| Day-by-day TDD task plan, task IDs, ownership | `docs/BUILD_PLAN.md` |
+| Devpost rule-to-artifact mapping, judge checklist | `docs/DEVPOST_COMPLIANCE.md` |
+| Decision history ("why was X decided?") | `docs/spec/` |
+| Hard rules an agent must obey | `CLAUDE.md` §3 |
+| Contributor onboarding (PAT, GPG, clone, smoke test) | `CONTRIBUTING.md` |
+| Vulnerability reporting | `SECURITY.md` |
+| What large binaries to fetch and where | `downloads/README.md` |

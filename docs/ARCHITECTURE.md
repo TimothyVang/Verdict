@@ -1,8 +1,13 @@
 # VERDICT — Architecture (current authoritative)
 
-**Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `archive/`. Read `archive/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
+**Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `spec/`. Read `spec/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
 **Date:** May 2, 2026.
-**For Devpost compliance:** see `DEVPOST_COMPLIANCE.md`. For week-by-week build sequencing: `BUILD_PLAN.md`.
+**For Devpost compliance:** see `DEVPOST_COMPLIANCE.md`. For week-by-week build sequencing: `BUILD_PLAN.md`. For hard rules an agent must obey: see `../CLAUDE.md` §3.
+
+### How to edit this doc
+- This is the **single architectural authority.** Never duplicate decisions into other docs; cross-link instead.
+- **Never edit `spec/`** — those files capture point-in-time audits and are cited from here.
+- **`BUILD_PLAN.md` task IDs** are immutable once a contributor has committed against them. New work gets a new ID.
 
 ---
 
@@ -21,12 +26,19 @@ VERDICT detects available infrastructure at startup and selects one of three mod
 Same seed + same temperature + same prompt = three identical outputs. Wang et al. 2022 self-consistency (arXiv:2203.11171) requires *diverse* reasoning paths. The implementation derives three blake3-keyed seeds per case:
 
 ```python
+from blake3 import blake3
+
 def derive_seeds(case_id: str) -> tuple[int, int, int]:
-    h = blake3(case_id.encode())
-    return (
-        int.from_bytes(h.derive_key("seed_a").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_b").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_c").digest()[:4], "big"),
+    """Three reproducible-but-diverse seeds per case via blake3 derive_key contexts."""
+    return tuple(
+        int.from_bytes(
+            blake3(
+                case_id.encode(),
+                derive_key_context=f"verdict.seeds.v1.{label}",
+            ).digest(length=4),
+            "big",
+        )
+        for label in ("a", "b", "c")
     )
 ```
 
@@ -208,10 +220,10 @@ Three YAMLs in `verdict/playbooks/` (memory.yml / disk.yml / triage.yml) ported 
 - order: 3
   tool: vol3.windows.psscan
   rule: "DKOM_divergence: set(psscan_pids) - set(pslist_pids) ≠ ∅
-         → Hypothesis(T1014.001, high, [PROCESS_MEMORY])"
+         → Hypothesis(T1014, high, [PROCESS_MEMORY])"
 ```
 
-This is one of the architecture's clearest moats — DKOM/T1014.001 detection auto-fires from the divergence between `pslist` (active list walk) and `psscan` (EPROCESS pool memory signature scan). Free in code, encoded as schema, and a 30-second demo segment.
+This is one of the architecture's clearest moats — DKOM/T1014 detection auto-fires from the divergence between `pslist` (active list walk) and `psscan` (EPROCESS pool memory signature scan). Free in code, encoded as schema, and a 30-second demo segment.
 
 ### Hunt Evil baseline
 
@@ -310,7 +322,7 @@ async def vol3_pslist(memory_image: Path, output_dir: Path) -> ToolOutput:
     await sandbox.destroy()
     return ToolOutput(
         tool_name="vol3.windows.pslist",
-        tool_version="vol3 2.10.0",
+        tool_version="vol3 2.28.0",  # current at W2.A pin time; update at build
         invocation_args=[...],
         invocation_hash=blake3(...),
         stdout_hash=output_hash,
@@ -419,7 +431,7 @@ Detailed in `BUILD_PLAN.md` W6.A.1 + `archive/03-audit-v4.5.md` lines 855–865.
 0:00–0:30  Cold open + architecture flash
 0:30–1:30  CLOUD-ONLY (60s) — n=3 self-consistency, three seeds
 1:30–3:00  AIR-GAP (90s) — 7 hero beats:
-           ⓵ DKOM divergence (pslist+psscan) → T1014.001 auto
+           ⓵ DKOM divergence (pslist+psscan) → T1014 auto
            ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
            ⓷ Amcache caveat acknowledged in rationale
            ⓸ Pivot in action (1 pivot, 0 replans)
