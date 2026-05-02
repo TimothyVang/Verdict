@@ -1,0 +1,1 @@
+# verdict — DFIR agent package
