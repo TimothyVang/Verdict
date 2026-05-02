@@ -22,7 +22,7 @@ W2.G.1 will consume.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -83,7 +83,7 @@ def test_comprehension_mismatch_schema_round_trip() -> None:
                 parsed_success_criteria_hash="abc123",
             ),
         ],
-        timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=timezone.utc),
+        timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=UTC),
     )
     assert payload.event_type == "comprehension_check"
     assert payload.timestamp_utc.tzinfo is not None  # always TZ-aware
@@ -130,7 +130,7 @@ def test_comprehension_mismatch_rejects_empty_disagreeing_keys() -> None:
                     parsed_success_criteria_hash="abc",
                 )
             ],
-            timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=timezone.utc),
+            timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=UTC),
         )
 
 
@@ -150,7 +150,7 @@ def test_comprehension_mismatch_event_id_ulid_shape() -> None:
                 parsed_success_criteria_hash="abc",
             )
         ],
-        timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=timezone.utc),
+        timestamp_utc=datetime(2026, 5, 2, 12, 0, 0, tzinfo=UTC),
     )
     assert re.match(r"^[0-9A-HJKMNP-TV-Z]{26}$", payload.event_id), (
         f"event_id={payload.event_id!r} is not a ULID"
