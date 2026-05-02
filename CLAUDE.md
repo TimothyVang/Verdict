@@ -47,7 +47,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 
 ### 3.3 Tier-1 caveat acknowledgment
 
-`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. The seven Tier-1 caveats (encoded in `verdict/schemas/caveat_id.py` and `verdict/prompts/examiner_caveats.md`):
+`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. Caveat triggers are keyed by `Finding.artifact_classes` membership unless otherwise noted; `LOGON_TYPE_3_VS_10` is the named exception (triggered by `EVTX_4624` artifact_class AND the `EvtxRecord.LogonType` field equaling 3 or 10). The seven Tier-1 caveats (encoded in `verdict/schemas/caveat_id.py` and `verdict/prompts/examiner_caveats.md`):
 
 | CaveatID | Trigger |
 |----------|---------|
@@ -62,7 +62,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 ### 3.4 Mode lock
 
 - `LedgerEntry.mode_at_case_init` is set once and immutable.
-- `verdict resume <case_id>` reads the original mode and refuses to advance if the current `detect_mode()` differs.
+- `verdict resume <case_id>` reads the original mode and refuses to advance if the current `detect_mode()` differs. On mismatch it raises `ModeLockedError`, exits 2, and prints to stderr: `Case {case_id} was initialized in mode={original_mode}; current environment is mode={detected_mode}. To re-run under the new mode, use: verdict reverify {case_id} --mode {detected_mode}`.
 - Mode change is via `verdict reverify --mode <m>` only — that creates a **parallel verdict chain**, never mutating the original.
 - Cloud-only mode requires `ANTHROPIC_API` reachable; air-gap requires `SGLANG_BASE_URL` reachable; dual requires both. `verdict doctor` is the pre-flight.
 
@@ -71,10 +71,11 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 - Emit `T1055.012`, never bare `T1055`, when the sub-technique is determinable.
 - Regex enforced on `Hypothesis.mitre_technique` and `Finding.mitre_technique`: `^T\d{4}(\.\d{3})?$`.
 - Inspect AI scorer `mitre_subtechnique_precision` fails CI if the planner emits a parent technique when the sub was determinable.
+- Sub-technique precision applies equally to positive and negative hypotheses. Bare technique is acceptable only when no sub-technique exists upstream (e.g., `T1014` Rootkit, `T1106` Native API); the regex `^T\d{4}(\.\d{3})?$` enforces shape but not sub-technique-required.
 
 ### 3.6 Epistemic vocabulary
 
-- Verdict statuses are exactly: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. No others.
+- Verdict statuses are exactly: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. No others. This list is the canonical `VerdictStatus` enum; `ARCHITECTURE.md` §1 and `DEVPOST_COMPLIANCE.md` derive from it. **Engine-quorum verdict** (the immediate output of a `VerifierStrategy`) and **case verdict** (the persisted `Finding.status`) share the same enum but live on different objects: a `VerifierStrategy` returns `(VETTED_*, CONTESTED, UNVERIFIABLE)` per finding, while finalize_node maps `EXHAUSTED_REPLAN` from the replan budget. `Finding.review_state` (separate field, values `DRAFT / APPROVED / REJECTED`) tracks human approval state and is orthogonal to `VerdictStatus`.
 - Findings phrase attribution as **"evidence consistent with X"** — never "X did this". Attribution is for the human IR lead, not the agent.
 - Negative hypotheses are required (≥1 per plan). The `_negative_hypothesis_quality` validator deny-lists `cosmic`, `alien`, `nothing`, `not-relevant`, `n-a`. A negative hypothesis must have a non-None `mitre_technique` and non-empty `artifact_families`.
 - `Finding.status = UNVERIFIABLE` is a **first-class outcome**, not a failure to be hidden. The 15-item judge rubric specifically rewards explicit UNVERIFIABLE.

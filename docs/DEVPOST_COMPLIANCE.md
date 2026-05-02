@@ -16,7 +16,7 @@ The rules require the Project to demonstrate **all three** of the following. Fai
 
 | Required demonstration | What rules say | How VERDICT satisfies | Where shown | Status |
 |---|---|---|---|---|
-| **Self-correction** | "the agent detects and resolves errors or inconsistencies in its own output without human intervention" | Cross-engine quorum CONTESTED → replan_node loops back to planner with conflict surfaced as hint; both engines re-converge on corrected finding. Also: planner_critique_node (CoVe) catches wrong plans before execution. | Demo air-gap segment hero beat ⓹ (Qwen3 hallucinates path → GLM disagrees → CONTESTED → replan → VERIFIED_AIRGAP). Architecture: v4.5 §LangGraph topology + v4.6 planner_critique. | GATED on W2.D.1 + W3.A.1 |
+| **Self-correction** | "the agent detects and resolves errors or inconsistencies in its own output without human intervention" | Cross-engine quorum CONTESTED → replan_node loops back to planner with conflict surfaced as hint; both engines re-converge on corrected finding. Also: planner_critique_node (CoVe) catches wrong plans before execution. | Demo air-gap segment hero beat ⓹ (Qwen3 hallucinates path → GLM disagrees → CONTESTED → replan → VETTED_AIRGAP). Architecture: v4.5 §LangGraph topology + v4.6 planner_critique. | GATED on W2.D.1 + W3.A.1 |
 | **Accuracy validation** | "all findings are traceable to specific artifacts, files, offsets, or log entries" | `Finding.artifact_paths: list[Path]` (min 2), `Finding.evidence_hashes: dict[Path, str]` (SHA-256 per artifact), `Finding.artifact_classes: list[ArtifactClass]` (FOR500 corroboration). Every finding cites both the file path AND the cryptographic hash AND the artifact class. | Schema: v4.6 §Phase 1. Demo: every Finding rendered shows `[file:path][sha256:abc...][class:PREFETCH]` chips. | GATED on W1.B.6–W1.B.10 |
 | **Analytical reasoning** | "output is presented as a structured investigative narrative, not a raw execution log" | `Finding.rationale` is natural-language narrative ("Amcache lists evil.exe at 2024-03-14T15:32Z; per FOR500, Amcache LastModified reflects catalog registration not execution. Execution corroborated by Prefetch run-count=1 + EVTX 4688 at 2024-03-14T15:34Z."). Plus planner CoT capture (gzipped in ledger; first 8KB on Langfuse span). | `verdict export <case_id> --format html` produces narrative report. v4.5 architecture + W2.D.3. | GATED on W2.D.3 |
 
@@ -40,7 +40,7 @@ Every item must be present or the submission is incomplete.
 | **Demo video < 5 min** | "should be less than five (5) minutes" | `docs/DEMO_SEQUENCE.md` 5-min cut | Beaver (W6.A.2) | GATED |
 | **Demo screencast of live terminal + audio narration** | "should include a screencast of live terminal execution with audio narration. Not slides. Not marketing videos." | Two-pane recording: left = terminal, right = Langfuse trace tree. Audio narration throughout. NO marketing slides. | Beaver (W6.A.2) | GATED |
 | **Demo shows real evidence** | "Show the agent working against real evidence" | Honeynet ransomware image (Case 003) + 2 engineered cases (lol-bins, credtheft) | KP (W4.C) + Beaver (W6.A.2) | GATED |
-| **Demo shows ≥1 self-correction sequence** | "including at least one self-correction sequence" | Air-gap mode hero beat ⓹ — Qwen3-vs-GLM disagreement → CONTESTED → replan → VERIFIED_AIRGAP. Narrator calls it out: "this is self-correction." | Beaver (W6.A.2) | **MUST verify on every cut** |
+| **Demo shows ≥1 self-correction sequence** | "including at least one self-correction sequence" | Air-gap mode hero beat ⓹ — Qwen3-vs-GLM disagreement → CONTESTED → replan → VETTED_AIRGAP. Narrator calls it out: "this is self-correction." | Beaver (W6.A.2) | **MUST verify on every cut** |
 | **Demo on YouTube/Vimeo/Youku, public** | "must be uploaded to and made publicly visible on YouTube, Vimeo, or Youku" | YouTube unlisted-then-public on Jun 14 | Tim (W6.D.3) | GATED |
 | **Demo no third-party trademarks/copyrighted music** | "must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission" | Use royalty-free / CC0 audio. No corporate logos beyond fair-use citation of Volatility/Hayabusa logos for tool identification. | Beaver (W6.A.2) | GATED |
 | **Architecture Diagram (visual file)** | "Include an Architecture Diagram — A clear visual showing how components connect — the agent, SIFT tools, MCP servers, evidence sources, output pipeline" | `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (NOT just ASCII). Shows: Examiner CLI → Gateway → Mode selector → Planner/Verifier → Microsandbox VMs → 12 SIFT tools → Evidence Vault + Ledger + Langfuse. | Tim (NEW: W6.C.7) | **MISSING — added below** |
@@ -72,8 +72,9 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - Cross-family verification (Qwen3 + GLM-4.5-Air; different model families, partial-not-absolute independence empirically measured in W4.G.1)
-- VerdictStatus enum distinguishes: DRAFT / VETTED_CLOUD / VERIFIED_AIRGAP / VERIFIED_DUAL / CONTESTED / UNVERIFIABLE / APPROVED / REJECTED
-- Honest framing: VETTED_CLOUD is not VERIFIED (same-model self-consistency != true verification)
+- VerdictStatus enum (canonical per `CLAUDE.md` §3.6): VETTED_CLOUD / VETTED_AIRGAP / VETTED_DUAL / CONTESTED / UNVERIFIABLE / EXHAUSTED_REPLAN
+- Honest framing: VETTED_CLOUD is not VERIFIED (same-model self-consistency != true verification); VETTED_AIRGAP and VETTED_DUAL are cross-family verified
+- Human-review state is a separate `Finding.review_state` field (DRAFT / APPROVED / REJECTED), orthogonal to VerdictStatus
 - Tier-1 examiner caveats encoded in schema validators (Amcache LastModified ≠ execution; ShimCache order changed Win 8.1; etc.)
 - Artifact-pair corroboration: Finding requires ≥2 artifact_classes for execution claims (FOR500)
 - MITRE sub-technique granularity required (T1055.012 not just T1055)

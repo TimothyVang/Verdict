@@ -74,3 +74,8 @@ inspect_logs/
 # Plan / scratch
 *.scratch.md
 .plans/
+
+# Swarm runtime (per-task git worktrees + SQLite state)
+worktrees/
+swarm/swarm.db
+swarm/swarm.db-*

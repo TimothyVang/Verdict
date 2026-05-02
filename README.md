@@ -102,7 +102,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
        │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★ (Devpost-required self-correction)
        │  ⓺ TSI tcpdump proof (key never enters VM)
        │  ⓻ Kill -9 + verdict resume
-3:00 ─┤ DUAL MODE (60s) — three-way verification → VERIFIED_DUAL
+3:00 ─┤ DUAL MODE (60s) — three-way verification → VETTED_DUAL
 4:00 ─┤ Architecture recap + per-mode accuracy table
 5:00 ─┴─ End card: repo URL + MIT license
 ```

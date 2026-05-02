@@ -17,7 +17,7 @@ VERDICT detects available infrastructure at startup and selects one of three mod
 
 | Mode | Trigger | Engines | Verifier strategy | Use case |
 |---|---|---|---|---|
-| **cloud-only** | Internet ✓ + GPU ✗ | Claude Code (Agent SDK) | n=3 self-consistency at temperature=0.7 with three case_id-derived blake3 seeds. ≥2-of-3 → `VETTED_CLOUD`; below → `DRAFT_CLOUD`. **Best-effort vetting, not true verification** — same model shares failure modes. | SOC analyst on corporate laptop |
+| **cloud-only** | Internet ✓ + GPU ✗ | Claude Code (Agent SDK) | n=3 self-consistency at temperature=0.7 with three case_id-derived blake3 seeds. ≥2-of-3 → `VETTED_CLOUD`; below → `CONTESTED` (escalates to `replan_node`). **Best-effort vetting, not true verification** — same model shares failure modes. | SOC analyst on corporate laptop |
 | **air-gap-only** | Internet ✗ + GPU ✓ | SGLang serving Qwen3-30B-A3B-Thinking + GLM-4.5-Air | Cross-family quorum: both engines must independently agree on artifact set (Jaccard ≥0.80) and identical MITRE technique. Independence is **partial-not-absolute** (overlapping web pretraining); empirical disagreement-correlation measured in W4.G.1. | DCO operator on classified network |
 | **dual** | Internet ✓ + GPU ✓ | Claude + Qwen3 + GLM-4.5-Air | Three-way: cloud agrees with at least one local + locals agree with each other. Strongest verification. | Forensic lab |
 
@@ -43,6 +43,25 @@ def derive_seeds(case_id: str) -> tuple[int, int, int]:
 ```
 
 Reproducibility-with-diversity: re-running the case yields the same three samples (audit-friendly), but the three samples differ from each other (verifier-friendly).
+
+### Quorum dispatch table
+
+`quorum_node` applies the locked mode's `VerifierStrategy` and emits one of the canonical `VerdictStatus` values (defined in `CLAUDE.md` §3.6). The dispatch is total — every input lands in exactly one row.
+
+| Strategy | Engine outcome | `VerdictStatus` | Next node |
+|---|---|---|---|
+| `CloudSelfConsistency` (n=3) | ≥2 samples agree on `(mitre_technique, parsed_artifacts)` | `VETTED_CLOUD` | `finalize_node` |
+| `CloudSelfConsistency` (n=3) | <2 samples agree | `CONTESTED` | `replan_node` |
+| `AirGapCrossEngine` | Jaccard(`parsed_artifacts`) ≥0.80 AND identical `mitre_technique` | `VETTED_AIRGAP` | `finalize_node` |
+| `AirGapCrossEngine` | Jaccard ≥0.80, divergent `mitre_technique` | `CONTESTED` | `replan_node` |
+| `AirGapCrossEngine` | Jaccard <0.80 (incl. empty-set case below) | `CONTESTED` | `replan_node` |
+| `DualLaneCrossEngine` | cloud agrees with ≥1 local AND locals agree with each other | `VETTED_DUAL` | `finalize_node` |
+| `DualLaneCrossEngine` | cloud disagrees with both locals | `CONTESTED` | `replan_node` |
+| `DualLaneCrossEngine` | cloud agrees with 1 local, locals disagree with each other | `CONTESTED` | `replan_node` |
+| any | After `replan_max=3` exhaustion | `EXHAUSTED_REPLAN` | `unverifiable_finalize_node` |
+| any | Tool / sandbox / args exhaustion (see §6 + `FAILURE_MODES.md`) | `UNVERIFIABLE` | `finalize_node` (with `failure_reason` set) |
+
+**Empty-set rule:** if any quorum participant returns `parsed_artifacts=[]` (zero findings — e.g., GLM crashed silently, executor branch timed out per R6), it is treated as DISAGREEMENT for Jaccard / pair-agreement purposes. Empty-set is **never** a null vote that lets the non-empty engine win by default. Otherwise an executor that crashes silently becomes a free pass for the other lane and destroys the cross-engine guarantee.
 
 ---
 
@@ -106,6 +125,10 @@ START
                                                interrupt() for HITL)
 ```
 
+### Comprehension-gate clarify budget
+
+The clarify sub-state is bounded by `max_clarify_iterations=2`. After two re-prompts with persistent executor mismatch on `(parsed_positive_hypothesis_ids, parsed_negative_hypothesis_ids, parsed_success_criteria_hash)`, the gate emits `CONTESTED` and routes to `replan_node` with hint `comprehension_persistent_mismatch: executors disagreed on {field} after 2 clarify rounds`. Without this cap, the gate could re-prompt indefinitely; the graph would never reach `replan_max=3` and would simply hang.
+
 ### Pivot vs. replan distinction
 
 Real DFIR pivots 8–15 times per investigation; v4.4 research showed that bounded `replan_max=3` is a research-paper budget, not a DFIR budget. Two distinct flows:
@@ -113,6 +136,10 @@ Real DFIR pivots 8–15 times per investigation; v4.4 research showed that bound
 - **PIVOT** (cheap, `pivot_max=15`): single Hypothesis added on basis of an executor's output. Re-enters `executor_work` only. Use when "tool emitted weird parent process → check parent's hash."
 - **REPLAN** (expensive, `replan_max=3`): full plan rewrite. Re-enters `planner_node` with conflict surfaced as hint. Use only on quorum CONTESTED.
 - **At replan iteration 4:** `unverifiable_finalize_node` writes `Finding(status=UNVERIFIABLE)`, writes `LedgerEntry(event_type="exhausted_replan")`, calls `interrupt()` for HITL. Analyst can `update_state` and resume, or accept UNVERIFIABLE.
+
+### Pivot state-merge contract
+
+When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
 
 ### Checkpointing
 
@@ -355,6 +382,8 @@ Pydantic-AI `args_validator` runs *before* `microsandbox.spawn`:
 
 On validation failure: raise `ModelRetry`, bounded by `tool_arg_retry_max=2`, then UNVERIFIABLE.
 
+When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIABLE, artifact_paths=[], caveats_acknowledged=[], failure_reason="tool_args_failed_validation_after_2_retries")`. This would normally fail the `Finding._artifact_paths_min_length=2` and execution-class corroboration validators; the schema exempts UNVERIFIABLE findings via the `_unverifiable_relaxes_corroboration` validator branch — when `Finding.status == UNVERIFIABLE` AND `Finding.failure_reason` is set, `artifact_paths` and `caveats_acknowledged` may be empty. The same exemption covers `failure_reason ∈ {sandbox_spawn_failed, tsi_proxy_unreachable, branch_timeout}` (see `FAILURE_MODES.md`).
+
 ### Sanitization for prompt injection
 
 `verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
@@ -441,7 +470,7 @@ Detailed in `BUILD_PLAN.md` W6.A.1 + `archive/03-audit-v4.5.md` lines 855–865.
               (Devpost-required "self-correction sequence")
            ⓺ TSI tcpdump proof
            ⓻ Kill -9 between super-steps + verdict resume
-3:00–4:00  DUAL (60s) — three-way verification → VERIFIED_DUAL
+3:00–4:00  DUAL (60s) — three-way verification → VETTED_DUAL
 4:00–5:00  Architecture recap + per-mode accuracy table
 ```
 

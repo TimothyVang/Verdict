@@ -115,7 +115,7 @@ Single instance. Haiku 4.5. Passive on every PR after Reviewer approves. Scans t
 | §3.1 evidence integrity | Any new file path matching `^evidence/` written from code → flag |
 | §3.2 multi-artifact corroboration | `Finding(...)` constructions with `artifact_paths=[...]` containing <2 entries → flag |
 | §3.3 caveat acknowledgment | Amcache cite without `AMCACHE_LASTMODIFIED_NOT_EXEC` in `caveats_acknowledged` → flag |
-| §3.5 MITRE precision | Bare `T1055` (no sub-technique) outside negative hypotheses → flag |
+| §3.5 MITRE precision | Bare `T1055` (no sub-technique) → flag, unless the technique has no sub-techniques upstream (`T1014`, `T1106`, etc.). Auditor ships a parent-only allowlist mirroring CLAUDE.md §3.5. |
 | §3.7 git discipline | Commit subject missing `[W#.#.#]` task ID → flag; `--no-verify` / `--no-gpg-sign` / `--amend` traces in reflog → flag |
 | §3.8 dependency hard-NO | Any new `daytona`, `langsmith`, `braintrust`, `arize-phoenix`, `modal`, or AGPL-licensed pkg in lockfiles → flag |
 | §3.10 no mocks | `MockExecutor`, `MockSandbox`, `MockLLM`, `unittest.mock.MagicMock` against `verdict.*`, `responses`, `httpx_mock`, `vcr.py`, `if MOCK or TEST_MODE`, `os.environ.get("VERDICT_TEST")` → flag |
@@ -256,7 +256,7 @@ Body:
 
 ```markdown
 ## Task
-[W1.B.7](../docs/BUILD_PLAN.md#L371)
+[W1.B.7](BUILD_PLAN.md#L371)
 
 ## Mode(s) affected
 all  <!-- or cloud / airgap / dual -->
