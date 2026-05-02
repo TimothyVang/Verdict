@@ -211,6 +211,8 @@ VETTED is the schema's vetted-by-quorum outcome; the persisted Finding carries t
 
 ## 6-week roadmap
 
+> **Where we are now — 2026-05-02 (W1 Day 1):** Vang has solo-shipped ~190 commits across **W0** (bootstrap, swarm, skills, devcontainer, Langfuse), **W1.A** (doc wiki, infra), **W1.B** partial (`ArtifactClass`, `ToolOutput` w/ blake3), **W1.E.2** (`ToolWrapper` base), and **all of W2.C** (`DenyRuleWrapper` + `ToolExecutor` + `LedgerEmitter` + composed `executor_work`). That's ~3 nominal-weeks of solo throughput, ahead of the planned Tim track. **Beaver / Haley / KP are at 0 commits.** The Gantt below is the *planned* 4-person allocation; if the team stays solo, the descope priority list at the bottom of "What could kill us" kicks in by W4.
+
 ```
 WEEK 1 ── May 2-8 ── FOUNDATIONS + SCHEMAS
 ─────────────────────────────────────────────────────
@@ -409,7 +411,7 @@ Each ID is from [`BUILD_PLAN.md`](BUILD_PLAN.md). Pick the one that lines up wit
 
 ---
 
-## What could kill us (top 3 risks)
+## What could kill us (top 4 risks)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -440,6 +442,22 @@ Each ID is from [`BUILD_PLAN.md`](BUILD_PLAN.md). Pick the one that lines up wit
 │  Mitigation: HARD descope on May 6 if Phase W1.B not 80%│
 │              done. Drop W1.G architecture-review docs   │
 │              first (they can land in W6).               │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│ RISK #4 — Solo execution (Vang is sole git author)      │
+│                                                         │
+│  Likelihood: HIGH (state at W1 Day 1; ~190 commits all  │
+│              by Vang; Beaver/Haley/KP at 0)             │
+│  Impact:     EXTREME (one sick week and the 4-person    │
+│              Gantt becomes a 1-person Gantt; Case 001   │
+│              disagreement work has no owner without KP) │
+│  Mitigation: Each teammate ships a first PR from the    │
+│              First-pickups table by W1 EOD. Beaver:     │
+│              W1.A.4 (rig bring-up). Haley: W2.G.3 then  │
+│              W2.D.1. KP: W1.B.2 (CaveatID enum).        │
+│              Vang stops being the only path to every    │
+│              domain by W2 Day 1.                        │
 └─────────────────────────────────────────────────────────┘
 
   Master descope priority (cut in this order under pressure):
