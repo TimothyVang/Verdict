@@ -1,9 +1,9 @@
 # VERDICT — Master Build Plan (v1)
 
 **Document type:** Comprehensive 6-week TDD execution plan. Covers every task from v4.5 architecture + v4.6 schema patches + v4.4 deferred items + foundational infrastructure. This document is the single source of truth from May 2 through June 14, 2026.
-**Authority chain:** v4.5 (architecture) + v4.6 (schema amendments) + this document (execution). Where execution details disagree with v4.5, this plan wins for execution; v4.5 wins for architecture rationale.
+**Authority chain:** Devpost rules (always win) + `DEVPOST_COMPLIANCE.md` (rule-to-artifact mapping) + v4.5 (architecture) + v4.6 (schema amendments) + this document (execution). Where execution details disagree with v4.5, this plan wins for execution; v4.5 wins for architecture rationale.
 **Owner:** Tim (lead) + Beaver (LangGraph) + Haley (inference) + KP (forensics).
-**Deadline:** End of day June 14, 2026 (24h Devpost buffer; official deadline June 15 22:45 CDT).
+**Deadline:** End of day June 14, 2026 (Devpost official deadline is **Jun 15, 2026 11:45 PM EDT** = ~28h buffer). Judging period Jun 19 – Jul 3; winners announced ~Jul 8.
 **Status:** Ready to execute. Schemas freeze May 8; tool surface freezes May 15; verifier loop freezes May 22; evals freeze May 29; demo footage shoot begins May 30; final cut June 14.
 
 ---
@@ -12,7 +12,7 @@
 
 - **Today:** Saturday May 2, 2026.
 - **Total team-days available:** ~6 weeks × 4 teammates × 5 working-days/week ≈ 120 teammate-days. Realistic budget after slack/sleep/CI-pain: ~80 productive teammate-days.
-- **Total team-days planned in this document:** ~75 (Tim ~22, Beaver ~22, Haley ~10, KP ~21). Leaves ~5 days of slack distributed across teammates for unplanned blockers. Slack budget is per-week, not cumulative — week 6 budget cannot rescue week 2 slip.
+- **Total team-days planned in this document:** ~76 (Tim ~23, Beaver ~22, Haley ~10, KP ~21) — Tim +1 day for the Devpost-required W6.C.7-C.10 + W6.D.0 deliverables. Leaves ~4 days of slack distributed across teammates for unplanned blockers. Slack budget is per-week, not cumulative — week 6 budget cannot rescue week 2 slip.
 - **Hard rule on conventions** (per project `CLAUDE.md`): TDD failing test → RED → implement → GREEN → commit. One commit per task. Conventional Commits format. Never `--no-verify`, `--no-gpg-sign`, or `git commit --amend`. Pinned versions in lockfiles. Python 3.11 + uv + pytest + ruff. Rust 1.88 (project ships 1.88, Spec #2's 1.83 pin superseded). Node 20 + pnpm.
 
 ## Task ID convention
@@ -47,8 +47,8 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 | Need | Read |
 |---|---|
-| Architecture rationale | `VERDICT_AUDIT_v4.5.md` |
-| Schema patches + DFIR rule encoding | `VERDICT_v4.6_SPEC_PLAN.md` |
+| Architecture rationale | `archive/03-audit-v4.5.md` |
+| Schema patches + DFIR rule encoding | `archive/04-spec-plan-v4.6.md` |
 | Project-level conventions | `CLAUDE.md` (this repo) |
 | Tier-1 examiner caveats | `agent-config/MEMORY.md` |
 | Per-evidence-type tool sequencing | `agent-config/PLAYBOOK.md` |
@@ -336,7 +336,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
-This is the contract every teammate will code against. **Lock by Sunday May 4.** All tasks from `VERDICT_v4.6_SPEC_PLAN.md` Phase 1 plus the v4.5-architecture-review schemas.
+This is the contract every teammate will code against. **Lock by Sunday May 4.** All tasks from `archive/04-spec-plan-v4.6.md` Phase 1 plus the v4.5-architecture-review schemas.
 
 ### W1.B.1 — `ArtifactClass` enum
 - [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_13_required_members`. Run → RED.
@@ -552,7 +552,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Three architecture-review docs present | `ls docs/{THREAT_MODEL,FAILURE_MODES,CLI,SCHEMA_MIGRATION}.md` |
 | `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
 | `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
-| All 6 v4.6 patches applied to v4.5 audit doc | `grep -c "v4.6 P[1-6]" VERDICT_AUDIT_v4.5.md` returns ≥6 |
+| All 6 v4.6 patches applied to v4.5 audit doc | `grep -c "v4.6 P[1-6]" archive/03-audit-v4.5.md` returns ≥6 |
 | Conventional Commits enforced (no `--no-verify`) | `git log --oneline -50 | grep -c '^[a-f0-9]\+ \(feat\|test\|fix\|docs\|chore\)' = 50` |
 
 If any gate is RED on May 8: **descope before slipping**. Drop in this priority order: W1.G.7 → W1.G.6 → W1.A.7 (Langfuse v2; ship without it, fall back to OTel-only) → W1.G.1-3 (push docs to W6).
@@ -1111,7 +1111,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 
 ### W5.F.1 — Record rough cut against rehearsed flow
 - [ ] **W5.F.1.a** — Two-pane recording (terminal + Langfuse) of all 3 modes against Case 003 ransomware. ~5 min total.
-- [ ] **W5.F.1.b** — Review: does it land on each judging criterion (autonomous execution, verification, constraint architecture, audit trail, reproducibility, forensic discipline)?
+- [ ] **W5.F.1.b** — Review: does it land on each of the 6 official Devpost judging criteria (Autonomous Execution Quality, IR Accuracy, Breadth and Depth of Analysis, Constraint Implementation, Audit Trail Quality, Usability and Documentation)? Cross-reference `DEVPOST_COMPLIANCE.md` Part 3.
 - [ ] **W5.F.1.c** — Commit: `chore(demo): rough cut May 30 [W5.F.1]`
 
 ## Week 5 — acceptance gates
@@ -1174,12 +1174,41 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.5** — The v4 triage doc enumerating what landed in v1 vs deferred to v2. Reference v4.5 §Production-maturity audit. Commit: `docs: PRODUCTION_AUDIT.md [W6.C.5]`
 
 ### W6.C.6 — Submission writeup
-- [ ] **W6.C.6** — 500-word writeup for Devpost summarizing: problem, architecture, three innovations, accuracy results, demo video. Commit: `docs: Devpost submission writeup [W6.C.6]`
+- [ ] **W6.C.6** — 500-word writeup for Devpost summarizing: problem, architecture, three innovations, accuracy results, demo video. References all 6 official judging criteria explicitly per `DEVPOST_COMPLIANCE.md` Part 3. Commit: `docs: Devpost submission writeup [W6.C.6]`
+
+### W6.C.7 — `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (Devpost-required)
+- [ ] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
+- [ ] **W6.C.7.b** — Render to SVG + PNG fallback at `docs/ARCHITECTURE_DIAGRAM.{svg,png}`.
+- [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
+- [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM rendered visual [W6.C.7]`
+
+### W6.C.8 — `docs/EVIDENCE_DATASET.md` (Devpost-required)
+- [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (with finding_ids referencing accuracy report). (5) Limitations: Windows-only; no live-response; no Win11/macOS/Linux/network.
+- [ ] **W6.C.8.b** — Cross-reference from README + ACCURACY_REPORT.md + Devpost form.
+- [ ] **W6.C.8.c** — Commit: `docs: EVIDENCE_DATASET.md [W6.C.8]`
+
+### W6.C.9 — Agent Execution Logs export (Devpost-required)
+- [ ] **W6.C.9.a** — Failing test `tests/cli/test_export_execution_logs.py::test_includes_agent_to_agent_messages_with_timestamps`. Plus `test_includes_token_usage`. Plus `test_traces_finding_to_tool_call_id`. Plus `test_persistent_loop_iteration_n_field_present`. Run → RED.
+- [ ] **W6.C.9.b** — Implement `verdict export <case_id> --format execution-logs` emitting Devpost-compliant JSONL: each line `{ts_utc, event_type, agent_id?, target_agent_id?, tool_name?, tool_call_id?, prompt_tokens?, completion_tokens?, finding_id?, iteration_n?, langfuse_trace_id, langgraph_checkpoint_id}`. Distillation of HMAC ledger + Langfuse trace + planner CoT, packaged for judge consumption (NOT a tar of raw ledger).
+- [ ] **W6.C.9.c** — Run against all three demo cases; produce `submission/execution-logs/case_{001,002,003}.jsonl`; commit alongside accuracy report.
+- [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
+
+### W6.C.10 — `docs/NOVEL_CONTRIBUTION.md` (Devpost-required)
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014.001 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.b** — Cross-reference from README + Devpost form.
+- [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 
 ## Phase W6.D — Devpost submission (Tim, ~0.5 day)
 
+### W6.D.0 — GitHub repo public + License badge in About section (Devpost-required)
+- [ ] **W6.D.0.a** — Set repo Public visibility on GitHub.
+- [ ] **W6.D.0.b** — Verify LICENSE file at repo root is standard MIT text.
+- [ ] **W6.D.0.c** — Set repo About section: description, license auto-detected as MIT, topics include `dfir`, `incident-response`, `claude-code`, `sift-workstation`, `mcp`, `agentic`, `forensics`.
+- [ ] **W6.D.0.d** — Verify license badge visible at top of repo on a fresh logged-out browser session (Devpost rules §4 require license "detectable and visible at top of the repository page in the About section").
+- [ ] **W6.D.0.e** — Commit if any docs reference the repo URL: `chore(release): GitHub repo public + MIT badge in About [W6.D.0]`
+
 ### W6.D.1 — `scripts/package-devpost.sh`
-- [ ] **W6.D.1.a** — Failing test: produces a valid Devpost zip with all required components.
+- [ ] **W6.D.1.a** — Failing test: produces a valid Devpost zip including: source code, README, LICENSE, ARCHITECTURE.md, ARCHITECTURE_DIAGRAM.svg, BUILD.md, EVIDENCE_DATASET.md, ACCURACY_REPORT.md, NOVEL_CONTRIBUTION.md, DEMO_SEQUENCE.md, THREAT_MODEL.md, CLI.md, FAILURE_MODES.md, SCHEMA_MIGRATION.md, CASE_ISOLATION.md, SCOPE.md, SANS_JUDGE_CHECKLIST.md, PRODUCTION_AUDIT.md, submission/execution-logs/case_{001,002,003}.jsonl. Run → RED.
 - [ ] **W6.D.1.b** — Implement.
 - [ ] **W6.D.1.c** — Commit: `feat(scripts): package-devpost.sh [W6.D.1]`
 
@@ -1187,17 +1216,24 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.D.2** — `git tag v-submit && git push origin v-submit`. Commit before tag: `chore(release): cut v-submit for SANS Find Evil! 2026 [W6.D.2]`
 
 ### W6.D.3 — Manual Devpost upload Jun 14 EOD
-- [ ] **W6.D.3** — Upload zip + writeup + demo video link. Submit. Confirm receipt email. **24h before official deadline of Jun 15 22:45 CDT.**
+- [ ] **W6.D.3.a** — Run `DEVPOST_COMPLIANCE.md` Part 6 — verify all 18 boxes ticked.
+- [ ] **W6.D.3.b** — Upload zip + writeup + demo video link. Submit. Confirm receipt email. **Target Jun 14 EOD = ~28h before official deadline of Jun 15 11:45 PM EDT.**
+- [ ] **W6.D.3.c** — If Jun 14 21:00 EDT and any compliance box still unchecked: abort, resolve, retry Jun 15 morning.
 
 ## Week 6 — acceptance gates
 
 | Gate | Verification |
 |---|---|
 | Final 5-min demo video | `ls docs/demo-assets/final-cut.mp4` |
+| Demo shows ≥1 self-correction sequence (Devpost-required) | Manual review of cut against air-gap hero beat ⓹ |
+| Demo is screencast + narration, NOT slides (Devpost-required) | Manual review |
 | Three green dry runs against `SANS_JUDGE_CHECKLIST.md` | Beaver's notes |
-| All 8 submission docs shipped | `ls docs/{ARCHITECTURE,BUILD,THREAT_MODEL,FAILURE_MODES,CLI,CHECKPOINTING,CASE_ISOLATION,SCOPE,SCHEMA_MIGRATION,SANS_JUDGE_CHECKLIST,PRODUCTION_AUDIT,ACCURACY_REPORT,DEMO_SEQUENCE}.md` |
+| All Devpost-required documentation present | `ls docs/{ARCHITECTURE,ARCHITECTURE_DIAGRAM.svg,BUILD,EVIDENCE_DATASET,ACCURACY_REPORT,NOVEL_CONTRIBUTION,THREAT_MODEL,FAILURE_MODES,CLI,CHECKPOINTING,CASE_ISOLATION,SCOPE,SCHEMA_MIGRATION,SANS_JUDGE_CHECKLIST,PRODUCTION_AUDIT,DEMO_SEQUENCE}.md` |
 | README + LICENSE + CONTRIBUTING | `ls README.md LICENSE CONTRIBUTING.md` |
+| Repo public + MIT badge in GitHub About section (Devpost-required) | Manual browser check, logged-out |
+| Agent execution logs exported per case (Devpost-required) | `ls submission/execution-logs/case_{001,002,003}.jsonl` |
 | Devpost zip produced | `ls dist/verdict-devpost-v1.zip` |
+| Devpost compliance Part 6 checklist 18/18 ticked | Manual review |
 | Devpost upload confirmed | Receipt email |
 | `v-submit` tag pushed | `git tag --list 'v-submit'` |
 
@@ -1236,8 +1272,13 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - W5.B.1, W5.B.2, W5.B.3 (adapters)
 - W5.D.1, W5.D.2 (SCOPE + ARCHITECTURE update)
 
-**Week 6 (~2.5 days):**
+**Week 6 (~3.5 days):**
 - W6.C.1–W6.C.6 (submission docs)
+- W6.C.7 (ARCHITECTURE_DIAGRAM.svg rendered visual — Devpost-required)
+- W6.C.8 (EVIDENCE_DATASET.md — Devpost-required, KP collaborates)
+- W6.C.9 (Agent execution logs export — Devpost-required)
+- W6.C.10 (NOVEL_CONTRIBUTION.md — Devpost-required)
+- W6.D.0 (GitHub repo public + License badge — Devpost-required)
 - W6.D.1, W6.D.2, W6.D.3 (Devpost packaging + upload)
 
 ### Beaver — ~22 teammate-days

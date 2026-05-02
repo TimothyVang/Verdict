@@ -18,17 +18,16 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 
 ## 2. Authority chain (read in this order)
 
-The design is captured across five docs in `docs/spec/`. They are cumulative, not replacements.
-
 | Doc | Role | When to consult |
 |-----|------|-----------------|
-| `docs/spec/VERDICT_AUDIT_v4.5.md` | **Canonical architecture.** Latest authoritative system design. v4.5 explicitly **deletes the unit-test mock layer** (`MockExecutor` / `MockSandbox` / `MockLLM`) — VERDICT is built and tested against real inference, real microVMs, and real SIFT tools. Inspect AI end-to-end evals are the only test surface. | Default reference for architecture, schemas, nodes, threat model, verifier strategies. |
-| `docs/spec/VERDICT_v4.6_SPEC_PLAN.md` | **Five tactical patches** that overlay v4.5: (F1) `derive_seeds` fix, (F2) PreToolUse Layer-1 caveat + xfail smoke test, (F3) `Finding` schema patches (`artifact_paths` `min_length=2`, `artifact_classes` enum, `caveats_acknowledged`), (F4) `vol3.windows.psscan` + DKOM rule in `playbooks/memory.yml`, (F5) playbook + caveat + `hunt_evil` content. | When a v4.5 statement and v4.6 conflict on a patched item, **v4.6 wins on that item only**. |
-| `docs/spec/VERDICT_MASTER_BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day plan with task IDs (W1.A.3.a, W1.B.7, etc.), ownership, hours, acceptance gates. | Use task IDs in commit messages. Use weekly acceptance gates as the definition of done. |
-| `docs/spec/VERDICT_AUDIT_v4.4.md` | History — 24 findings (11 agentic + 13 DFIR). All findings remain in force. | Read for *why* a particular schema validator or playbook entry exists. |
-| `docs/spec/VERDICT_AUDIT_v4.3.md` | History — 10 system-design fixes. All findings remain in force. | Read for the original mode-detection, verifier-strategy, and checkpointing rationale. |
+| `README.md` | **Entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
+| `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/spec/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
+| `docs/BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day TDD plan with task IDs (W1.A.3.a, W1.B.7, …), ownership, hours, acceptance gates. | Pick your next task; use task IDs in commits; use weekly gates as the definition of done. |
+| `docs/DEVPOST_COMPLIANCE.md` | **Submission rule-to-artifact mapping.** Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging. |
+| `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit. | When docs appear to contradict each other. |
+| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches + original TL;DR. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
 
-When in doubt: **v4.6 patches > v4.5 architecture > v4.4 / v4.3 history.** Master plan defines *what* to build *when*, not *what* the system is.
+**Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
 
 ## 3. Hard rules — MUST / MUST NOT
 
@@ -140,7 +139,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 ## 4. Architecture at a glance
 
-VERDICT is a 9-node LangGraph state machine with explicit reducer-merged fanout. Source: `docs/spec/VERDICT_AUDIT_v4.5.md` plus v4.6 patches.
+VERDICT is a 9-node LangGraph state machine with explicit reducer-merged fanout. Source: `docs/spec/03-audit-v4.5.md` plus v4.6 patches.
 
 ```
                       ┌─────────────┐
@@ -247,7 +246,7 @@ See §3.8 for the explicit hard NOs. Anything not on either list needs an entry 
 
 ## 6. Target repo layout
 
-The workspace is currently a planning shell — no code exists yet. The first scaffolding work is **W1.A** of the master plan. Target tree (abridged; full version in `docs/spec/VERDICT_MASTER_BUILD_PLAN.md`):
+The workspace is currently a planning shell — no code exists yet. The first scaffolding work is **W1.A** of the master plan. Target tree (abridged; full version in `docs/BUILD_PLAN.md`):
 
 ```
 Verdict/
@@ -261,18 +260,20 @@ Verdict/
 ├── docker-compose.yml            ← Langfuse v2 self-host
 ├── docker-compose.langfuse-v3.yml
 ├── docs/
-│   ├── README.md                 ← docs index
-│   ├── spec/                     ← canonical source docs (do not edit)
-│   │   ├── VERDICT_AUDIT_v4.3.md
-│   │   ├── VERDICT_AUDIT_v4.4.md
-│   │   ├── VERDICT_AUDIT_v4.5.md
-│   │   ├── VERDICT_v4.6_SPEC_PLAN.md
-│   │   └── VERDICT_MASTER_BUILD_PLAN.md
+│   ├── ARCHITECTURE.md           ← canonical architecture (current authority)
+│   ├── BUILD_PLAN.md             ← 6-week / 75-teammate-day TDD execution plan
+│   ├── DEVPOST_COMPLIANCE.md     ← submission rule-to-artifact mapping
+│   ├── DOCS_ACCURACY_REPORT.md   ← cross-doc consistency audit
+│   ├── spec/                     ← audit history (read-only; reference only)
+│   │   ├── README.md             ← archive index + authority chain
+│   │   ├── 01-audit-v4.3.md      ← initial audit (10 system-design fixes)
+│   │   ├── 02-audit-v4.4.md      ← agentic + DFIR pass (24 findings)
+│   │   ├── 03-audit-v4.5.md      ← system-design review (drops mock layer)
+│   │   ├── 04-spec-plan-v4.6.md  ← week-1 schema patches
+│   │   └── 05-tldr-original.md   ← earlier TL;DR (superseded by README.md)
 │   ├── hackathon/
 │   │   ├── RULES.md              ← official SANS FIND EVIL! rules
 │   │   └── OVERVIEW.md           ← hackathon overview + resource links
-│   ├── ARCHITECTURE.md           ← (W1+) project-authored
-│   ├── BUILD.md                  ← (W1+)
 │   ├── THREAT_MODEL.md           ← (W1+) 4 surfaces: insider, prompt-inj-from-evidence,
 │   │                               malicious-tool-output, external-attacker
 │   ├── FAILURE_MODES.md          ← (W1+) component × failure × recovery matrix
@@ -561,11 +562,11 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 
 | When you need… | Read |
 |----------------|------|
-| Canonical architecture, locked decisions | `docs/spec/VERDICT_AUDIT_v4.5.md` |
-| Five tactical patches over v4.5 | `docs/spec/VERDICT_v4.6_SPEC_PLAN.md` |
-| Sequencing, ownership, weekly acceptance gates, task IDs | `docs/spec/VERDICT_MASTER_BUILD_PLAN.md` |
-| Why a particular DFIR validator or playbook entry exists | `docs/spec/VERDICT_AUDIT_v4.4.md` |
-| Why mode-detect / verifier-strategy / checkpointing look the way they do | `docs/spec/VERDICT_AUDIT_v4.3.md` |
+| Canonical architecture, locked decisions | `docs/spec/03-audit-v4.5.md` |
+| Five tactical patches over v4.5 | `docs/spec/04-spec-plan-v4.6.md` |
+| Sequencing, ownership, weekly acceptance gates, task IDs | `docs/BUILD_PLAN.md` |
+| Why a particular DFIR validator or playbook entry exists | `docs/spec/02-audit-v4.4.md` |
+| Why mode-detect / verifier-strategy / checkpointing look the way they do | `docs/spec/01-audit-v4.3.md` |
 | Hackathon eligibility, judging, prizes | `docs/hackathon/RULES.md` |
 | Hackathon overview + resource links | `docs/hackathon/OVERVIEW.md` |
 | The upstream Claude Code config framework being extended | `protocol-sift/` |
