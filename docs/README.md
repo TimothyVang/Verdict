@@ -1,46 +1,52 @@
 # docs/
 
-All project documentation. Two stable subdirectories today; project-authored docs (ARCHITECTURE.md, BUILD.md, THREAT_MODEL.md, etc.) will land here as W1+ master-plan work delivers them.
+Project documentation. The root `README.md` is the entry point and includes the canonical doc map; this file is a flat index of what lives here.
+
+## Authority order
+
+Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → root `CLAUDE.md` → `spec/` archive.
+
+If a doc and the code disagree, code wins. Fix the doc.
 
 ## Layout
 
 ```
 docs/
-├── README.md            ← this file
-├── spec/                ← canonical VERDICT design docs (read-only inputs)
-│   ├── VERDICT_AUDIT_v4.3.md            ← system-design review (10 fixes)
-│   ├── VERDICT_AUDIT_v4.4.md            ← threat-model + DFIR-discipline review (24 fixes)
-│   ├── VERDICT_AUDIT_v4.5.md            ← canonical architecture (drops mock layer)
-│   ├── VERDICT_v4.6_SPEC_PLAN.md        ← five tactical patches over v4.5
-│   └── VERDICT_MASTER_BUILD_PLAN.md     ← 6-week / 75-teammate-day execution plan
-└── hackathon/           ← SANS FIND EVIL! meta
-    ├── RULES.md         ← official rules (eligibility, judging, prizes, IP)
-    └── OVERVIEW.md      ← deliverables, links, install commands
+├── README.md                    ← this file
+├── ARCHITECTURE.md              ← current authoritative architecture
+├── BUILD_PLAN.md                ← 6-week TDD execution plan (task IDs)
+├── DEVPOST_COMPLIANCE.md        ← submission rule-to-artifact mapping
+├── DOCS_ACCURACY_REPORT.md      ← cross-doc consistency audit
+├── spec/                        ← audit history (archive — reference only)
+│   ├── README.md                ← what each archive doc captured
+│   ├── 01-audit-v4.3.md
+│   ├── 02-audit-v4.4.md
+│   ├── 03-audit-v4.5.md
+│   ├── 04-spec-plan-v4.6.md
+│   └── 05-tldr-original.md
+└── hackathon/
+    ├── RULES.md                 ← official SANS FIND EVIL! rules
+    └── OVERVIEW.md              ← hackathon overview + resource links
 ```
 
-## Authority chain (when specs disagree)
+## Coming soon (W1+ deliverables — see `BUILD_PLAN.md`)
 
-**v4.6 patches > v4.5 architecture > v4.4 / v4.3 history.**
-Master build plan defines *what* to build *when*, not *what is*.
+These are referenced by `CLAUDE.md` and `BUILD_PLAN.md` but not yet authored:
 
-See `../CLAUDE.md` §2 for the full table.
-
-## Coming soon (W1.A+ deliverables)
-
-These will land under `docs/` as the master plan executes:
-
-- `ARCHITECTURE.md` — system diagram + node-by-node walkthrough
-- `BUILD.md` — exact build steps from a fresh SIFT VM
-- `THREAT_MODEL.md` — four threat surfaces
+- `THREAT_MODEL.md` — four threat surfaces (insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker)
 - `FAILURE_MODES.md` — component × failure × recovery matrix
-- `CLI.md` — `verdict` command surface
+- `CLI.md` — full `verdict` command surface
 - `CHECKPOINTING.md` — SqliteSaver + WAL + reducer pattern
 - `CASE_ISOLATION.md` — RadixAttention prefix-cache vs case data
-- `SCOPE.md` — v1 = Windows DFIR; v2 roadmap
+- `SCOPE.md` — v1 = Windows DFIR; v2 roadmap (macOS / Linux / ESXi)
 - `SCHEMA_MIGRATION.md` — breaking-change migration policy
-- `SANS_JUDGE_CHECKLIST.md` — 15-item demo rubric
+- `SANS_JUDGE_CHECKLIST.md` — 15-item demo rubric (W6)
 - `PRODUCTION_AUDIT.md` — v4 triage (v1 vs v2)
-- `DEMO_SEQUENCE.md` — 5-minute storyboard
-- `ACCURACY_REPORT.md` — per-mode tables + correlation analysis
+- `DEMO_SEQUENCE.md` — 5-min storyboard with timing (W6)
+- `ACCURACY_REPORT.md` — per-mode tables + correlation analysis (W6)
 
-Do **not** edit anything in `spec/` — those are immutable specifications. Project-authored docs live as siblings of `spec/`.
+## Editing rules
+
+- **Never edit `spec/`.** Those files capture point-in-time decisions; they're cited from `ARCHITECTURE.md` and would lose meaning if rewritten.
+- **`ARCHITECTURE.md` is the single architectural authority.** If you change a component, update it here, not in the spec archive.
+- **`BUILD_PLAN.md` task IDs** are immutable once a contributor has committed against them. New work gets a new ID.

@@ -1,75 +1,237 @@
-# Contributing to VERDICT
+# CONTRIBUTING — Verdict
 
-VERDICT is the SANS *FIND EVIL!* 2026 hackathon entry; submission deadline **Jun 14 2026 EOD** (Devpost) / Jun 15 22:45 CDT (official). Until then this repo is on hackathon time — fast iteration, focused scope.
+New-contributor setup guide. If you've already done the SANS Find Evil! 2026 team-onboarding (Devpost join, SIFT VM, Protocol SIFT install, starter case data), pick up at **Step 4**. Otherwise start at the top.
 
-## Before you contribute
+**Repo:** https://github.com/TimothyVang/Verdict
+**Default branch:** `main`
+**License:** MIT
+**Deadline gate:** 2026-06-15 22:45 CDT (team-internal target: 2026-06-14 EOD = ~28 h buffer)
 
-1. **Read `CLAUDE.md` end-to-end.** It is the operating charter — hard rules in §3 are load-bearing.
-2. **Read `docs/spec/VERDICT_AUDIT_v4.5.md`** for canonical architecture and `docs/spec/VERDICT_v4.6_SPEC_PLAN.md` for tactical patches.
-3. **Find your task ID** in `docs/spec/VERDICT_MASTER_BUILD_PLAN.md` (e.g. `W1.B.7`). Every commit references one.
+Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this file. Code + lockfiles win over docs (per `CLAUDE.md`); update the doc, don't roll back the code, unless the code is wrong.
 
-## Workflow
+---
 
-1. **TDD.** Failing test → RED → implement → GREEN → one commit per task. (`CLAUDE.md` §3.7)
-2. **Conventional Commits with task IDs:**
+## Step 0 — Accounts and access
+
+You need all four before you can push:
+
+1. **GitHub account** with 2FA enabled. Required for PAT issuance and signed commits.
+2. **Devpost account** joined to the team submission. Confirm your name shows on the submission page.
+3. **Anthropic API key** (or Claude Code OAuth) for cloud-mode and dual-mode runs. Air-gap mode does not require this. OAuth tokens are *not* redistributable per Anthropic commercial terms — each contributor uses their own.
+4. **Write access to `TimothyVang/Verdict`.** PUG (TSgt Vang) adds you. Confirm with `gh repo view TimothyVang/Verdict --json viewerPermission` after install — should report `WRITE` or higher.
+
+---
+
+## Step 1 — Create a GitHub PAT (read + write)
+
+PUG's recommendation: fine-grained PAT scoped to this repo so revocation doesn't disrupt your other work.
+
+1. https://github.com/settings/tokens?type=beta → **Generate new token** (fine-grained).
+2. **Token name:** `verdict-contrib-<your-handle>`
+3. **Expiration:** 90 days. Diary it; the hackathon ends 2026-06-15, so a single 90-day token covers the whole sprint plus a slack week.
+4. **Repository access:** *Only select repositories* → `TimothyVang/Verdict`.
+5. **Repository permissions** (set the dropdowns to **Read and write**):
+   - Contents — Read and write
+   - Pull requests — Read and write
+   - Issues — Read and write
+   - Workflows — Read and write *(needed once `.github/workflows/` lands)*
+   - Metadata — Read-only (auto-selected, leave it)
+   - Everything else — No access
+6. **Generate**, copy the token *once*, store it in a credential manager (1Password, `pass`, `gopass`, `bw`, Bitwarden Secrets — whatever your shop uses). Do **not** paste it into a `.env` that ships with the repo.
+7. Verify scope:
+   ```bash
+   curl -sH "Authorization: Bearer ${VERDICT_GH_PAT}" https://api.github.com/repos/TimothyVang/Verdict \
+     | jq '.permissions'
+   # Expect: {"admin": false, "maintain": false, "push": true, "triage": true, "pull": true}
    ```
-   feat(schema): add ArtifactClass enum [W1.B.1]
-   fix(verifier): seed derivation collapses at temp=0 [W1.C.2 / v4.6 F1]
-   test(graph): kill-9 resume across super-step boundary [W3.E.4]
-   docs(arch): document three-layer immutability [W1.G.3]
-   ```
-3. **Never** `--no-verify`, `--no-gpg-sign`, or `git commit --amend`. Pre-commit hook failures get fixed and re-staged.
-4. **One PR per task ID.** PR title = the commit subject. PR body = what changed + which acceptance gate this satisfies.
 
-## What you must NOT do
+### Hand the PAT to git
 
-These are hard rules — see `CLAUDE.md` §3:
+Two valid paths. Pick one — **don't mix them**, you'll create credential-helper conflicts.
 
-- Add a mock anywhere (§3.10 — VERDICT is full-stack, real services).
-- Add a forbidden dependency (§3.8 — Daytona, Modal, LangSmith, AutoGen v0.4, …).
-- Bypass the deny-rule wrapper or microsandbox read-only mount (§3.1, §4.2).
-- Emit a `Finding` with `<2` artifact paths or classes (§3.2).
-- Cite Amcache without acknowledging `AMCACHE_LASTMODIFIED_NOT_EXEC` (§3.3).
-- Use bare MITRE techniques (`T1055`) when a sub-technique is determinable (§3.5).
-- Commit secrets (`.env`, `*.gpg`, evidence files). The `.gitignore` covers most; double-check.
-
-## Local dev
-
+**Path A — git credential helper (Linux/SIFT VM, recommended):**
 ```bash
-git clone --recurse-submodules https://github.com/TimothyVang/Verdict.git
-cd Verdict
-cp .env.example .env       # fill in API keys, Langfuse keys, etc.
-uv sync                    # once pyproject.toml lands (W1.A)
-verdict doctor             # pre-flight: every service, every key
+git config --global credential.helper 'cache --timeout=28800'   # 8h
+git config --global credential.https://github.com.username YOUR_GH_USERNAME
+# First push will prompt for password — paste the PAT once, helper caches it.
 ```
 
-If `verdict doctor` fails, **fix the underlying service** — do not work around it with a mock.
-
-## Testing
-
-The eval harness IS the test surface (§10.3):
-
+**Path B — gh CLI (Windows host, macOS, or anywhere `gh` is already installed):**
 ```bash
-inspect eval inspect_ai/tasks/verdict_eval_cloud.py
-inspect eval inspect_ai/tasks/verdict_eval_airgap.py
-inspect eval inspect_ai/tasks/verdict_eval_dual.py
+gh auth login --hostname github.com --git-protocol https --with-token < /path/to/pat.txt
+gh auth setup-git
 ```
 
-Plus per-area pytest:
+**SSH alternative:** if you'd rather use an ed25519 SSH key, that's fine — skip the PAT entirely for git and use the PAT only for `gh` API calls and CI. Generate with `ssh-keygen -t ed25519 -C "verdict-<handle>"`, add to https://github.com/settings/keys, and clone with `git@github.com:TimothyVang/Verdict.git`.
+
+---
+
+## Step 2 — Local toolchain
+
+Verdict ships three runtimes. Pin everything; no `latest`.
+
+| Component | Pinned version | Install |
+|---|---|---|
+| Python | 3.11.x | `uv python install 3.11` (https://github.com/astral-sh/uv) |
+| Python pkg mgr | `uv` (latest) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
+| Rust | 1.88 | `rustup install 1.88 && rustup default 1.88` |
+| Node | 20.x LTS | `nvm install 20 && nvm use 20` |
+| Node pkg mgr | `pnpm` (corepack) | `corepack enable && corepack use pnpm` |
+| Linters | `ruff`, `cargo clippy`, `eslint` | wired via pre-commit; see Step 5 |
+
+**Where to develop.** Two supported configurations:
+
+- **Inside the SIFT VM** (canonical). All forensic tools, microsandbox, SGLang resolve here. Required for any work touching the executor branches, the microsandbox layer, or evidence I/O.
+- **On the host with the SIFT VM as a runtime target** (faster edit loop). Use VS Code Remote-SSH or `Develop on a Container` into the VM. Acceptable for schema, planner, MCP gateway, and unit-test work that doesn't actually shell out to forensic tools.
+
+If your work touches `services/mcp/src/tools/`, `services/agent_mcp/`, or anything under a microsandbox path, you must run integration tests inside the VM before opening a PR.
+
+---
+
+## Step 3 — GPG (or SSH) commit signing
+
+Per `CLAUDE.md`, **`--no-gpg-sign` is forbidden.** Every commit on `main` must be verified.
 
 ```bash
-uv run pytest tests/schemas/ tests/playbooks/ tests/knowledge/ -v
-pytest tests/chaos/test_kill_9_resume.py -v   # 100/100 zero-loss
+# GPG path
+gpg --full-generate-key                       # ed25519, no expiry or 2y
+gpg --armor --export YOUR_KEY_ID              # paste into https://github.com/settings/gpg/new
+git config --global user.signingkey YOUR_KEY_ID
+git config --global commit.gpgsign true
+git config --global tag.gpgsign true
+
+# SSH-signing path (simpler; works with the same ed25519 key from Step 1)
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true
+# Add the same pub key at https://github.com/settings/ssh/new with type "Signing Key"
 ```
 
-## Reporting issues
+Smoke-test before your first real commit:
+```bash
+git commit --allow-empty -m "test: signing smoke [chore]"
+git log --show-signature -1   # expect: gpg: Good signature  OR  Good "git" signature
+git reset --soft HEAD~1       # back the smoke commit out
+```
 
-Open an issue with:
-- Mode (cloud / airgap / dual)
-- `verdict doctor` output
-- Relevant ledger excerpt (`verdict show <case_id>` — redact secrets)
-- Langfuse trace link if applicable
+---
 
-## License
+## Step 4 — Clone and bootstrap
 
-By contributing you agree your work is licensed under the MIT License (see `LICENSE`).
+```bash
+# Pick the path you set up in Step 1
+git clone https://github.com/TimothyVang/Verdict.git verdict     # PAT
+# OR
+git clone git@github.com:TimothyVang/Verdict.git verdict          # SSH
+
+cd verdict
+
+# Hooks + dev deps (will land in the repo over Week 1; if missing, skip)
+test -f pyproject.toml && uv sync --all-extras
+test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks
+test -f Cargo.toml && cargo build --workspace
+test -f pnpm-lock.yaml && pnpm install --frozen-lockfile
+```
+
+Sanity check:
+```bash
+uv run pytest -q             # must pass on a clean clone — if it doesn't, that's a P0
+cargo test --workspace -q
+pnpm test
+```
+
+If the workspace files don't exist yet (we're early in Week 1), clone is enough — the scaffold lands per `BUILD_PLAN.md` Phase W1.A.
+
+---
+
+## Step 5 — Conventions you must follow
+
+These are not aspirational. CI will reject PRs that violate them.
+
+### TDD loop (per `CLAUDE.md`)
+```
+failing test  →  RED  →  implement  →  GREEN  →  one commit  →  push
+```
+One task = one commit. No batching unrelated changes. No `git commit --amend` after push.
+
+### Conventional Commits + task IDs
+Every commit message starts with a type and ends with the `BUILD_PLAN.md` task ID in brackets:
+```
+feat(schema): add ArtifactClass enum [W1.B.1]
+fix(executor): handle vol3 plugin timeout [W2.C.4]
+test(quorum): contested-then-replan path [W3.D.2]
+docs(readme): clarify air-gap mode flag [W6.C.7]
+```
+Types: `feat`, `fix`, `test`, `refactor`, `chore`, `docs`, `perf`, `ci`. Task IDs come from `BUILD_PLAN.md` — grep the doc for `Wk.Phase.Task` patterns.
+
+### Forbidden git flags
+- `--no-verify` (bypasses hooks — never)
+- `--no-gpg-sign` (bypasses signing — never)
+- `git commit --amend` after `git push` (rewrites shared history — never)
+- `git push --force` to `main` (use `--force-with-lease` to *your own* feature branches only)
+
+### Branches
+Format: `<type>/<task-id>-<slug>` — e.g. `feat/W1-B-1-artifact-class-enum`. Branch from `main`, rebase before PR, squash on merge only if the branch was a single logical task. Otherwise preserve the TDD red→green commits — they're the audit trail.
+
+### PRs
+Open a draft PR as soon as you have a failing test pushed. Title mirrors the eventual squash-merge commit. PR body must include:
+- Task ID + link to the `BUILD_PLAN.md` line
+- Which mode(s) it affects (`cloud`, `airgap`, `dual`, or `all`)
+- Test evidence (paste the failing-then-passing run, or attach the log)
+- Schema changes? Then call out the migration plan — schemas freeze 2026-05-08.
+
+### Linters
+`ruff check . && ruff format --check .` for Python. `cargo clippy --all-targets --all-features -- -D warnings` for Rust. `eslint .` for Node. Pre-commit runs all three; CI re-runs them. No `# noqa` without an inline justification.
+
+### Secrets
+Never commit: API keys, OAuth tokens, PATs, HMAC ledger keys, case data, anything from `/mnt/hgfs/evidence/`. The `.gitignore` covers `*.env`, `evidence/`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit.
+
+---
+
+## Step 6 — Run a smoke investigation
+
+Inside the SIFT VM, confirm your environment can drive an end-to-end loop before you start writing code:
+
+```bash
+cd ~/verdict   # or wherever you cloned
+claude         # interactive Claude Code session if you're on cloud/dual mode
+> investigate /mnt/hgfs/evidence/hackathon-2026/<case-folder>
+```
+
+Air-gap operators: ask PUG for the bridged + Tesla-mode entry point.
+
+Expected output: structured Findings citing tool-call IDs, a quorum verdict, an HMAC-signed ledger entry, and a Langfuse trace (if Langfuse is up — see `ARCHITECTURE.md` §Observability).
+
+If the run fails before producing a Finding, you have a P0 environment problem. Post the trace ID + `verdict doctor` output in team chat before opening a code PR.
+
+---
+
+## Step 7 — Where to ask questions
+
+Authority order (escalate left-to-right):
+
+1. **NotebookLM Q&A:** https://notebooklm.google.com/notebook/f0957a60-6fb2-452b-93d4-ecd73ba47779?authuser=1 — chief location for "how does X work?"
+2. **`docs/` and the audit history in `archive/`** — most "why did we choose X?" questions are answered in `archive/03-audit-v4.5.md`.
+3. **Team chat** — PUG / Beaver / Haley / KP. Use the appropriate thread; don't DM PUG for things the team should see.
+4. **Devpost platform issues only:** https://help.devpost.com/
+
+Do not paste PAT tokens, OAuth tokens, case data, or HMAC keys into any of the above. NotebookLM and chat are *not* secret-cleared channels.
+
+---
+
+## First-day checklist
+
+Copy into your notes and tick as you go.
+
+- [ ] GitHub 2FA on, PAT issued with read+write on `TimothyVang/Verdict`, stored in a secret manager
+- [ ] Git credential helper or `gh auth` configured; can `gh repo view TimothyVang/Verdict`
+- [ ] Commit signing verified (`git log --show-signature` shows good signature on a smoke commit)
+- [ ] Python 3.11 + uv, Rust 1.88, Node 20 + pnpm installed and on `PATH`
+- [ ] Repo cloned; `uv sync`, `cargo build`, `pnpm install` all succeed (or scaffold not yet landed — confirm with PUG)
+- [ ] Pre-commit hooks installed; `pre-commit run --all-files` green
+- [ ] SIFT VM `clean-install` and `protocol-sift-installed` snapshots taken
+- [ ] First `investigate <case>` produces a Finding + ledger entry inside the VM
+- [ ] `BUILD_PLAN.md` skimmed; you know which task ID you're picking up first
+- [ ] `ARCHITECTURE.md` §1 (modes) and §2 (LangGraph topology) read end-to-end
+
+Welcome to the team. Push small, push often, sign everything.

@@ -2,6 +2,8 @@
 
 **Document version 4.5 — May 2, 2026.** v4.4 added the architecture review fixes (threat model, Planner protocol, ToolOutput base, executor_work split, planner CoT capture, etc.). **v4.5 removes the unit-test mock layer** (`MockExecutor`/`MockSandbox`/`MockLLM`) — that was architectural-purity advice for a maintained codebase, not a 6-week hackathon submission. The Inspect AI eval suite running against real SGLang + microsandbox + ground-truth fixtures IS the test layer. Every other v4.4 fix stands. Net delta: Beaver −0.5 day, total team budget drops from +12.5 to +12 teammate-days.
 
+> **Devpost compliance note (added post-publication):** This audit document is the architecture authority. For Devpost rule compliance (deadline Jun 15 11:45 PM EDT, six judging criteria, mandatory submission artifacts including Architecture Diagram visual, Evidence Dataset Documentation, Accuracy Report, Agent Execution Logs, and Novel Contribution statement), see `DEVPOST_COMPLIANCE_CHECKLIST.md`. Where this audit's recommendations interact with submission requirements, the compliance checklist sequences them into Week 6 deliverables in `VERDICT_MASTER_BUILD_PLAN.md`.
+
 ## TL;DR
 
 - **Stack is locked. Three operational modes.** Cloud-only: Claude Code with n=3 self-consistency. Air-gap-only: SGLang serving Qwen3-30B-A3B-Thinking + GLM-4.5-Air with cross-engine quorum. Dual (full): all three engines, strongest verification. Gateway autodetects mode at startup based on internet reachability and local GPU availability; operator can override with `--mode={cloud,airgap,dual}`.

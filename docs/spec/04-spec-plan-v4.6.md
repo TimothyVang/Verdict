@@ -3,7 +3,7 @@
 **Document type:** Spec amendment + TDD execution plan (not another audit doc).
 **Status:** Ready to execute.
 **Deadline:** End of week 1 (May 8, 2026). Schemas freeze before week 2.
-**Authority:** v4.5 remains the architecture document; v4.6 is amendments-in-place plus a TDD task list. Where v4.6 contradicts v4.5, v4.6 wins for the items it touches and v4.5 stands for everything else.
+**Authority:** v4.5 remains the architecture document; v4.6 is amendments-in-place plus a TDD task list. Where v4.6 contradicts v4.5, v4.6 wins for the items it touches and v4.5 stands for everything else. For Devpost rule compliance (final submission deadline Jun 15 11:45 PM EDT), authority is `DEVPOST_COMPLIANCE_CHECKLIST.md` — v4.6 covers the schema/forensic-discipline subset only.
 
 ## What v4.6 fixes
 

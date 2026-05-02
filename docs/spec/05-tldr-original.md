@@ -1,32 +1,10 @@
-# VERDICT
+# VERDICT — TL;DR with diagrams
 
-Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS Find Evil! hackathon (deadline Jun 15, 2026 11:45 PM EDT).
-
-**One sentence:** Two AI models cross-check each other against forensic evidence, encoding SANS investigative discipline as schema rules (not prompts), producing a tamper-evident HMAC-signed audit trail that maps every finding back to a specific tool execution.
+**One sentence:** A forensic LLM agent that catches its own hallucinations using two AI models cross-checking each other, encodes SANS investigative discipline as code (not prompts), and produces a courtroom-grade audit trail. Built for the SANS Find Evil! hackathon, June 14, 2026 deadline.
 
 ---
 
-## Doc map — read in this order
-
-```
-verdict/
-├── README.md                ← you are here. Entry point, diagrams, judging criteria.
-├── ARCHITECTURE.md          ← Current authoritative architecture. Read second.
-├── BUILD_PLAN.md            ← 6-week TDD execution plan. Read third (when starting work).
-├── DEVPOST_COMPLIANCE.md    ← Submission rule-to-artifact mapping. Read before submitting.
-└── archive/                 ← Audit history. Reference for "why did we decide X?"
-    ├── 01-audit-v4.3.md     ← Initial audit (pre-research-pass)
-    ├── 02-audit-v4.4.md     ← After agentic + DFIR research passes
-    ├── 03-audit-v4.5.md     ← After system-design review (mock layer removed)
-    ├── 04-spec-plan-v4.6.md ← Schema patches for week 1
-    └── 05-tldr-original.md  ← Earlier TL;DR (superseded by this README)
-```
-
-**Authority order:** Devpost rules (always win) → DEVPOST_COMPLIANCE.md → ARCHITECTURE.md → BUILD_PLAN.md. Archive is reference, not authority.
-
----
-
-## What VERDICT does
+## What VERDICT actually does
 
 ```
    Memory image / disk image / EVTX bundle
@@ -106,8 +84,10 @@ verdict/
                  │
                  ▼
         ┌──────────────────┐
-        │ Planner Critique │   CoVe — same model checks its own
-        │ (CoVe)           │   plan against evidence summary
+        │ Planner Critique │   "Does plan cover most-likely
+        │ (CoVe — same     │    attacker techniques given the
+        │  model checks    │    evidence type? Yes/no/replan."
+        │  its own plan)   │
         └────────┬─────────┘
                  │
                  ▼
@@ -127,9 +107,9 @@ verdict/
             └────────┴───┬────┴────────┘
                          ▼
                 ┌──────────────────┐
-                │ Pivot Node       │   "Tool output suggests a new
-                │ (cheap follow-   │    hypothesis — add 1, re-run."
-                │  up; max 15)     │
+                │ Pivot Node       │   "Tool output suggests a
+                │ (cheap follow-   │    new hypothesis — add 1
+                │  up; max 15)     │    Hypothesis, re-run."
                 └────────┬─────────┘
                          │
                          ▼
@@ -159,6 +139,7 @@ verdict/
    │  Agent attempts tool call                            │
    │  e.g. "vol3 -f /evidence/mem.vmem windows.malfind"  │
    └──────────────────┬──────────────────────────────────┘
+                      │
                       ▼
    ┌─────────────────────────────────────────────────────┐
    │  LAYER 1 — Claude PreToolUse hook                    │
@@ -168,22 +149,31 @@ verdict/
    │      means deny is buggy for MCP tools. Logged but  │
    │      not the architectural guarantee.               │
    └──────────────────┬──────────────────────────────────┘
+                      │
                       ▼
    ┌─────────────────────────────────────────────────────┐
    │  LAYER 2 — LangGraph DenyRuleWrapper                 │
    │  (fires in ALL modes, regardless of model)          │
-   │  ✓  Architectural guarantee.                        │
+   │                                                      │
+   │  ✓  Validates typed tool args against deny-rule     │
+   │     list. Architectural guarantee.                  │
    └──────────────────┬──────────────────────────────────┘
+                      │
                       ▼
    ┌─────────────────────────────────────────────────────┐
    │  LAYER 3 — Microsandbox read-only mount              │
    │  (kernel-enforced, even if Layers 1-2 bypassed)     │
-   │  ✓  /evidence mounted read-only at libkrun level.   │
+   │                                                      │
+   │  ✓  /evidence mounted read-only at the libkrun      │
+   │     microVM kernel level. Cannot be written.        │
    └──────────────────┬──────────────────────────────────┘
+                      │
                       ▼
               Tool runs in ephemeral
               microVM, dies after call
 ```
+
+**Why three layers?** Defense-in-depth. Claude hooks don't fire in air-gap mode (no Claude in loop). Microsandbox alone doesn't catch tool-arg validation. Each layer catches what the others miss.
 
 ---
 
@@ -203,7 +193,7 @@ verdict/
 
 **Three things competitors don't have:**
 
-1. **Forensic discipline encoded in code, not prompts.** Schema *rejects* a Finding citing Amcache without acknowledging the LastModified caveat. Schema *rejects* an execution claim with only one artifact class. Hunt Evil baselines + DKOM divergence detection fire automatically.
+1. **Forensic discipline encoded in code, not prompts.** Schema *rejects* a Finding that cites Amcache without acknowledging the LastModified caveat. Schema *rejects* an execution claim with only one artifact class. Hunt Evil baselines + DKOM divergence detection fire automatically.
 
 2. **Bidirectional audit trail.** Ledger entry → Langfuse trace → tool call → microsandbox version → file hash. And reverse: trace → ledger entry → finding. Judges can drill in either direction.
 
@@ -258,54 +248,185 @@ WEEK 5 ── May 30-Jun 5 ── MODE AUTODETECT + POLISH
 
 WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 ─────────────────────────────────────────────────────
- Tim    │██████████████│   README + ARCHITECTURE + Devpost
+ Tim    │████████████│     README + ARCHITECTURE + Devpost
  Beaver │██████│           Final cut + dry runs
  Haley  │██│               Demo support
  KP     │████│             Final accuracy polish
 
-  ★ Submit Jun 14 EOD (~28h before Jun 15 11:45 PM EDT deadline)
+  ★ Submit Jun 14 EOD (24h before official deadline)
 ```
 
 ---
 
-## Demo (5 min, 7 hero beats)
+## Who does what (in one panel)
+
+```
+┌────────────────────────────────────────────────────────┐
+│ TIM ── Gateway / Microsandbox / Ledger / Hooks         │
+│         ~22 teammate-days                              │
+│                                                        │
+│  • Schema bundle (Mode, ArtifactClass, CaveatID,       │
+│    Finding, LedgerEntry, EvidenceManifest, ToolOutput) │
+│  • FastMCP gateway + microsandbox provider             │
+│  • HMAC ledger + write+fsync+verify-readback           │
+│  • OpenLLMetry / Langfuse instrumentation              │
+│  • TSI secret injection + tcpdump demo                 │
+│  • Mode autodetect + verdict CLI                       │
+│  • THREAT_MODEL.md + FAILURE_MODES.md + CLI.md         │
+│  • Devpost packaging + submission                      │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│ BEAVER ── LangGraph / Verifiers / Agent loop           │
+│            ~22 teammate-days                            │
+│                                                        │
+│  • Plan-then-Execute LangGraph topology (9 nodes)      │
+│  • Three verifier strategies (Cloud/Airgap/Dual)       │
+│  • Seed-derivation fix (n=3 actually diverse paths)    │
+│  • planner_critique_node (CoVe)                        │
+│  • comprehension_gate (executor consensus)             │
+│  • pivot_node + replan_node + unverifiable_finalize    │
+│  • SqliteSaver with WAL + synchronous=FULL             │
+│  • Mode lock + verdict reverify                        │
+│  • Final demo cut + judge checklist dry runs           │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│ HALEY ── SGLang / Qwen3 / GLM-4.5-Air / vLLM           │
+│           ~10 teammate-days (5 reserved as slack)      │
+│                                                        │
+│  • SGLang serving both models with proper parsers      │
+│  • 100-call tool-call parse rate ≥98% (gate)           │
+│  • OpenAI-compat client wiring for OTel                │
+│  • Inference firefighting reserve                      │
+└────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────┐
+│ KP ── Forensics / Tools / Eval / Content               │
+│        ~21 teammate-days                                │
+│                                                        │
+│  • Three playbook YAMLs (memory/disk/triage)           │
+│  • examiner_caveats.md + hunt_evil.yml + lolbins.yml   │
+│  • 9 non-vol3 tool wrappers (Sleuth Kit, EZ Tools...)  │
+│  • 6 agentskills.io skills with required_tools         │
+│  • 50 ground-truth indicators across 3 cases           │
+│  • 5 Inspect AI scorers                                │
+│  • Demo Case 001 engineered for Qwen3-vs-GLM disagree  │
+│  • Qwen3-vs-GLM disagreement-correlation measurement   │
+│  • ACCURACY_REPORT.md                                  │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## The 5-minute demo (7 hero beats)
 
 ```
 0:00 ─┬─ Cold open + architecture flash
        │
 0:30 ─┤ CLOUD-ONLY MODE (60s)
-       │  • Three Claude samples, three seeds, temp=0.7
+       │  • Three Claude samples at temp=0.7, three seeds
        │  • Langfuse pane: 3 sibling spans converging
        │  • 2-of-3 agree → VETTED_CLOUD (honest framing)
        │
 1:30 ─┤ AIR-GAP MODE (90s) — THE HERO SHOT
-       │  Pull network cable on camera. Mode → airgap.
+       │  Pull network cable on camera. Mode re-detects → airgap.
        │
-       │  ⓵ DKOM divergence (pslist+psscan) → T1014.001 auto
-       │  ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
-       │  ⓷ Amcache caveat acknowledged in rationale
-       │  ⓸ Pivot in action (1 pivot, 0 replans)
-       │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★
-       │     (this beat is Devpost-required: "at least one
-       │      self-correction sequence")
-       │  ⓺ TSI tcpdump proof (key never enters VM)
-       │  ⓻ Kill -9 + verdict resume
+       │  ⓵ DKOM divergence: pslist + psscan diverge
+       │     → automatic Hypothesis(T1014.001)
+       │     "textbook rootkit signature"
+       │
+       │  ⓶ Hunt Evil masquerade: scvhost.exe parent=cmd.exe
+       │     → automatic Hypothesis(T1036.005)
+       │     "process baseline anomaly"
+       │
+       │  ⓷ Amcache caveat: Finding rationale acknowledges
+       │     "LastModified ≠ execution; corroborated by
+       │      Prefetch + EVTX 4688"
+       │
+       │  ⓸ Pivot in action: weird-parent finding triggers
+       │     pivot_node → 1 new Hypothesis, no replan
+       │
+       │  ⓹ Disagreement: Qwen3 hallucinates path; GLM
+       │     disagrees → CONTESTED → replan → both agree
+       │     → VERIFIED_AIRGAP (HMAC-signed)
+       │
+       │  ⓺ TSI proof: tcpdump shows API key on host egress,
+       │     NOT inside microvm. Credentials never enter VM.
+       │
+       │  ⓻ Kill -9 + resume: yank gateway between super-steps,
+       │     restart, verdict resume picks up from checkpoint.
        │
 3:00 ─┤ DUAL MODE (60s)
-       │  • New case (mode locked at init)
+       │  • Plug cable back. New case (mode locked at init).
        │  • Three-way verification → VERIFIED_DUAL
        │
 4:00 ─┤ Architecture recap + per-mode accuracy table
+       │  • Hallucination rate per mode
+       │  • MITRE sub-technique precision
+       │  • Negative-hypothesis quality
+       │  • Qwen3-vs-GLM disagreement correlation
        │
 5:00 ─┴─ End card: repo URL + MIT license
 ```
 
 ---
 
-## Mapped to all 6 Devpost judging criteria
+## What could kill us (top 3 risks)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ RISK #1 — Microsandbox hits a blocker week 4+           │
+│                                                         │
+│  Likelihood: MEDIUM (it's beta)                         │
+│  Impact:     HIGH (kills TSI hero shot)                 │
+│  Mitigation: Test it HARD in week 2 (chaos exercise),   │
+│              not week 4. Have bubblewrap+nsjail         │
+│              fallback rehearsed. Accept loss of TSI.    │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│ RISK #2 — Case 001 doesn't disagree by end of week 4    │
+│                                                         │
+│  Likelihood: MEDIUM                                      │
+│  Impact:     HIGH (no air-gap demo without disagreement)│
+│  Mitigation: KP starts engineering W1, not W4. If 001   │
+│              won't disagree, engineer 002 to. Both done │
+│              by mid-W5 latest.                          │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│ RISK #3 — Schemas slip past May 8                       │
+│                                                         │
+│  Likelihood: MEDIUM                                      │
+│  Impact:     EXTREME (cascades into every later week)   │
+│  Mitigation: HARD descope on May 6 if Phase W1.B not 80%│
+│              done. Drop W1.G architecture-review docs   │
+│              first (they can land in W6).               │
+└─────────────────────────────────────────────────────────┘
+
+  Master descope priority (cut in this order under pressure):
+    1. Optional adapters (Atropos, Hermes pager, GhidrAssist)
+    2. REMnux MCP
+    3. kill-9 chaos test 100/100 → 10/10 sample
+    4. 5 of 6 skills (keep windows-triage + memory + report)
+    5. Planner CoT capture
+    6. planner_critique_node (accept wrong-plan v1 risk)
+    7. pivot_node (fold pivots into replan loop)
+
+  NEVER cut: schema bundle, seed-fix, playbooks,
+             psscan+DKOM, executor split, ≥1 verifier,
+             kill-9 resume, demo video, Devpost submission.
+```
+
+---
+
+## Bottom line — mapped to all 6 official Devpost judging criteria
 
 ```
 ┌────────────────────────────────────────────────────────────┐
+│                                                            │
+│  Six equally-weighted judging criteria. We score on each:  │
 │                                                            │
 │   1. AUTONOMOUS EXECUTION QUALITY                          │
 │      Mode-aware verifier strategy. Plan-then-Execute       │
@@ -341,53 +462,37 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │      with task IDs. agentskills.io portable skills.        │
 │                                                            │
 │  Cost: ~76 teammate-days over 6 weeks, 4 people.           │
-│  Risk: ~4 days slack. Microsandbox is beta.                │
+│  Risk: ~4 days slack budget. Microsandbox is beta.         │
 │                                                            │
 │  Hard deadline: Jun 15, 2026 11:45 PM EDT.                 │
 │  Team target:   Jun 14 EOD = ~28h buffer.                  │
 │                                                            │
+│  Winnable? YES — if schemas lock May 8 and Case 001        │
+│  disagrees by end of W4. Those are the load bearers.       │
+│                                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 
-**Tie-breaker awareness:** rules break ties by criterion order. Push hardest on Autonomous Execution Quality (criterion #1) — the self-correction beat must land cleanly in the demo.
+**Tie-breaker awareness:** rules break ties by criterion order (1 before 2 before 3...). If we're competing for placement, push hardest on Autonomous Execution Quality (criterion #1) — the self-correction beat must land cleanly in the demo.
 
 ---
 
-## Top 3 risks
-
-```
-RISK #1 — Microsandbox hits a blocker week 4+
-  Likelihood: MEDIUM (it's beta)
-  Impact:     HIGH (kills TSI hero shot)
-  Mitigation: Test it HARD in week 2, not week 4.
-
-RISK #2 — Case 001 doesn't disagree by end of week 4
-  Likelihood: MEDIUM
-  Impact:     HIGH (no air-gap demo without disagreement)
-  Mitigation: KP starts engineering W1; engineer Case 002 if 001 fails.
-
-RISK #3 — Schemas slip past May 8
-  Likelihood: MEDIUM
-  Impact:     EXTREME (cascades into every later week)
-  Mitigation: Hard descope on May 6 if Phase W1.B not 80% done.
-```
-
-**Master descope priority** (cut in order under pressure): optional adapters → REMnux MCP → kill-9 chaos test 100/100 → 5 of 6 skills → planner CoT capture → planner_critique_node → pivot_node.
-
-**Never cut:** schema bundle, seed-fix, playbooks, psscan+DKOM, executor split, ≥1 verifier strategy, kill-9 resume, demo video, Devpost submission.
-
----
-
-## Quick reference
+## Where to read more
 
 ```
   Need:                                  Read:
   ─────                                  ─────
-  Architecture details                   ARCHITECTURE.md
-  Day-by-day TDD task plan               BUILD_PLAN.md
-  Devpost rule-to-artifact mapping       DEVPOST_COMPLIANCE.md
-  Decision history (why we chose X)      archive/
-  Tier-1 examiner caveats                ../agent-config/MEMORY.md
-  Tool sequencing playbooks              ../agent-config/PLAYBOOK.md
-  Project conventions                    ../CLAUDE.md
+  Devpost rule-to-artifact mapping       DEVPOST_COMPLIANCE_CHECKLIST.md
+  Why we picked X over Y                 VERDICT_AUDIT_v4.5.md
+  Schema patches + DFIR rules            VERDICT_v4.6_SPEC_PLAN.md
+  Day-by-day TDD task plan               VERDICT_MASTER_BUILD_PLAN.md
+  Tier-1 examiner caveats                agent-config/MEMORY.md
+  Tool sequencing playbooks              agent-config/PLAYBOOK.md
+  Project conventions                    CLAUDE.md
 ```
+
+**Authority order for "are we satisfying the rules?":**
+1. Devpost rules at findevil.devpost.com (always wins)
+2. DEVPOST_COMPLIANCE_CHECKLIST.md (rule-to-artifact mapping)
+3. VERDICT_MASTER_BUILD_PLAN.md (task sequencing)
+4. VERDICT_AUDIT_v4.5.md + VERDICT_v4.6_SPEC_PLAN.md (architecture rationale)
