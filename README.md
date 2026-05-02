@@ -172,7 +172,8 @@ This codebase is built to be navigated by an LLM coding agent. [`CLAUDE.md`](CLA
    See [`CONTRIBUTING.md`](CONTRIBUTING.md) "Quick path — one command" for what this brings up.
 4. **Pick a task** from [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) by `W#.#.#` ID. Filter for unchecked `[ ]` boxes; respect ownership (Tim / Beaver / Haley / KP). Surface the relevant `W#.#.#` task body to your agent so it has the failing-test spec and acceptance gate.
 5. **Run the TDD loop** per `CLAUDE.md` §3.7: failing test → RED → implement → GREEN → one commit per task ID, format `feat(scope): summary [W#.#.#]`. **Never** `--no-verify`, **never** `git commit --amend`, **never** mock VERDICT-internal modules (§3.10).
-6. **Open a PR** with the `W#.#.#` task ID in the title.
+6. **Commit + push with `/qc`** — the project-vendored slash command at [`.claude/skills/qc/SKILL.md`](.claude/skills/qc/SKILL.md). It stages, drafts the Conventional Commit (with `[W#.#.#]`), commits, and pushes — without bypassing hooks, signing, or rewriting history. Drop it at `~/.claude/skills/qc/SKILL.md` for global use, or rely on the project-local copy.
+7. **Open a PR** with the `W#.#.#` task ID in the title — `gh pr create --draft --title "<commit-title>" --body "<task-id> + summary + RED/GREEN snippets>"`.
 
 **Hard rules to surface to your agent before it edits code** (these are the load-bearing ones — full list in `CLAUDE.md` §3):
 
@@ -185,7 +186,7 @@ This codebase is built to be navigated by an LLM coding agent. [`CLAUDE.md`](CLA
 
 ### Without an LLM
 
-Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-keyboard onboarding (account access → PAT → toolchain → GPG/SSH signing → clone → smoke investigation).
+Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-keyboard onboarding (account access → `gh auth login` → toolchain → GPG/SSH signing → clone → smoke investigation).
 
 ---
 
@@ -198,7 +199,7 @@ Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-key
 | Devpost rule-to-artifact mapping, judge checklist | `docs/DEVPOST_COMPLIANCE.md` |
 | Decision history ("why was X decided?") | `docs/spec/` |
 | Hard rules an agent must obey | `CLAUDE.md` §3 |
-| Contributor onboarding (PAT, GPG, clone, smoke test) | `CONTRIBUTING.md` |
+| Contributor onboarding (`gh auth`, GPG, clone, smoke test) | `CONTRIBUTING.md` |
 | Community Q&A, ideas, hero-beat captures | [GitHub Discussions](https://github.com/TimothyVang/Verdict/discussions) |
 | Bug reports + tracked work | [GitHub Issues](https://github.com/TimothyVang/Verdict/issues) |
 | Vulnerability reporting | `SECURITY.md` |
