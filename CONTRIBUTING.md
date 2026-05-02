@@ -206,6 +206,8 @@ Authority order (escalate left-to-right):
 
 Do not paste PAT tokens, OAuth tokens, case data, or HMAC keys into any of the above. NotebookLM and chat are *not* secret-cleared channels.
 
+If you see a PR authored by a `swarm:*` worker, read [`docs/AGENT_SWARM.md`](docs/AGENT_SWARM.md) — it explains the build swarm, the reviewer/auditor agents, and the human merge gate that makes those PRs land safely. Swarm PRs follow the same branch + commit + signing rules you do; the only difference is that they have agent reviews stacked under your human approval.
+
 ---
 
 ## First-day checklist

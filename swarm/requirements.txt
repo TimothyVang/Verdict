@@ -1,0 +1,14 @@
+# Phase-0 swarm dependencies. When pyproject.toml lands in W1.A this file
+# folds into a [swarm] extra; for now it stands alone so the conductor and
+# auditor can be exercised before the rest of the Python project exists.
+#
+# Pinned per CONTRIBUTING.md Step 2 ("no `latest`"). Bumps require a PR.
+
+PyYAML==6.0.2
+# Anthropic SDK + Claude Agent SDK arrive in Phase-1 (open question §14:
+# "token budget per task" must be ratified first). Pinning here as a
+# placeholder for the diff to come:
+#   anthropic==0.40.0
+#   claude-agent-sdk==<TBD>
+#   langfuse==2.x
+#   gitpython==3.1.x

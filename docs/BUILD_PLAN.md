@@ -24,6 +24,8 @@ Every task in this document has a unique grep-able ID of the form `Wk.Phase.Task
 
 Use the ID in commit messages: `feat(schema): add ArtifactClass enum [W1.B.1]`. This makes git log archeology trivial. CI gates reference task IDs in PR templates.
 
+**RED-line policy:** every `*.a` "Failing test" sub-task names a test path AND the literal failing assertion (e.g., `assert result.status == VerdictStatus.VETTED_DUAL`, `assert ledger_writer.write(...) raises HashMismatchError`). A test name like `test_does_X` is descriptive but ambiguous; the RED assertion is contractual. New `*.a` lines added to this plan must follow this format.
+
 ---
 
 ## TL;DR — what gets built
@@ -333,6 +335,16 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 ### W1.A.8 — Inspect AI hello-world
 - [ ] **W1.A.8.a** — `pip install inspect-ai` per CLAUDE.md. Author `inspect_ai/tasks/hello_world.py` minimal task. Run `inspect eval inspect_ai/tasks/hello_world.py`. Assert pass.
 - [ ] **W1.A.8.b** — Commit: `feat(eval): Inspect AI hello-world task [W1.A.8]`
+
+### W1.A.9 — Mechanical hard-rule enforcement (Tim, ~3 hours)
+Pulls forward what `CONTRIBUTING.md` line 220 already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only — see `docs/AGENTIC_WORKFLOW_REVIEW.md` D1 + D3 + D4.
+
+- [ ] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
+- [ ] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `verdict/` and `tests/`.
+- [ ] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
+- [ ] **W1.A.9.d** — Stub `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate`, fails on >10%. Scorer stub returns 0.0 (always pass) until W4.D.1 implements the real scorer. Wires the gate into CI so the metric is measured before any hallucination-producing code lands.
+- [ ] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
+- [ ] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI stub) [W1.A.9]`
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
@@ -652,7 +664,7 @@ For each tool:
 - [ ] **W2.D.1.c** — Commit: `feat(planning): planner_critique_node CoVe [W2.D.1]`
 
 ### W2.D.2 — `PlannerCritiqueVerdict` schema + `critique_verdict` ledger event
-- [ ] **W2.D.2.a** — Failing test for schema + ledger entry.
+- [ ] **W2.D.2.a** — Failing test `tests/planning/test_planner_critique_verdict.py::test_schema_rejects_missing_failed_questions_when_route_back`. Plus `test_ledger_emits_critique_verdict_event_with_route_decision`. Assertions: `PlannerCritiqueVerdict(route="planner", failed_questions=[]).model_validate()` raises `ValidationError`; `ledger.last_entry.event_type == "critique_verdict"` after `planner_critique_node` runs.
 - [ ] **W2.D.2.b** — Wire into LangGraph + ledger.
 - [ ] **W2.D.2.c** — Commit: `feat(graph): planner_critique_node wired between planner + comprehension_gate [W2.D.2]`
 
@@ -764,7 +776,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 - [ ] **W3.A.2.c** — Commit: `feat(verification): DualLaneCrossEngine three-way verification [W3.A.2]`
 
 ### W3.A.3 — Universal Self-Consistency full impl (Chen 2023)
-- [ ] **W3.A.3.a** — Failing test: USC judge picks most-consistent free-form rationale among n=3 samples.
+- [ ] **W3.A.3.a** — Failing test `tests/verification/test_universal_self_consistency.py::test_judge_picks_most_consistent_rationale_among_n3`. Assertion: given three Findings with rationale strings differing in structure but agreeing in substance on two of three, `UniversalSelfConsistency.judge(findings).selected_index in {0, 1}` (the two-of-three majority) and `result.status == VerdictStatus.CONTESTED` is NOT returned (USC is the judge of last resort before CONTESTED).
 - [ ] **W3.A.3.b** — Implement upgrade from W1.C.3 stub.
 - [ ] **W3.A.3.c** — Commit: `feat(verification): Universal Self-Consistency judge [W3.A.3]`
 
@@ -1051,7 +1063,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 ## Phase W5.B — Adapters (Tim, ~1 day)
 
 ### W5.B.1 — OpenCTI MCP integration
-- [ ] **W5.B.1.a** — Failing integration test: malware-analysis VM enriches a finding via OpenCTI lookup; API key never enters VM (TSI verified).
+- [ ] **W5.B.1.a** — Failing integration test `tests/sandboxes/test_malware_vm_tsi.py::test_opencti_enrichment_via_tsi_keeps_key_out_of_vm`. Assertions: `tcpdump_capture(microvm_iface).bearer_count == 0` AND `tcpdump_capture(host_egress_to_opencti).bearer_count == 1` AND the resulting `Finding.enrichment` dict contains the OpenCTI threat-actor metadata.
 - [ ] **W5.B.1.b** — Implement `verdict/adapters/opencti_mcp.py`.
 - [ ] **W5.B.1.c** — Commit: `feat(adapters): OpenCTI MCP via TSI [W5.B.1]`
 
@@ -1739,8 +1751,8 @@ Key beats for the 5-min cut:
 
 - **0:00–0:30** Cold open + architecture diagram flash with v4.6 node sequence (planner → planner_critique → comprehension_gate → executor_fanout → pivot → quorum → replan/unverifiable_finalize).
 - **0:30–1:30** Cloud-only mode, n=3 with three distinct seeds at temp=0.7 (narrate "different seeds, same case ID for reproducibility"). Three Langfuse sibling spans converging.
-- **1:30–3:00** Air-gap hero shot. Pull the cable. Comprehension gate fires. Hero beat 1: pslist+psscan DKOM divergence → T1014. Hero beat 2: Hunt Evil masquerade catch (`scvhost.exe` parent=cmd.exe). Hero beat 3: Amcache caveat acknowledgment in Finding rationale. Hero beat 4: pivot in action (1 pivot, 0 replans). Hero beat 5: Qwen3-vs-GLM disagreement → CONTESTED → replan → VERIFIED_AIRGAP. Hero beat 6: tcpdump TSI proof. Hero beat 7: kill -9 between super-steps + `verdict resume`.
-- **3:00–4:00** Dual mode (new case, mode-locked). Three-way verification → VERIFIED_DUAL.
+- **1:30–3:00** Air-gap hero shot. Pull the cable. Comprehension gate fires. Hero beat 1: pslist+psscan DKOM divergence → T1014. Hero beat 2: Hunt Evil masquerade catch (`scvhost.exe` parent=cmd.exe). Hero beat 3: Amcache caveat acknowledgment in Finding rationale. Hero beat 4: pivot in action (1 pivot, 0 replans). Hero beat 5: Qwen3-vs-GLM disagreement → CONTESTED → replan → VETTED_AIRGAP. Hero beat 6: tcpdump TSI proof. Hero beat 7: kill -9 between super-steps + `verdict resume`.
+- **3:00–4:00** Dual mode (new case, mode-locked). Three-way verification → VETTED_DUAL.
 - **4:00–5:00** Architecture recap + accuracy table per mode (hallucination, agreement, FP rates, step_efficiency, MITRE sub-technique precision, negative-hypothesis quality, Qwen3-vs-GLM disagreement correlation).
 
 ---

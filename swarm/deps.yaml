@@ -1,0 +1,26 @@
+# Cross-phase dependencies + tasks the swarm must NOT claim (humans only).
+#
+# Format:
+#   <task-id>: [<blocker-task-id>, ...]      # task waits on blockers
+#   requires_human:
+#     - <task-id>                            # never claimed by worker pool
+#
+# Implicit deps (within-phase, sequential by suffix) are handled by the
+# conductor automatically. This file is for cross-phase deps only.
+#
+# See docs/AGENT_SWARM.md §6.3.
+
+# --- cross-phase deps (curated; add as we discover them) ---
+W1.A.5: [W1.B.4, W1.B.6]      # FastMCP gateway needs Artifact + Finding skeletons
+W4.D.1: [W4.C.1]              # cloud eval task needs ground-truth case_001
+W4.D.2: [W4.C.1, W4.C.2]      # airgap eval needs both engineered cases
+W4.D.3: [W4.C.1, W4.C.2, W4.C.3]
+
+# --- requires_human (hardware-bound, key-bound, or human-curated) ---
+requires_human:
+  - W1.A.4    # SGLang on H100 — Haley + GPU rig
+  - W1.A.7    # Langfuse self-host — Docker on dev host
+  - W4.C.1    # Engineered case_001 ground truth — human curation
+  - W4.C.2    # Engineered case_002 ground truth
+  - W4.C.3    # Engineered case_003 ground truth (Honeynet-derivative)
+  - W3.D.3    # HMAC ledger key handling — humans only (CLAUDE.md §3.9)
