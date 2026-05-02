@@ -119,6 +119,28 @@ def test_non_execution_technique_duplicate_class_accepted() -> None:
     Finding(**kw)
 
 
+def test_non_execution_subtechnique_duplicate_class_accepted() -> None:
+    """Regression guard — §3.2 split(".", 1)[0] correctly isolates parent.
+
+    T1055.012 (Process Injection: Process Hollowing) has parent T1055, which
+    is NOT in _EXECUTION_PARENTS. A Finding with two identical ArtifactClass
+    values must be accepted; if the parent-extraction logic were broken
+    (e.g. comparing the full "T1055.012" string against the frozenset instead
+    of extracting "T1055" first) the validator would silently skip the check
+    even when it should fire — or, if the set were keyed on full strings, it
+    would fail to fire. This test guards that split(".", 1)[0] is the correct
+    isolation mechanism for sub-techniques outside _EXECUTION_PARENTS.
+    """
+    kw = _base_kwargs()
+    kw["mitre_technique"] = "T1055.012"
+    kw["artifact_classes"] = [
+        ArtifactClass.PROCESS_MEMORY,
+        ArtifactClass.PROCESS_MEMORY,
+    ]
+    # Must not raise — T1055.012's parent T1055 is outside _EXECUTION_PARENTS.
+    Finding(**kw)
+
+
 # ---------------------------------------------------------------------------
 # §3.3 — AMCACHE_LASTMODIFIED_NOT_EXEC (validator: _amcache_caveat_required)
 # ---------------------------------------------------------------------------
