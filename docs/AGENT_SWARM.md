@@ -445,16 +445,27 @@ swarm/                              # Python helper modules + role specs (canoni
 │   ├── reviewer.md                 # fallback; primary path is the TaskCompleted hook
 │   └── auditor.md                  # fallback; primary path is the TaskCompleted hook
 └── hooks/
+    ├── suggest-skill.sh            # UserPromptSubmit skill suggestion helper; static fallback on failure
     └── task-completed.sh           # runs reviewer + auditor; exit-2 blocks completion
+
+.github/workflows/
+└── claude-pr-review.yml            # PR-side CLAUDE.md §3 review using Claude Code Action
 
 scripts/
 ├── run-team.sh                     # PRIMARY entrypoint (Claude Code Agent Teams)
 └── run-swarm.sh                    # FALLBACK (subagent-driven 20-wide pool)
+
+swarm/memory/
+├── README.md                       # memory protocol
+├── lessons.jsonl                   # append-only raw lessons; intentionally not committed after bootstrap
+└── patterns.md                     # distilled lessons read by teammates before code
 ```
 
 The two `agents/` directories are **not duplicates** — `swarm/agents/*.md` holds canonical long-form role specs (~60–105 lines each: discipline, blocking matrix, common pitfalls); `.claude/agents/*.md` are thin harness overlays whose frontmatter exposes `model` + `tools` to Claude Code and whose body is a pointer instructing the teammate to load the swarm/agents/ spec for full discipline. Edit specs in `swarm/agents/`; edit model tiering or tool allowlists in `.claude/agents/`.
 
 Phase-0 code remains minimal. The lead session does Phase-0 resume discovery + Phase-1 dispatch in-prompt (see `scripts/run-team.sh`). The SDK fallback worker command is not part of the supported surface until W1/W3 scaffolding implements it end-to-end; do not ship placeholder command paths.
+
+Agent-Team launches now pre-filter tasks for non-overlapping file scopes, start teammates concurrently with `--permission-mode auto`, require SendMessage checkpoints (`RED`, `GREEN`, `PR`, `BLOCKED`, `DONE`), and distill `swarm/memory/lessons.jsonl` into `patterns.md` during cleanup.
 
 ---
 
