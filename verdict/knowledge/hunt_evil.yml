@@ -1,0 +1,100 @@
+# Hunt Evil — 8 Canonical Windows Process Baselines
+#
+# Source: SANS FOR508 / Hunt Evil poster (Rob Lee / Mark Baggett).
+# Loaded at case_init and compared against vol3.windows.pslist + pstree output.
+# Deviations → ProcessBaselineAnomaly → T1036.005 hypothesis.
+#
+# Fields:
+#   process_name:            exact binary name (case-insensitive on Windows)
+#   expected_parent:         canonical parent process name
+#   expected_path:           canonical full path (backslash, no trailing slash)
+#   expected_signing:        true = Microsoft-signed expected; null = variable
+#   expected_instance_count: "1" = exactly one; "1+" = one or more; null = variable
+#   notes:                   forensic commentary for examiner
+
+- process_name: svchost.exe
+  expected_parent: services.exe
+  expected_path: "C:\\Windows\\System32\\svchost.exe"
+  expected_signing: true
+  expected_instance_count: "1+"
+  notes: >
+    Multiple instances are normal; each MUST have a -k <group> argument.
+    An svchost.exe with no arguments or with parent other than services.exe
+    is suspicious. Common LOLBin abuse vector.
+
+- process_name: lsass.exe
+  expected_parent: wininit.exe
+  expected_path: "C:\\Windows\\System32\\lsass.exe"
+  expected_signing: true
+  expected_instance_count: "1"
+  notes: >
+    Exactly one instance. Parent is wininit.exe (post-Vista) or winlogon.exe
+    (pre-Vista). lsass.exe with parent cmd.exe or powershell.exe indicates
+    credential theft tooling (T1003.001 — LSASS Memory). Mimic process:
+    lsasss.exe, lsass.exe in wrong path.
+
+- process_name: csrss.exe
+  expected_parent: smss.exe
+  expected_path: "C:\\Windows\\System32\\csrss.exe"
+  expected_signing: true
+  expected_instance_count: "1+"
+  notes: >
+    One per session (Session 0 + one per interactive logon). Parent is smss.exe
+    but smss.exe exits after launch, so parent PID appears as 0 or dead.
+    csrss.exe with a live parent other than smss.exe, or with wrong path, is
+    a masquerade indicator.
+
+- process_name: winlogon.exe
+  expected_parent: smss.exe
+  expected_path: "C:\\Windows\\System32\\winlogon.exe"
+  expected_signing: true
+  expected_instance_count: "1+"
+  notes: >
+    One per interactive session. Parent smss.exe exits, so parent appears dead.
+    winlogon.exe is the correct spawner for userinit.exe and logonui.exe.
+    Adversaries may attempt to inject into or masquerade as winlogon.exe
+    to intercept credentials.
+
+- process_name: services.exe
+  expected_parent: wininit.exe
+  expected_path: "C:\\Windows\\System32\\services.exe"
+  expected_signing: true
+  expected_instance_count: "1"
+  notes: >
+    Exactly one instance. services.exe is the Service Control Manager.
+    Spawns svchost.exe instances. Masquerade indicator: service.exe,
+    services32.exe, or wrong path. T1543.003 (Create or Modify System
+    Process: Windows Service) exploitation often uses this process context.
+
+- process_name: wininit.exe
+  expected_parent: smss.exe
+  expected_path: "C:\\Windows\\System32\\wininit.exe"
+  expected_signing: true
+  expected_instance_count: "1"
+  notes: >
+    Exactly one instance. Spawns services.exe, lsass.exe, and lsm.exe
+    (on older Windows). Parent smss.exe exits after launch. Any duplicate
+    or wrong-parent wininit.exe is highly suspicious.
+
+- process_name: explorer.exe
+  expected_parent: userinit.exe
+  expected_path: "C:\\Windows\\explorer.exe"
+  expected_signing: true
+  expected_instance_count: "1+"
+  notes: >
+    One per interactive user session. Parent userinit.exe exits after spawning
+    explorer.exe, so parent appears dead. explorer.exe in System32, AppData,
+    or Temp directories is a masquerade indicator (T1036.005). Adversaries
+    commonly inject into or hijack explorer.exe for persistence.
+
+- process_name: smss.exe
+  expected_parent: System
+  expected_path: "C:\\Windows\\System32\\smss.exe"
+  expected_signing: true
+  expected_instance_count: "1+"
+  notes: >
+    Master instance has parent PID 4 (System). Short-lived child instances
+    spin up per session and self-terminate. smss.exe with parent other than
+    System (PID 4), or with wrong path, is a masquerade indicator.
+    The Session Manager is one of the first user-mode processes and is a
+    high-value target for pre-logon persistence.
