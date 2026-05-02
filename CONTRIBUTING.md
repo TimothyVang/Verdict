@@ -9,6 +9,21 @@ New-contributor setup guide. If you've already done the SANS Find Evil! 2026 tea
 
 Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this file. Code + lockfiles win over docs (per `CLAUDE.md`); update the doc, don't roll back the code, unless the code is wrong.
 
+> ## ⚠ REMINDER — update `docs/` before you call a contribution done
+>
+> **Every contribution must leave `docs/` consistent with the code it ships.** Before you mark a task complete, push your final commit, or flip a draft PR to ready: walk the [Docs-follow-research table](#docs-follow-research-always) below and update **every** matching doc in the same PR.
+>
+> The minimum sweep:
+>
+> - Did you add/rename/remove a file under `verdict/`? Grep `docs/` + `CLAUDE.md` + `README.md` for the old path; update every reference.
+> - Did you add/change/remove a CLI command, flag, or env var? Update `CLAUDE.md` §10 and `README.md` "CLI surface".
+> - Did you add/change/remove a schema field, validator, enum member, or playbook rule? Update `docs/ARCHITECTURE.md` §4 and any `CLAUDE.md` §3.x rule that cites it.
+> - Did you add/remove a dependency, change a version pin, or vendor a skill/MCP? Update `CONTRIBUTING.md` §2 toolchain table + `docs/PRODUCTION_AUDIT.md` (deps) or `docs/SKILLS_FRAMEWORK.md` / `docs/MCP_FRAMEWORK.md` + license audit (vendored).
+> - Did you change a LangGraph node, verifier strategy, mode behavior, or caveat? Update `docs/ARCHITECTURE.md` §1–§2, `CLAUDE.md` §3.3 / §4 / §8, and `docs/TLDR.md` if cited.
+> - Did you discover an audit-history claim in `docs/spec/` is wrong? Log it in `docs/DOCS_ACCURACY_REPORT.md`. **Do NOT edit `spec/`** — it's frozen.
+>
+> A reviewer will ask "why didn't you update docs?" if your PR touches code without touching the doc that refers to it. The 2-hour `verdict-doc-drift` routine will also open a draft PR if it catches you. Beat both — close the loop yourself in the same PR.
+
 ---
 
 ## Step 0 — Accounts and access
@@ -213,6 +228,7 @@ EOF
 Then iterate: every push uses `/qc`; flip the PR to ready with `gh pr ready` when all gates green; check status with `gh pr status`, CI with `gh pr checks`, review feedback with `gh pr view`.
 
 ### Docs follow research, always
+<a id="docs-follow-research-always"></a>
 
 When you confirm a fact through investigation — a MITRE technique ID, a tool's actual behavior, a schema constraint, an upstream license, an API surface, a deadline, anything you had to verify — **update the corresponding doc in the same PR**. The doc tree is authority for everything not encoded in code; let it drift behind the code and the next contributor (or the SANS judge) reads a lie.
 
@@ -290,5 +306,6 @@ Copy into your notes and tick as you go.
 - [ ] First `investigate <case>` produces a Finding + ledger entry inside the VM
 - [ ] `BUILD_PLAN.md` skimmed; you know which task ID you're picking up first
 - [ ] `ARCHITECTURE.md` §1 (modes) and §2 (LangGraph topology) read end-to-end
+- [ ] **You've internalized the top-of-file REMINDER:** every contribution updates `docs/` in the same PR, before "done"
 
-Welcome to the team. Push small, push often, sign everything.
+Welcome to the team. Push small, push often, sign everything — **and update the docs every time**.
