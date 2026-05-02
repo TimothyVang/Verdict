@@ -84,7 +84,7 @@ class Hypothesis(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def _negative_hypothesis_quality(self) -> "Hypothesis":
+    def _negative_hypothesis_quality(self) -> Hypothesis:
         """Enforce non-degenerate negative hypotheses per §3.6."""
         if self.polarity != "negative":
             return self
@@ -135,7 +135,7 @@ class InvestigationPlan(BaseModel):
     tool_budget: int = Field(ge=1)
 
     @model_validator(mode="after")
-    def _at_least_one_negative(self) -> "InvestigationPlan":
+    def _at_least_one_negative(self) -> InvestigationPlan:
         """§3.6 — ≥1 negative hypothesis per plan."""
         if not any(h.polarity == "negative" for h in self.hypotheses):
             raise ValueError(
@@ -144,7 +144,7 @@ class InvestigationPlan(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def _at_least_one_positive(self) -> "InvestigationPlan":
+    def _at_least_one_positive(self) -> InvestigationPlan:
         """At least one positive hypothesis to investigate."""
         if not any(h.polarity == "positive" for h in self.hypotheses):
             raise ValueError(
@@ -214,7 +214,7 @@ class PlannerCritiqueVerdict(BaseModel):
     all_questions: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _failed_questions_required_on_loopback(self) -> "PlannerCritiqueVerdict":
+    def _failed_questions_required_on_loopback(self) -> PlannerCritiqueVerdict:
         """Loopback route MUST carry at least one failed question."""
         if self.route == "planner" and not self.failed_questions:
             raise ValueError(

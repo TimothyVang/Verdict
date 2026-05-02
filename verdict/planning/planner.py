@@ -31,7 +31,6 @@ from typing import Protocol, runtime_checkable
 
 from verdict.schemas.plan import InvestigationPlan
 
-
 # ---------------------------------------------------------------------------
 # Planner Protocol
 # ---------------------------------------------------------------------------

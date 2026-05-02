@@ -26,8 +26,6 @@ CLAUDE.md §3.2 — execution-class technique with single artifact class is a
 
 from __future__ import annotations
 
-import pytest
-
 from verdict.planning.planner_critique import CritiqueConfig, critique_plan
 from verdict.schemas.artifact_class import ArtifactClass
 from verdict.schemas.plan import (
@@ -35,7 +33,6 @@ from verdict.schemas.plan import (
     InvestigationPlan,
     PlannerCritiqueVerdict,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers — build minimal valid / invalid plans
@@ -175,7 +172,6 @@ def test_plan_missing_negative_hypothesis_routes_to_planner() -> None:
     somehow only positives reach it. Test the critique's own negative-
     hypothesis check directly via CritiqueConfig.
     """
-    plan = _make_plan()
     # Override hypotheses to all-positive (bypass schema via model_construct).
     all_positive_plan = InvestigationPlan.model_construct(
         schema_version="v1",
