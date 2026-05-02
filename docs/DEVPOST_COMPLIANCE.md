@@ -79,7 +79,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - MITRE sub-technique granularity required (T1055.012 not just T1055)
 - Inspect AI per-mode scorers: hallucination_rate, findings_precision, findings_recall, mitre_subtechnique_precision, negative_hypothesis_quality
 
-**Demo segment:** air-gap hero beats ⓵ (DKOM divergence → automatic T1014.001), ⓶ (Hunt Evil masquerade → T1036.005), ⓷ (Amcache caveat acknowledgment in rationale).
+**Demo segment:** air-gap hero beats ⓵ (DKOM divergence → automatic T1014), ⓶ (Hunt Evil masquerade → T1036.005), ⓷ (Amcache caveat acknowledgment in rationale).
 
 ### Criterion 3: Breadth and Depth of Analysis
 > "How much case data can the agent handle? **Depth on fewer types beats shallow coverage of many.**"
@@ -89,7 +89,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - 19 tool wrappers (10 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
 - Three evidence types covered with depth: memory image, disk image, triage zip. Three playbook YAMLs encode SANS-canonical sequencing per type.
 - 50 ground-truth indicators across 3 engineered cases (lol-bins, credential theft, ransomware)
-- DKOM/T1014.001 detection via pslist+psscan divergence — encoded, not LLM-recalled
+- DKOM/T1014 detection via pslist+psscan divergence — encoded, not LLM-recalled
 - Hunt Evil baseline catalog covering 8 canonical Windows processes
 - LOLBin cmdline catalog covering 6 binaries with MITRE sub-technique mapping
 
@@ -217,7 +217,7 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 
 ### W6.D.0 — GitHub repo metadata
 - [ ] **W6.D.0.a** — Set repo Public visibility.
-- [ ] **W6.D.0.b** — Verify LICENSE file at repo root contains MIT text (RFC-2119 standard MIT, not custom).
+- [ ] **W6.D.0.b** — Verify LICENSE file at repo root contains MIT text (OSI-canonical MIT, SPDX identifier `MIT`; not custom).
 - [ ] **W6.D.0.c** — Set repo About section: description, license badge auto-detected as MIT, topics include `dfir`, `incident-response`, `claude-code`, `sift-workstation`, `mcp`, `agentic`.
 - [ ] **W6.D.0.d** — Verify license badge visible at top of repo on a fresh logged-out browser session.
 - [ ] **W6.D.0.e** — Commit if any docs reference the repo URL: `chore(release): GitHub repo public + MIT badge in About [W6.D.0]`
@@ -240,7 +240,7 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
 ### W6.C.10 — `docs/NOVEL_CONTRIBUTION.md`
-- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan, schema-enforced caveat acknowledgment, DKOM/T1014.001 auto-detection, Hunt Evil masquerade catch, LOLBin matcher with T1218 sub-techniques, agentskills.io skill bundle, custom Inspect AI scorers including step_efficiency + mitre_subtechnique_precision + negative_hypothesis_quality + Qwen3-vs-GLM disagreement-correlation analysis). (3) What was pre-existing open source (with license + source URL each: SIFT Workstation, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic + Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher with T1218 sub-techniques, agentskills.io skill bundle, custom Inspect AI scorers including step_efficiency + mitre_subtechnique_precision + negative_hypothesis_quality + Qwen3-vs-GLM disagreement-correlation analysis). (3) What was pre-existing open source (with license + source URL each: SIFT Workstation, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic + Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README.
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 

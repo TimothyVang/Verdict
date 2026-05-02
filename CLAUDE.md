@@ -12,7 +12,7 @@ This file is the operating charter for any Claude Code session opened in this wo
 - **Submission deadline:** **Jun 14 2026 EOD** (Devpost upload buffer); **Jun 15 22:45 CDT** official.
 - **Judging window:** Jun 19 – Jul 3 2026; winners ~Jul 8 2026.
 - **Sponsor / judge:** SANS Institute; Rob T. Lee (CAIO).
-- **Submission pack:** see §11 plus `docs/hackathon/RULES.md` and `docs/hackathon/OVERVIEW.md`.
+- **Submission pack:** see §11 plus `docs/DEVPOST_COMPLIANCE.md` and the live page at https://findevil.devpost.com/.
 
 VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude Code config framework cloned in this workspace. License is **MIT** (the hackathon allows MIT or Apache-2.0).
 
@@ -139,300 +139,91 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 ## 4. Architecture at a glance
 
-VERDICT is a 9-node LangGraph state machine with explicit reducer-merged fanout. Source: `docs/spec/03-audit-v4.5.md` plus v4.6 patches.
+9-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4) → executor_work {DenyRuleWrapper / ToolExecutor / LedgerEmitter} → pivot (≤15) → quorum → replan (≤3) | unverifiable_finalize → finalize**.
 
-```
-                      ┌─────────────┐
-                      │   planner   │   InvestigationPlan
-                      └──────┬──────┘   (positive + ≥1 negative hypotheses,
-                             │           pivot_budget=15, replan_budget=3)
-                             ▼
-                  ┌─────────────────────┐
-                  │ planner_critique    │   CoVe — questions the plan
-                  │ (Chain-of-Verify)   │   asks itself, must pass before
-                  └──────────┬──────────┘   comprehension_gate
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │ comprehension_gate  │   collects PlanComprehensionEcho
-                  │ (n=4 executors)     │   from all 4; consensus on
-                  └──────────┬──────────┘   hypothesis_ids + criteria_hash
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │   executor_fanout   │   parallel n=4 executors,
-                  │   (reducer merge)   │   deterministic merge
-                  └──────────┬──────────┘
-                             │
-                             ▼
-        ┌────────────────────┴─────────────────────┐
-        │              executor_work               │
-        │  ┌────────────┐ ┌──────────┐ ┌────────┐  │
-        │  │ DenyRule   │→│ ToolExec │→│Ledger  │  │
-        │  │ Wrapper    │ │ (sandbox)│ │Emitter │  │
-        │  └────────────┘ └──────────┘ └────────┘  │
-        └──────────────────────┬───────────────────┘
-                               │
-                               ▼
-                  ┌─────────────────────┐
-                  │     pivot_node      │   ≤15 cheap follow-ups
-                  └──────────┬──────────┘   (single-Hypothesis adjustments)
-                             │
-                             ▼
-                  ┌─────────────────────┐
-                  │      quorum         │   VerifierStrategy dispatch
-                  │ (mode-dependent)    │   (see §8)
-                  └──────────┬──────────┘
-                             │
-                  ┌──────────┴──────────┐
-                  ▼                     ▼
-          ┌───────────────┐    ┌────────────────────────┐
-          │   replan      │    │ unverifiable_finalize  │
-          │ (≤3 iters)    │    │ (replan iter 4 →       │
-          └──────┬────────┘    │  UNVERIFIABLE +        │
-                 │             │  interrupt() for human)│
-                 │             └────────────┬───────────┘
-                 │                          │
-                 └────────┐         ┌───────┘
-                          ▼         ▼
-                       ┌──────────────┐
-                       │   finalize   │   HMAC-signed Findings
-                       └──────────────┘
-```
+Three operational modes, auto-detected at `case_init` and **locked**:
 
-### 4.1 Operational modes
+- `CLOUD` — Claude Code planner + local Qwen3 executor + `CloudSelfConsistency` (n=3, blake3-keyed seeds, temp=0.7).
+- `AIRGAP` — Qwen3 planner+executor + `AirGapCrossEngine` (Qwen3 vs GLM-4.5-Air, Jaccard ≥ 0.80).
+- `DUAL` — parallel cloud+airgap lanes + `DualLaneCrossEngine` (cloud + ≥1 local; locals agree).
 
-Mode is auto-detected at `case_init` (or overridden via `--mode`) and **locked**.
+Three-layer immutability defense: (1) Claude `PreToolUse` hook (best-effort, per #33106/#37210); (2) LangGraph `DenyRuleWrapper` (architectural guarantee, all modes); (3) microsandbox read-only `/evidence` mount + `noexec` (kernel-enforced).
 
-| Mode | Planner | Executor (×4) | Verifier |
-|------|---------|---------------|----------|
-| `CLOUD` | Claude Code (Anthropic) | local Qwen3-30B-A3B-Thinking | `CloudSelfConsistency` (n=3) |
-| `AIRGAP` | local Qwen3-30B-A3B-Thinking | local Qwen3 | `AirGapCrossEngine` (Qwen3 vs GLM-4.5-Air) |
-| `DUAL` | parallel cloud + airgap lanes | both | `DualLaneCrossEngine` (cloud + ≥1 local; locals agree) |
+→ Full topology, mode tables, defense-in-depth rationale: **`docs/ARCHITECTURE.md` §1–§3**.
 
-### 4.2 Three-layer immutability defense
+## 5. Tech stack (one line each)
 
-| Layer | Mechanism | Strength |
-|-------|-----------|----------|
-| 1 | Claude Code `PreToolUse` hook | **Best-effort.** Per anthropics/claude-code#33106 + #37210, `permissionDecision: "deny"` is buggy for MCP and Edit tools. CI smoke test (xfail-marked) monitors for regression; relying on Layer 1 alone is forbidden. |
-| 2 | LangGraph `DenyRuleWrapper` (`verdict/graph/wrappers/deny_rule.py`) | **Architectural guarantee.** Fires in all three modes regardless of which model called. This is the load-bearing layer. |
-| 3 | Microsandbox read-only `/evidence` mount + `noexec` | **Kernel-enforced.** Final defense. Even a model+wrapper bypass cannot write through a read-only mount. |
+Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
 
-The PreToolUse hook is documented as a deterrent + telemetry source, not a guarantee.
-
-## 5. Tech stack
-
-| Layer | Choice | Notes |
-|-------|--------|-------|
-| Language (primary) | Python **3.11** | `uv` for env, `pytest` for tests, `ruff` for lint+format (no black/isort split). |
-| Language (MCP services) | Rust **1.88** | FastMCP 3.x wrappers. |
-| Language (skills, deferred v2) | Node **20** | pnpm workspaces (`mcp-widgets` deferred). |
-| Inference (primary local) | **SGLang** (Apache-2.0) | RadixAttention prefix-cache; `--tool-call-parser qwen3_xml` and `--tool-call-parser glm45` (native). |
-| Inference (fallback local) | **vLLM** (Apache-2.0) | Pinned to PR #39055 (Qwen3 reasoning-parser). |
-| Models | Qwen3-30B-A3B-Thinking-2507 (Apache-2.0); GLM-4.5-Air (MIT) | Qwen3 = planner/executor; GLM-4.5-Air = verifier only. |
-| Cloud agent | Claude Agent SDK + Claude Code CLI | OAuth, interactive, or `ANTHROPIC_API_KEY` paths. |
-| Orchestration | **LangGraph** (MIT) + `SqliteSaver` | `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL` for kill-9 resilience. |
-| Schemas | **Pydantic v2** + Pydantic-AI (MIT) | All forensic discipline encoded as validators. |
-| Tool dispatch | Pydantic-AI `args_validators` | `ModelRetry` flow, retry_max=2, then UNVERIFIABLE. |
-| Guardrails | **NeMo Guardrails** (Apache-2.0) | input/output rails. |
-| MCP gateway | **FastMCP 3.x** (Apache-2.0) | 12+ SIFT tools surfaced as MCP tools. |
-| Sandbox | **Microsandbox** (Apache-2.0, beta) — libkrun microVM | ~200 ms cold start, TSI for credential injection, rootfs SHA-256 pin. Fallback: bubblewrap (LGPL-2.0) + nsjail (Apache-2.0). |
-| Hashing | **blake3** (MIT) | Keyed-hash seed derivation, invocation hashing, evidence re-hashing. SHA-256 for per-file evidence hashes. |
-| Observability | **Langfuse v2** self-host (MIT) + **OpenLLMetry** (Apache-2.0) | Trace tree cross-linked to JSONL ledger via `trace_id`. |
-| Eval harness | **Inspect AI** (MIT, UKGovernmentBEIS) | Three per-mode tasks; five deterministic scorers; 50 ground-truth indicators across 3 cases. |
-| CI/CD | GitHub Actions | Workflows: `l0-static`, `l1-unit`, `l2-sift-lite`, `l3-goldens`, `inspect-ai-evals`, `release`, `devpost-submit`. |
-
-See §3.8 for the explicit hard NOs. Anything not on either list needs an entry in `docs/PRODUCTION_AUDIT.md` before adoption.
+→ Full version pins, license notes, hard-NO list: **`docs/ARCHITECTURE.md` §7** (and §3.8 above for forbidden deps).
 
 ## 6. Target repo layout
 
-The workspace is currently a planning shell — no code exists yet. The first scaffolding work is **W1.A** of the master plan. Target tree (abridged; full version in `docs/BUILD_PLAN.md`):
+Today the workspace holds docs only — code scaffolding is **W1.A** of `docs/BUILD_PLAN.md`. Active layout:
 
 ```
 Verdict/
-├── CLAUDE.md                     ← this file
-├── README.md
-├── LICENSE                       ← MIT
-├── CONTRIBUTING.md
-├── CHANGELOG.md
-├── pyproject.toml                ← uv workspace root
-├── uv.lock
-├── docker-compose.yml            ← Langfuse v2 self-host
-├── docker-compose.langfuse-v3.yml
+├── CLAUDE.md  README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  .env.example
 ├── docs/
-│   ├── ARCHITECTURE.md           ← canonical architecture (current authority)
-│   ├── BUILD_PLAN.md             ← 6-week / 75-teammate-day TDD execution plan
-│   ├── DEVPOST_COMPLIANCE.md     ← submission rule-to-artifact mapping
-│   ├── DOCS_ACCURACY_REPORT.md   ← cross-doc consistency audit
-│   ├── spec/                     ← audit history (read-only; reference only)
-│   │   ├── README.md             ← archive index + authority chain
-│   │   ├── 01-audit-v4.3.md      ← initial audit (10 system-design fixes)
-│   │   ├── 02-audit-v4.4.md      ← agentic + DFIR pass (24 findings)
-│   │   ├── 03-audit-v4.5.md      ← system-design review (drops mock layer)
-│   │   ├── 04-spec-plan-v4.6.md  ← week-1 schema patches
-│   │   └── 05-tldr-original.md   ← earlier TL;DR (superseded by README.md)
-│   ├── hackathon/
-│   │   ├── RULES.md              ← official SANS FIND EVIL! rules
-│   │   └── OVERVIEW.md           ← hackathon overview + resource links
-│   ├── THREAT_MODEL.md           ← (W1+) 4 surfaces: insider, prompt-inj-from-evidence,
-│   │                               malicious-tool-output, external-attacker
-│   ├── FAILURE_MODES.md          ← (W1+) component × failure × recovery matrix
-│   ├── CLI.md                    ← (W1+)
-│   ├── CHECKPOINTING.md          ← (W1+) SqliteSaver + WAL + reducer pattern
-│   ├── CASE_ISOLATION.md         ← (W1+) RadixAttention prefix-cache vs case data
-│   ├── SCOPE.md                  ← (W1+) v1 = Windows DFIR; v2 = macOS / Linux / ESXi
-│   ├── SCHEMA_MIGRATION.md       ← (W1+)
-│   ├── SANS_JUDGE_CHECKLIST.md   ← (W6) 15-item demo rubric (see §11)
-│   ├── PRODUCTION_AUDIT.md       ← (W1+) v4 triage (what landed v1 vs v2)
-│   ├── DEMO_SEQUENCE.md          ← (W6) 5-min storyboard with timing
-│   ├── ACCURACY_REPORT.md        ← (W6) per-mode tables + correlation analysis
-│   └── demo-assets/              ← (W6)
-├── downloads/                    ← gitignored; large binaries (manual fetch)
-│   ├── sift-workstation/         ← SIFT OVA (8.81 GB)
-│   └── evidence-samples/         ← case_001..003 (Slack-distributed)
-├── protocol-sift/                ← upstream Claude Code config framework (cloned)
-├── verdict/
-│   ├── runtime/                  ← mode_detect, gateway, evidence_recheck
-│   ├── schemas/                  ← mode, artifact_class, caveat_id, evidence,
-│   │                               tool_output, plan, finding, ledger,
-│   │                               playbook, hunt_evil, version
-│   ├── verification/             ← strategy, derive_seeds, cloud_self_consistency,
-│   │                               airgap_cross_engine, dual_lane_cross_engine,
-│   │                               universal_self_consistency
-│   ├── planning/                 ← planner, planner_critique, playbook_loader,
-│   │                               executor_prompt, prompts/
-│   ├── playbooks/                ← memory.yml, disk.yml, triage.yml
-│   ├── knowledge/                ← hunt_evil.yml, lolbins.yml
-│   ├── graph/
-│   │   ├── nodes.py / topology.py / reducers.py / checkpoint.py / interrupt.py
-│   │   └── wrappers/             ← deny_rule, tool_executor, ledger_emitter
-│   ├── tools/
-│   │   ├── base.py / args_validators.py / sanitization.py
-│   │   ├── vol3/                 ← pslist, psscan, pstree, cmdline, dlllist,
-│   │   │                           malfind, netscan, svcscan, handles, callbacks
-│   │   ├── hayabusa_csv_timeline.py / hayabusa_filter.py
-│   │   ├── plaso_extract.py / psort_filter.py
-│   │   ├── mmls.py / fls.py / fsstat.py
-│   │   ├── mftecmd.py / recmd.py / pecmd.py
-│   │   ├── bulk_extractor.py / exiftool.py / capa.py
-│   ├── sandboxes/                ← microsandbox_provider, tsi_provider, rootfs_pin
-│   ├── ledger/                   ← writer, chain, hmac_key, redaction
-│   ├── observability/            ← langfuse_setup, otel_setup, trace_link
-│   ├── cli/                      ← __main__, init, resume, reverify, status,
-│   │                               ls, show, export, validate, mode, gc,
-│   │                               health, doctor, approve, credentials
-│   └── adapters/                 ← opencti_mcp, velociraptor_mcp, ghidrassist_mcp,
-│                                   atropos_export, hermes_pager
-├── verdict-skills/               ← agentskills.io frontmatter; SKILL.md + KNOWLEDGE.md
-│   ├── windows-triage/           ← LOLBins catalog
-│   ├── linux-triage/
-│   ├── memory-forensics/
-│   ├── network-pcap/
-│   ├── malware-static/
-│   └── report-writing/
-├── tests/
-│   ├── schemas/ verification/ planning/ playbooks/ prompts/ knowledge/
-│   ├── graph/ tools/ sandboxes/ ledger/ observability/ cli/
-│   ├── chaos/                    ← test_kill_9_resume.py (100-case zero-loss)
-│   ├── smoke/                    ← test_pretooluse_deny.py (xfail), test_amendment_a2_guard.py
-│   └── e2e/
-├── inspect_ai/
-│   ├── tasks/                    ← verdict_eval_cloud / airgap / dual
-│   ├── scorers/                  ← step_efficiency, findings_precision,
-│   │                               findings_recall, mitre_subtechnique_precision,
-│   │                               negative_hypothesis_quality
-│   ├── scripts/                  ← measure_disagreement_correlation.py
-│   └── ground_truth/
-│       ├── case_001_lolbins/     ← 17 indicators
-│       ├── case_002_credtheft/   ← 17 indicators
-│       └── case_003_ransomware/  ← 16 indicators (Honeynet derivative)
-├── scripts/
-│   ├── install.sh                ← three-credential-path
-│   ├── verdict-install.sh        ← overlay on Protocol SIFT install.sh
-│   ├── run-all-tests.sh
-│   ├── package-devpost.sh        ← dist/verdict-devpost-v1.zip
-│   ├── shoot-demo.sh             ← two-pane recording driver
-│   └── healthcheck.sh
-├── .github/workflows/            ← l0-static, l1-unit, l2-sift-lite, l3-goldens,
-│                                   inspect-ai-evals, release, devpost-submit
-└── packer/
-    └── sift-microvm.pkr.hcl      ← L3 warm qcow2 from sift-2026.03.24.ova
+│   ├── ARCHITECTURE.md  BUILD_PLAN.md  DEVPOST_COMPLIANCE.md  DOCS_ACCURACY_REPORT.md
+│   └── spec/           ← frozen audit archive (01..05 + README)
+├── downloads/          ← SIFT OVA, evidence samples (gitignored)
+└── protocol-sift/      ← upstream submodule
 ```
 
-Total target: ~140 first-class files at completion.
+Code surface to land in W1+ (target ~140 files; full tree in `docs/BUILD_PLAN.md` §file-layout):
 
-## 7. Forensic doctrine
+```
+verdict/
+├── runtime/        schemas/        verification/    planning/
+├── playbooks/      knowledge/      graph/wrappers/  tools/vol3/
+├── sandboxes/      ledger/         observability/   cli/         adapters/
+verdict-skills/  tests/{schemas,graph,tools,chaos,smoke,e2e,…}
+inspect_ai/{tasks,scorers,ground_truth/case_00{1..3}_*}
+scripts/  .github/workflows/  packer/
+```
 
-This is the SANS-canonical body of knowledge an agent must internalise. Most of it is encoded in `verdict/playbooks/`, `verdict/knowledge/`, and `verdict/prompts/` — do not duplicate it in code.
+## 7. Forensic doctrine (one-paragraph summaries)
 
-### 7.1 Canonical first moves (per evidence type)
+The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/playbooks/`, `verdict/knowledge/`, `verdict/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
 
-| Evidence type | First tool | Then |
-|---------------|-----------|------|
-| Memory dump | `windows.info` | `pslist` → `psscan` → `pstree` → `cmdline` → `dlllist` → `malfind` → `netscan` → `svcscan` → `handles` → `callbacks` |
-| Disk image | `image_hash_verify` → `mmls` → `fsstat` | `fls` → `mftecmd` → `recmd` → `pecmd` → `hayabusa` → `plaso` → `bulk_extractor` |
-| Triage zip (KAPE/Velociraptor) | `unzip` → registry hives | prefetch / amcache / shimcache → EVTX → MFT → carving |
+- **Canonical first moves.** Memory → `windows.info`. Disk → `image_hash_verify` → `mmls` → `fsstat`. Triage zip → registry hives first.
+- **DKOM / T1014.** `set(psscan_pids) - set(pslist_pids)` non-empty → emit T1014 hypothesis. First-class playbook rule (v4.6 F4), not a prompt suggestion.
+- **Hunt Evil 8.** Baselines for `svchost`, `lsass`, `csrss`, `winlogon`, `services`, `wininit`, `explorer`, `smss`. Deviation → `ProcessBaselineAnomaly` → **T1036.005**.
+- **LOLBins.** Cmdline-shape catalog (LOLBAS-sourced) maps each binary to its T1218.* sub-technique.
+- **Tool-pair splits.** `plaso_extract` + `psort_filter`; `hayabusa_csv_timeline` + `hayabusa_filter`. Never monolithic.
+- **Timestamps.** UTC + trailing `Z`. Prefer `$FN` over stompable `$SI`; `$SI`-only claims carry `MFT_SI_STOMPABLE`.
+- **Negative hypotheses.** ≥1 per plan. Deny-list rejects `cosmic`/`alien`/`nothing`/`not-relevant`/`n-a`. Must have `mitre_technique` + non-empty `artifact_families`. Inspect AI fails CI if score < 0.5.
 
-### 7.2 DKOM / T1014 detection
+## 8. Verifier strategies (one-line each)
 
-Encoded in `verdict/playbooks/memory.yml`: after `pslist` and `psscan` complete, compute `set(psscan_pids) - set(pslist_pids)`. Non-empty difference → emit T1014 hypothesis automatically. v4.6 F4 made this a first-class playbook rule rather than a prompted suggestion.
+`verdict/verification/strategy.py` — `VerifierStrategy` Protocol; quorum dispatches per locked mode.
 
-### 7.3 Hunt Evil — 8 canonical Windows processes
+- `CloudSelfConsistency` — n=3 with three blake3-keyed seeds at `temp=0.7` (v4.6 F1; **never** temp=0, that collapses to n=1). ≥ 2-of-3 → `VETTED_CLOUD`.
+- `AirGapCrossEngine` — Qwen3 + GLM-4.5-Air both execute. Jaccard ≥ 0.80 on `artifact_paths` AND identical `mitre_technique` → `VETTED_AIRGAP`.
+- `DualLaneCrossEngine` — cloud + both locals. Cloud agrees with ≥1 local AND locals agree → `VETTED_DUAL`.
+- `UniversalSelfConsistency` (Chen 2023) — judge of last resort before declaring `CONTESTED`.
 
-`verdict/knowledge/hunt_evil.yml` carries baselines (parent, path, signing) for: `svchost`, `lsass`, `csrss`, `winlogon`, `services`, `wininit`, `explorer`, `smss`. Any deviation → `ProcessBaselineAnomaly` → MITRE **T1036.005** (Process Masquerading).
+**Budgets:** `pivot_max=15`; `replan_max=3` (iteration 4 → `unverifiable_finalize_node` → `Finding(status=UNVERIFIABLE)` + `interrupt()` for human); `tool_arg_retry_max=2`.
 
-### 7.4 LOLBins discrimination
-
-`verdict-skills/windows-triage/KNOWLEDGE.md` carries cmdline-shape catalog (sourced from LOLBAS): `regsvr32` (T1218.010), `rundll32` (T1218.011), `mshta` (T1218.005), `wmic` (T1047), `certutil` (T1140), `bitsadmin` (T1197), and more.
-
-### 7.5 Tool-pair splits
-
-- **Plaso:** split into `plaso_extract` + `psort_filter` MCP tools — never run as a single monolithic call (super-timeline is expensive; filter must be a separate, cacheable step).
-- **Hayabusa:** split into `hayabusa_csv_timeline` + `hayabusa_filter` for the same reason.
-
-### 7.6 Timestamp discipline
-
-- All datetimes in schemas are `datetime` with `tzinfo=UTC`; serialised with trailing `Z`.
-- `$STANDARD_INFORMATION` (`$SI`) is user-mode-stompable on NTFS — prefer `$FILE_NAME` (`$FN`). Any `$SI`-only timeline claim must carry `MFT_SI_STOMPABLE`.
-
-### 7.7 Negative hypothesis discipline
-
-- Each `InvestigationPlan` requires ≥1 negative hypothesis.
-- Validator deny-list rejects degenerate phrasings (`cosmic`, `alien`, `nothing`, `not-relevant`, `n-a`).
-- Negative hypotheses must have a non-None `mitre_technique` and a non-empty `artifact_families` list.
-- Inspect AI scorer `negative_hypothesis_quality` fails CI if the score < 0.5.
-
-## 8. Verifier strategies
-
-`verdict/verification/strategy.py` defines a `VerifierStrategy` Protocol; the quorum node dispatches one of three concrete strategies based on locked mode.
-
-| Strategy | Mode | Mechanism | Pass condition |
-|----------|------|-----------|----------------|
-| `CloudSelfConsistency` | `CLOUD` | n=3 samples with three blake3-keyed seeds at `temp=0.7` (NOT temp=0 — that collapses to n=1; this is v4.6 F1) | ≥2-of-3 agree → `VETTED_CLOUD` |
-| `AirGapCrossEngine` | `AIRGAP` | Qwen3 + GLM-4.5-Air both execute | Jaccard ≥0.80 on `artifact_paths` AND identical `mitre_technique` → `VETTED_AIRGAP` |
-| `DualLaneCrossEngine` | `DUAL` | cloud + both locals | cloud agrees with ≥1 local AND locals agree with each other → `VETTED_DUAL` |
-| `UniversalSelfConsistency` (Chen 2023) | any | judge of last resort | Used when above strategies disagree, before declaring `CONTESTED`. |
-
-Budgets:
-- `pivot_max = 15` — cheap single-Hypothesis follow-ups inside `pivot_node`.
-- `replan_max = 3` — full plan rewrites. **Iteration 4** routes to `unverifiable_finalize_node` which writes `Finding(status=UNVERIFIABLE)` + an `exhausted_replan` ledger event and calls `interrupt()` for human review.
-- `tool_arg_retry_max = 2` — Pydantic-AI `args_validator` failures bounded; then `UNVERIFIABLE`.
+→ Strategy details, dispatch logic, scorer wiring: **`docs/ARCHITECTURE.md` §1, §4**.
 
 ## 9. Ledger discipline
 
-`verdict/ledger/writer.py` + `verdict/ledger/chain.py`. The ledger is the chain-of-custody artifact a SANS judge will scrutinise.
+`verdict/ledger/writer.py` + `chain.py`. The ledger is the chain-of-custody artifact a SANS judge will scrutinise.
 
-- **Format:** JSONL append-only at `cases/<id>/ledger.jsonl`.
-- **Chain integrity:** each `LedgerEntry.prev_entry_hash` references the prior entry's hash; `verdict validate <case_id>` walks the chain.
-- **Three-tier ID hierarchy:** `case_id` (eternal) → `langfuse_trace_id` (per `graph.invoke`) → `langgraph_checkpoint_id` (per super-step). All three on every entry.
-- **Examination-environment metadata:** `microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version` recorded per tool invocation. NIST SP 800-86 compliance.
-- **Per-output-file hashes:** `output_files_sha256: dict[str, str]`.
-- **HMAC signing:** every entry signed with HMAC key (TPM-backed or gpg-encrypted). Findings additionally signed over `(Finding + approver + timestamp)`.
-- **Redaction discipline:** auth fields stripped from `payload` (and recorded in `payload_redactions`) **before** the entry is hashed and HMAC-signed. Order matters.
-- **Write discipline:** `write() + fsync() + verify-readback` in `LedgerEmitter`. No buffered writes.
-- **Cross-link:** Langfuse trace tree carries `case_id` + `ledger_entry_id`; ledger carries `langfuse_trace_id`. Bidirectional.
+- JSONL append-only at `cases/<id>/ledger.jsonl`. `prev_entry_hash` chains entries; `verdict validate <case_id>` walks them.
+- Three-tier IDs on every entry: `case_id` → `langfuse_trace_id` → `langgraph_checkpoint_id`.
+- Per-call examination metadata: `microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version` (NIST SP 800-86).
+- Per-output-file `output_files_sha256: dict[str, str]`.
+- HMAC-signed entries (TPM-backed or gpg-encrypted key); Findings additionally signed over `(Finding + approver + timestamp)`.
+- Redaction strips auth fields **before** hashing/signing — order matters.
+- `write() + fsync() + verify-readback` in `LedgerEmitter`. No buffered writes.
+- Bidirectional cross-link with Langfuse trace tree via `trace_id`.
 
-Ledger event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode_lock`, `comprehension_check`, `critique_verdict`, `pivot`, `exhausted_replan`, `evidence_hash_recheck`, `sandbox_failure`, `planner_cot`.
+Event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode_lock`, `comprehension_check`, `critique_verdict`, `pivot`, `exhausted_replan`, `evidence_hash_recheck`, `sandbox_failure`, `planner_cot`.
+
+→ Schema fields, validation flow, key-management decisions: **`docs/ARCHITECTURE.md` §5**.
 
 ## 10. Key commands
 
@@ -558,25 +349,23 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 7. `docs/ACCURACY_REPORT.md` — per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings.
 8. `docs/DEMO_SEQUENCE.md` — 5-min sequence with timing per beat.
 
-## 12. Pointers (read these directly, do not summarise from memory)
+## 12. Pointers (read directly, do not summarise from memory)
 
 | When you need… | Read |
 |----------------|------|
-| Canonical architecture, locked decisions | `docs/spec/03-audit-v4.5.md` |
-| Five tactical patches over v4.5 | `docs/spec/04-spec-plan-v4.6.md` |
+| Architecture, schemas, ledger, threat model, tool surface | `docs/ARCHITECTURE.md` |
 | Sequencing, ownership, weekly acceptance gates, task IDs | `docs/BUILD_PLAN.md` |
-| Why a particular DFIR validator or playbook entry exists | `docs/spec/02-audit-v4.4.md` |
-| Why mode-detect / verifier-strategy / checkpointing look the way they do | `docs/spec/01-audit-v4.3.md` |
-| Hackathon eligibility, judging, prizes | `docs/hackathon/RULES.md` |
-| Hackathon overview + resource links | `docs/hackathon/OVERVIEW.md` |
-| The upstream Claude Code config framework being extended | `protocol-sift/` |
+| Submission rule-to-artifact mapping, judge-facing checklist | `docs/DEVPOST_COMPLIANCE.md` |
+| Cross-doc consistency audit + critical-fix log | `docs/DOCS_ACCURACY_REPORT.md` |
+| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..05` + `README.md`) |
+| Hackathon rules + resource links | https://findevil.devpost.com/ + `downloads/README.md` |
+| Upstream Claude Code config framework being extended | `protocol-sift/` |
 
-When in doubt about precedence: **v4.6 patches > v4.5 architecture > v4.4 / v4.3 history.** Master plan defines *what* and *when*, not *what is*.
+**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/`. Code wins over docs; if code is right, fix the doc.
 
 ## 13. Working-mode reminders for Claude Code sessions
 
-- This workspace is **not yet a git repo.** Initialising it (`git init`, `LICENSE`, `.gitignore`) is W1.A work — get user confirmation before doing it.
-- The `docs/spec/` directory is the **canonical source** for VERDICT design. Do not edit those files; treat them as read-only specifications.
+- The `docs/spec/` directory is the **frozen audit archive**. Do not edit; cite from `ARCHITECTURE.md`.
 - The five forbidden destructive git operations (see §3.7) apply once the repo exists.
 - New dependencies require a license check against §3.8 before installation.
 - Any rule in §3 that you find yourself wanting to bend is almost certainly load-bearing — surface the conflict to the user instead of working around it.

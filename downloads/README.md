@@ -32,7 +32,7 @@ sudo cast install --mode=server teamdfir/sift-saltstack
 
 ## evidence-samples/
 
-Ground-truth case data referenced by the VERDICT eval harness. Three engineered cases per `../docs/spec/VERDICT_MASTER_BUILD_PLAN.md`:
+Ground-truth case data referenced by the VERDICT eval harness. Three engineered cases per `../docs/BUILD_PLAN.md`:
 
 - `case_001_lolbins/` — 17 indicators (LOLBins compromise)
 - `case_002_credtheft/` — 17 indicators (credential theft)
@@ -57,3 +57,20 @@ downloads/evidence-samples/
 ## Reminder — no mocks (CLAUDE.md §3.10)
 
 These are **real evidence files**, used by the dev loop, eval loop, and demo loop alike. Do not fabricate synthetic substitutes. If files aren't available, tests should fail loudly via `verdict doctor`, not paper over the gap with a mock.
+
+---
+
+## Hackathon resources
+
+For full hackathon rules and judging criteria, see `../docs/DEVPOST_COMPLIANCE.md` (our authoritative interpretation) or the live page at https://findevil.devpost.com/.
+
+| Resource | URL |
+|----------|-----|
+| Main hackathon page | https://findevil.devpost.com/ |
+| Live rules | https://findevil.devpost.com/rules |
+| Project gallery | https://findevil.devpost.com/project-gallery |
+| Protocol SIFT Slack | https://join.slack.com/t/sansaihackathon/shared_invite/zt-3srjz86zo-bwHi_v1aKTg2IJAU4_4OwA |
+| SIFT Workstation download | https://www.sans.org/tools/sift-workstation |
+| Protocol SIFT GitHub | https://github.com/teamdfir/protocol-sift |
+| Protocol SIFT install one-liner | `curl -fsSL https://raw.githubusercontent.com/teamdfir/protocol-sift/main/install.sh \| bash` |
+| Hackathon Manager | aihackathon@sans.org |

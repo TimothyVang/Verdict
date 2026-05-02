@@ -146,45 +146,25 @@ If the workspace files don't exist yet (we're early in Week 1), clone is enough 
 
 ## Step 5 — Conventions you must follow
 
-These are not aspirational. CI will reject PRs that violate them.
+**The hard rules live in `CLAUDE.md` §3** (TDD loop, Conventional Commits with `[W?.?.?]` task IDs, forbidden git flags, dependency policy, no-mocks, evidence-integrity invariants). Read them once; CI rejects PRs that violate them.
 
-### TDD loop (per `CLAUDE.md`)
-```
-failing test  →  RED  →  implement  →  GREEN  →  one commit  →  push
-```
-One task = one commit. No batching unrelated changes. No `git commit --amend` after push.
-
-### Conventional Commits + task IDs
-Every commit message starts with a type and ends with the `BUILD_PLAN.md` task ID in brackets:
-```
-feat(schema): add ArtifactClass enum [W1.B.1]
-fix(executor): handle vol3 plugin timeout [W2.C.4]
-test(quorum): contested-then-replan path [W3.D.2]
-docs(readme): clarify air-gap mode flag [W6.C.7]
-```
-Types: `feat`, `fix`, `test`, `refactor`, `chore`, `docs`, `perf`, `ci`. Task IDs come from `BUILD_PLAN.md` — grep the doc for `Wk.Phase.Task` patterns.
-
-### Forbidden git flags
-- `--no-verify` (bypasses hooks — never)
-- `--no-gpg-sign` (bypasses signing — never)
-- `git commit --amend` after `git push` (rewrites shared history — never)
-- `git push --force` to `main` (use `--force-with-lease` to *your own* feature branches only)
+This section is contributor-specific workflow on top of those rules.
 
 ### Branches
 Format: `<type>/<task-id>-<slug>` — e.g. `feat/W1-B-1-artifact-class-enum`. Branch from `main`, rebase before PR, squash on merge only if the branch was a single logical task. Otherwise preserve the TDD red→green commits — they're the audit trail.
 
 ### PRs
-Open a draft PR as soon as you have a failing test pushed. Title mirrors the eventual squash-merge commit. PR body must include:
-- Task ID + link to the `BUILD_PLAN.md` line
+Open a **draft PR as soon as you have a failing test pushed**. Title mirrors the eventual squash-merge commit. PR body must include:
+- Task ID + link to the `docs/BUILD_PLAN.md` line
 - Which mode(s) it affects (`cloud`, `airgap`, `dual`, or `all`)
 - Test evidence (paste the failing-then-passing run, or attach the log)
-- Schema changes? Then call out the migration plan — schemas freeze 2026-05-08.
+- Schema changes? Call out the migration plan — schemas freeze 2026-05-08.
 
 ### Linters
 `ruff check . && ruff format --check .` for Python. `cargo clippy --all-targets --all-features -- -D warnings` for Rust. `eslint .` for Node. Pre-commit runs all three; CI re-runs them. No `# noqa` without an inline justification.
 
-### Secrets
-Never commit: API keys, OAuth tokens, PATs, HMAC ledger keys, case data, anything from `/mnt/hgfs/evidence/`. The `.gitignore` covers `*.env`, `evidence/`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit.
+### Secrets in commits
+The `.gitignore` already covers `.env*`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`, `*.gpg`, `cases/`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit. Never paste PATs, OAuth tokens, or HMAC keys into PR descriptions or commit messages.
 
 ---
 
