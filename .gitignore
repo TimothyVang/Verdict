@@ -79,3 +79,4 @@ inspect_logs/
 worktrees/
 swarm/swarm.db
 swarm/swarm.db-*
+swarm/memory/lessons.jsonl
