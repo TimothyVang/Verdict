@@ -22,47 +22,73 @@ You need all four before you can push:
 
 ---
 
-## Step 1 — Create a GitHub PAT (read + write)
+## Step 1 — Authenticate with the `gh` CLI
 
-PUG's recommendation: fine-grained PAT scoped to this repo so revocation doesn't disrupt your other work.
+`gh` is the canonical auth path for VERDICT. It handles token issuance under the hood, wires git transparently, and gives you the same surface (`gh pr create`, `gh issue list`, `gh repo view`) that your reviewers use. No manual token copy-paste, no credential-helper conflicts, no `pat.txt` files lying around.
+
+### 1a. Install `gh` (skip if `gh --version` already prints something)
+
+```bash
+# Linux / SIFT VM (apt)
+type -p curl >/dev/null || sudo apt install -y curl
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+  | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+sudo apt update && sudo apt install -y gh
+
+# macOS
+brew install gh
+
+# Verify
+gh --version
+```
+
+### 1b. Authenticate and wire git
+
+```bash
+gh auth login --hostname github.com --git-protocol https --web
+# Opens a browser tab. Accept the requested scopes (repo, read:org, workflow).
+
+gh auth setup-git
+# Configures git to delegate auth to gh. No PAT to manage.
+```
+
+### 1c. Verify access
+
+```bash
+gh auth status                                    # → Logged in to github.com as <you>
+gh repo view TimothyVang/Verdict --json viewerPermission
+# → {"viewerPermission":"WRITE"}  (or higher)
+```
+
+If `viewerPermission` is `READ` or `null`, ping PUG to add you to the repo before continuing.
+
+### When you actually need a fine-grained PAT
+
+The web UI / fine-grained PAT flow is only needed for non-interactive contexts:
+
+- **CI runners** that can't do a browser login (use `gh auth login --with-token < pat.txt`).
+- **Scripts** that need a different scope than what `gh auth setup-git` gives you.
+- **Shared team services** (uncommon; prefer a deploy key or GitHub App).
+
+For those cases:
 
 1. https://github.com/settings/tokens?type=beta → **Generate new token** (fine-grained).
-2. **Token name:** `verdict-contrib-<your-handle>`
-3. **Expiration:** 90 days. Diary it; the hackathon ends 2026-06-15, so a single 90-day token covers the whole sprint plus a slack week.
-4. **Repository access:** *Only select repositories* → `TimothyVang/Verdict`.
-5. **Repository permissions** (set the dropdowns to **Read and write**):
-   - Contents — Read and write
-   - Pull requests — Read and write
-   - Issues — Read and write
-   - Workflows — Read and write *(needed once `.github/workflows/` lands)*
-   - Metadata — Read-only (auto-selected, leave it)
-   - Everything else — No access
-6. **Generate**, copy the token *once*, store it in a credential manager (1Password, `pass`, `gopass`, `bw`, Bitwarden Secrets — whatever your shop uses). Do **not** paste it into a `.env` that ships with the repo.
-7. Verify scope:
-   ```bash
-   curl -sH "Authorization: Bearer ${VERDICT_GH_PAT}" https://api.github.com/repos/TimothyVang/Verdict \
-     | jq '.permissions'
-   # Expect: {"admin": false, "maintain": false, "push": true, "triage": true, "pull": true}
-   ```
+2. **Token name:** `verdict-<purpose>-<your-handle>`. **Expiration:** 90 days (covers the whole sprint).
+3. **Repository access:** *Only select repositories* → `TimothyVang/Verdict`.
+4. **Permissions:** Contents R/W, Pull requests R/W, Issues R/W, Workflows R/W, Metadata R-only.
+5. Store the token in a credential manager. Do **not** paste it into a `.env` that ships with the repo.
 
-### Hand the PAT to git
+`gh auth token` prints the token currently in use; `gh auth refresh -s <scope>` adds scopes to your existing auth without round-tripping through the web UI.
 
-Two valid paths. Pick one — **don't mix them**, you'll create credential-helper conflicts.
+### SSH alternative
 
-**Path A — git credential helper (Linux/SIFT VM, recommended):**
 ```bash
-git config --global credential.helper 'cache --timeout=28800'   # 8h
-git config --global credential.https://github.com.username YOUR_GH_USERNAME
-# First push will prompt for password — paste the PAT once, helper caches it.
+gh auth login --hostname github.com --git-protocol ssh --web
+# gh prompts to upload an existing key or generate one. Sets the remote to git@github.com:.../...git automatically.
 ```
-
-**Path B — gh CLI (Windows host, macOS, or anywhere `gh` is already installed):**
-```bash
-gh auth login --hostname github.com --git-protocol https --with-token < /path/to/pat.txt
-gh auth setup-git
-```
-
-**SSH alternative:** if you'd rather use an ed25519 SSH key, that's fine — skip the PAT entirely for git and use the PAT only for `gh` API calls and CI. Generate with `ssh-keygen -t ed25519 -C "verdict-<handle>"`, add to https://github.com/settings/keys, and clone with `git@github.com:TimothyVang/Verdict.git`.
 
 ---
 
@@ -128,11 +154,8 @@ git reset --soft HEAD~1       # back the smoke commit out
 ## Step 4 — Clone and bootstrap
 
 ```bash
-# Pick the path you set up in Step 1
-git clone https://github.com/TimothyVang/Verdict.git verdict     # PAT
-# OR
-git clone git@github.com:TimothyVang/Verdict.git verdict          # SSH
-
+# gh picks HTTPS or SSH automatically based on your Step 1 setup
+gh repo clone TimothyVang/Verdict verdict
 cd verdict
 
 # Hooks + dev deps (will land in the repo over Week 1; if missing, skip)
@@ -162,12 +185,54 @@ This section is contributor-specific workflow on top of those rules.
 ### Branches
 Format: `<type>/<task-id>-<slug>` — e.g. `feat/W1-B-1-artifact-class-enum`. Branch from `main`, rebase before PR, squash on merge only if the branch was a single logical task. Otherwise preserve the TDD red→green commits — they're the audit trail.
 
-### PRs
-Open a **draft PR as soon as you have a failing test pushed**. Title mirrors the eventual squash-merge commit. PR body must include:
-- Task ID + link to the `docs/BUILD_PLAN.md` line
-- Which mode(s) it affects (`cloud`, `airgap`, `dual`, or `all`)
-- Test evidence (paste the failing-then-passing run, or attach the log)
-- Schema changes? Call out the migration plan — schemas freeze 2026-05-08.
+### Commit + push: use `/qc`
+
+`/qc` is the project's quick-commit slash command. It stages your changes, drafts a Conventional Commit per `CLAUDE.md` §3.7 (`<type>(scope): summary [W#.#.#]`), commits, and pushes — without `--no-verify`, `--no-gpg-sign`, `--amend`, or any Claude Code watermark. Use `/qc` for every commit on a working branch; use `/qc main` only if you're soloing a fix straight to `main` (skips PR review).
+
+### PRs (use `gh pr create`)
+
+Open a **draft PR as soon as you have a failing test pushed**. Title mirrors the eventual squash-merge commit. Body must include task ID, mode(s) affected, test evidence, and schema-change notes if any.
+
+```bash
+gh pr create \
+  --base main \
+  --draft \
+  --title "feat(scope): summary [W1.B.1]" \
+  --body "$(cat <<'EOF'
+**Task:** [docs/BUILD_PLAN.md W1.B.1](../blob/main/docs/BUILD_PLAN.md)
+**Mode(s):** all   <!-- cloud / airgap / dual / all -->
+**Test evidence:**
+\`\`\`
+<paste the failing-then-passing run, or attach the log>
+\`\`\`
+**Schema impact:** none   <!-- describe migration plan if non-zero; schemas freeze 2026-05-08 -->
+EOF
+)"
+```
+
+Then iterate: every push uses `/qc`; flip the PR to ready with `gh pr ready` when all gates green; check status with `gh pr status`, CI with `gh pr checks`, review feedback with `gh pr view`.
+
+### Docs follow research, always
+
+When you confirm a fact through investigation — a MITRE technique ID, a tool's actual behavior, a schema constraint, an upstream license, an API surface, a deadline, anything you had to verify — **update the corresponding doc in the same PR**. The doc tree is authority for everything not encoded in code; let it drift behind the code and the next contributor (or the SANS judge) reads a lie.
+
+Authority lives in `docs/` (`ARCHITECTURE.md`, `BUILD_PLAN.md`, `DEVPOST_COMPLIANCE.md`, `DOCS_ACCURACY_REPORT.md`); the `docs/spec/` archive is read-only. Code wins over docs — if the code is right and a doc is wrong, **fix the doc, don't roll back the code**.
+
+Concretely, when a verified fact lands:
+
+| What you confirmed | Update |
+|---|---|
+| New schema field, validator, or enum member | `docs/ARCHITECTURE.md` §4 (and `CLAUDE.md` §3.x if it's a hard rule) |
+| Tool wrapper added or behavior changed | `docs/ARCHITECTURE.md` §6 |
+| MITRE technique / sub-technique presence or absence | `CLAUDE.md` §3.5 examples and any doc that cites it |
+| Dependency added, removed, or version pinned | this `CONTRIBUTING.md` §2 + `docs/PRODUCTION_AUDIT.md` |
+| LangGraph node added / removed / renamed | `docs/ARCHITECTURE.md` §2 + `docs/BUILD_PLAN.md` task body |
+| Verifier strategy semantics changed | `docs/ARCHITECTURE.md` §1 + `CLAUDE.md` §8 |
+| Caveat list changed | `CLAUDE.md` §3.3 + `docs/TLDR.md` (if cited) + `verdict/prompts/examiner_caveats.md` |
+| New skill or MCP vendored | `docs/SKILLS_FRAMEWORK.md` (skills) or `docs/MCP_FRAMEWORK.md` (MCPs) + audit log |
+| Audit-history correction (research contradicts a frozen `spec/` claim) | log in `docs/DOCS_ACCURACY_REPORT.md`. Do **not** edit `spec/`. |
+
+If your PR touches code but not the doc the code refers to, expect the reviewer to ask why. Drive-by doc fixes (typos, dead links, outdated commands you noticed in passing) are welcome in their own commit on the same branch — keep them separate from the feature commit so the audit trail stays clean.
 
 ### Linters
 `ruff check . && ruff format --check .` for Python. `cargo clippy --all-targets --all-features -- -D warnings` for Rust. `eslint .` for Node. Pre-commit runs all three; CI re-runs them. No `# noqa` without an inline justification.
