@@ -15,7 +15,6 @@ Tests use a real SqliteCheckpointer + real StateGraph in tmp_path.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import TypedDict
 
