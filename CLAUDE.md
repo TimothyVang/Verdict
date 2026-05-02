@@ -69,7 +69,7 @@ These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe how dev 
 
 **Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
 
-**`protocol-sift/` is a git submodule** pinned to upstream `teamdfir/protocol-sift`. The two `CLAUDE.md` files inside it (`global/CLAUDE.md`, `case-templates/CLAUDE.md`) are upstream Claude Code framework templates, **not** Verdict authority — do not edit in place (it dirties the submodule). Verdict-side overrides go in this `CLAUDE.md` or in `.claude/skills/verdict-house-rules/SKILL.md`.
+**`protocol-sift/` is a git submodule** pinned to upstream `teamdfir/protocol-sift`, tracked on the local `verdict-overrides` branch (not `main`). The submodule's two `CLAUDE.md` files have been renamed to `global/CLAUDE.protocol-sift.md` and `case-templates/CLAUDE.protocol-sift.md` so they are unambiguously upstream-only and **not** picked up as Verdict authority if anyone `cd`s into those directories. The rename lives on the `verdict-overrides` branch in the submodule; do not push it upstream to `teamdfir/protocol-sift`. Verdict-side overrides go in this `CLAUDE.md` or in `.claude/skills/verdict-house-rules/SKILL.md`.
 
 ## 3. Hard rules — MUST / MUST NOT
 
