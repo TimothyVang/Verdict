@@ -1,0 +1,60 @@
+evidence_type: disk_image
+first_move: image_hash_verify
+steps:
+  - order: 1
+    tool: image_hash_verify
+    rule: "verify against case_init manifest"
+
+  - order: 2
+    tool: mmls
+    mitre_technique_hint: null
+
+  - order: 3
+    tool: fsstat
+    depends_on: [2]
+    mitre_technique_hint: null
+
+  - order: 4
+    tool: fls
+    depends_on: [3]
+    mitre_technique_hint: null
+
+  - order: 5
+    tool: mftecmd
+    depends_on: [4]
+    rule: "use $FN timestamps for evidentiary claims; $SI is stompable by user-mode malware (timestomp)"
+
+  - order: 6
+    tool: recmd
+    mitre_technique_hint: T1547
+    rule: "Run/RunOnce/IFEO/Services hives = persistence top-5"
+
+  - order: 7
+    tool: pecmd
+    mitre_technique_hint: T1059
+    rule: "Prefetch ≥1 run + last_run within evidence window = execution corroboration"
+
+  - order: 8
+    tool: hayabusa.csv_timeline
+    depends_on: [4]
+    mitre_technique_hint: null
+
+  - order: 9
+    tool: hayabusa.filter
+    depends_on: [8]
+    rule: "filter by time_range from prior findings via pivot"
+
+  - order: 10
+    tool: plaso.extract
+    depends_on: [9]
+    mitre_technique_hint: null
+
+  - order: 11
+    tool: psort.filter
+    depends_on: [10]
+    mitre_technique_hint: null
+
+  - order: 12
+    tool: bulk_extractor
+    depends_on: [4]
+    mitre_technique_hint: null
