@@ -26,7 +26,7 @@ from pathlib import Path
 
 from blake3 import blake3 as _blake3
 
-from verdict.ledger.hmac_key import HMACKeyProvider, get_hmac_key_provider_from_bytes
+from verdict.ledger.hmac_key import HMACKeyProvider
 from verdict.ledger.redaction import redact_payload
 from verdict.schemas.ledger import LedgerEntry
 

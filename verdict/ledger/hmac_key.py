@@ -30,7 +30,6 @@ from __future__ import annotations
 import hashlib
 import hmac as _hmac
 import os
-import struct
 from pathlib import Path
 from typing import Protocol
 
