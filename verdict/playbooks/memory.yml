@@ -1,0 +1,52 @@
+evidence_type: memory
+first_move: windows.info
+steps:
+  - order: 1
+    tool: vol3.windows.info
+    mitre_technique_hint: null
+
+  - order: 2
+    tool: vol3.windows.pslist
+    mitre_technique_hint: null
+
+  - order: 3
+    tool: vol3.windows.psscan
+    mitre_technique_hint: null
+    rule: "DKOM_divergence: set(psscan_pids) - set(pslist_pids) ≠ ∅ → Hypothesis(T1014, high, [PROCESS_MEMORY])"
+
+  - order: 4
+    tool: vol3.windows.pstree
+    depends_on: [2]
+    mitre_technique_hint: null
+
+  - order: 5
+    tool: vol3.windows.cmdline
+    depends_on: [2]
+    rule: "LOLBIN_match: cmdline pattern in lolbins.yml → Hypothesis(T1218.<sub>, high)"
+
+  - order: 6
+    tool: vol3.windows.dlllist
+    depends_on: [5]
+    mitre_technique_hint: null
+
+  - order: 7
+    tool: vol3.windows.malfind
+    mitre_technique_hint: T1055
+    rule: "RWX_no_pe: T1055.002; hollowed_pe: T1055.012; reflective: T1055.001"
+
+  - order: 8
+    tool: vol3.windows.netscan
+    mitre_technique_hint: T1071
+
+  - order: 9
+    tool: vol3.windows.svcscan
+    mitre_technique_hint: T1543.003
+
+  - order: 10
+    tool: vol3.windows.handles
+    depends_on: [2]
+    mitre_technique_hint: null
+
+  - order: 11
+    tool: vol3.windows.callbacks
+    mitre_technique_hint: T1014
