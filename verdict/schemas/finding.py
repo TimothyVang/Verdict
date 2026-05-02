@@ -1,4 +1,8 @@
-"""Finding skeleton — base fields only. artifact_classes added in W1.B.8."""
+"""Finding schema — §3.2 multi-artifact corroboration enforcement.
+
+artifact_classes: list[ArtifactClass] with min_length=2 (W1.B.8).
+SANS FOR500 doctrine: no single artifact class proves execution.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +10,8 @@ from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from verdict.schemas.artifact_class import ArtifactClass
 
 
 class VerdictStatus(str, Enum):
@@ -23,7 +29,7 @@ ReviewState = Literal["DRAFT", "APPROVED", "REJECTED"]
 
 
 class Finding(BaseModel):
-    """Vetted forensic conclusion. Base skeleton — validators added incrementally."""
+    """Vetted forensic conclusion with multi-artifact corroboration (§3.2)."""
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
@@ -35,7 +41,10 @@ class Finding(BaseModel):
 
     mitre_technique: str
 
+    # §3.2 — both fields require >=2 entries; single-artifact claims are
+    # forensically unsound per FOR500 doctrine.
     artifact_paths: list[str] = Field(min_length=2)
+    artifact_classes: list[ArtifactClass] = Field(min_length=2)
 
     status: VerdictStatus
     review_state: ReviewState = "DRAFT"
