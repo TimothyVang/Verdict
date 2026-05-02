@@ -1,7 +1,8 @@
-"""Finding schema — §3.2 multi-artifact corroboration.
+"""Finding schema — §3.2 multi-artifact corroboration + §3.3 caveat field.
 
 artifact_classes field (W1.B.8) present.
-caveats_acknowledged field added in W1.B.9.
+caveats_acknowledged field (W1.B.9): list[CaveatID] defaults to [].
+Validators enforcing §3.3 triggers are added in W1.B.10.
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from verdict.schemas.artifact_class import ArtifactClass
+from verdict.schemas.caveat_id import CaveatID
 
 
 class VerdictStatus(str, Enum):
@@ -44,6 +46,13 @@ class Finding(BaseModel):
     # §3.2 — both fields require >=2 entries.
     artifact_paths: list[str] = Field(min_length=2)
     artifact_classes: list[ArtifactClass] = Field(min_length=2)
+
+    # §3.3 — Tier-1 caveat acknowledgment. Typed list[CaveatID] so that
+    # bare strings not in the enum are rejected by Pydantic before any
+    # model validator runs. Default is empty; validators in W1.B.10 enforce
+    # that the right caveats are present when the matching artifact_classes
+    # trigger them.
+    caveats_acknowledged: list[CaveatID] = Field(default_factory=list)
 
     status: VerdictStatus
     review_state: ReviewState = "DRAFT"
