@@ -49,7 +49,7 @@ These are copied verbatim from `CLAUDE.md` §3. Re-read them before every commit
 
 ### Dependency hard-NO (§3.8)
 - Forbidden: Daytona, REMnux MCP (vendored), Llama 4, Gemma 3, Modal, LangSmith, Braintrust, Arize Phoenix, AutoGen v0.4, Microsoft Agent Framework, AGPL clean-room rewrites.
-- Every new dep must be MIT or Apache-2.0 unless explicitly approved in `docs/PRODUCTION_AUDIT.md`.
+- Every new dep must be MIT or Apache-2.0 unless explicitly approved in `docs/RELEASE.md`.
 
 ### Credential isolation (§3.9)
 - API keys / OAuth tokens / bearer tokens never enter a microVM.

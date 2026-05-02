@@ -43,7 +43,7 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 7. **Observability**: Langfuse self-hosted (MIT) with OTel via OpenLLMetry; trace tree UI cross-linked to JSONL ledger via `trace_id`; SqliteSaver checkpointer with `PRAGMA journal_mode=WAL; synchronous=FULL` for kill-9 resilience.
 8. **Eval harness**: Inspect AI with three per-mode tasks (`verdict_eval_cloud`, `verdict_eval_airgap`, `verdict_eval_dual`); five scorers (`step_efficiency`, `findings_precision`, `findings_recall`, `mitre_subtechnique_precision`, `negative_hypothesis_quality`); 50 ground-truth indicators across 3 engineered cases (lol-bins compromise, credential theft, ransomware).
 9. **5-minute demo video** recorded May 30 (rough cut) and June 14 (final), two-pane (terminal + Langfuse trace tree), all three modes against the Honeynet ransomware image, hero beats: pslist/psscan DKOM divergence, Hunt Evil masquerade catch (`scvhost.exe` parent=`cmd.exe`), Amcache-caveat acknowledgment, pivot-vs-replan distinction, TSI tcpdump proof, kill -9 + resume, planner_critique CoVe.
-10. **Submission docs**: README, ARCHITECTURE.md, BUILD.md, THREAT_MODEL.md, FAILURE_MODES.md, CLI.md, CHECKPOINTING.md, CASE_ISOLATION.md, SCOPE.md, SCHEMA_MIGRATION.md, SANS_JUDGE_CHECKLIST.md, PRODUCTION_AUDIT.md, LICENSE (MIT), CONTRIBUTING.md.
+10. **Submission docs**: README, ARCHITECTURE.md, DEVPOST_COMPLIANCE.md, RELEASE.md, FAILURE_MODES.md, CASE_ISOLATION.md, LICENSE (MIT), CONTRIBUTING.md.
 
 ---
 
@@ -106,18 +106,9 @@ By June 14 the repo will have this shape:
 ├── docker-compose.langfuse-v3.yml          # ClickHouse-backed alt for >=16GB RAM hosts
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   ├── BUILD.md
-│   ├── THREAT_MODEL.md                     # 4 surfaces (W1.G.1)
+│   ├── RELEASE.md                          # build, scope, CLI, demo, accuracy, dataset, novelty
 │   ├── FAILURE_MODES.md                    # Component × failure × recovery (W1.G.2)
-│   ├── CLI.md                              # verdict CLI surface (W1.G.3)
-│   ├── CHECKPOINTING.md                    # SqliteSaver + WAL + reducer (W3.E.4)
 │   ├── CASE_ISOLATION.md                   # RadixAttention prefix-cache vs case data (W3.G.1)
-│   ├── SCOPE.md                            # v1 = Windows DFIR (W5.D.1)
-│   ├── SCHEMA_MIGRATION.md                 # schema_version migration story (W1.G.4)
-│   ├── SANS_JUDGE_CHECKLIST.md             # Demo recorded against this (W6.B.1)
-│   ├── PRODUCTION_AUDIT.md                 # The v4 triage doc
-│   ├── DEMO_SEQUENCE.md                    # 5-min sequence (W6.A.1)
-│   └── ACCURACY_REPORT.md                  # Per-mode tables + correlation analysis (W5.E.1)
 ├── verdict/
 │   ├── __init__.py
 │   ├── runtime/
@@ -302,13 +293,13 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
 
 ### W1.A.2 — SIFT VM provisioning (manual + scripted)
-- [ ] **W1.A.2.a** — Document VM specs in `docs/BUILD.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation per project's existing `scripts/sift-vm-bootstrap.sh`.
+- [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation per project's existing `scripts/sift-vm-bootstrap.sh`.
 - [ ] **W1.A.2.b** — Smoke test: `vol3 -h` runs inside VM. Verify Python 3.11 present.
 - [ ] **W1.A.2.c** — Commit: `docs(build): SIFT VM provisioning checklist [W1.A.2]`
 
 ### W1.A.3 — Microsandbox install
 - [ ] **W1.A.3.a** — Run `curl -sSL https://get.microsandbox.dev | sh` inside SIFT VM. Verify `microsandbox --version` returns. Verify `microsandbox-mcp` binary present.
-- [ ] **W1.A.3.b** — Smoke test: spawn an Ubuntu 22.04 microVM, run `vol3 -h`, destroy. Document spawn time in `docs/BUILD.md` (target <500ms).
+- [ ] **W1.A.3.b** — Smoke test: spawn an Ubuntu 22.04 microVM, run `vol3 -h`, destroy. Document spawn time in `docs/RELEASE.md` (target <500ms).
 - [ ] **W1.A.3.c** — Build `verdict-sift-tools` rootfs Docker image with the 12 forensic tools pinned to versions: `vol3==2.10.0`, `hayabusa==2.18.0`, `plaso==20260427`, `MFTECmd==1.2.x`, etc. Push as `verdict-sift-tools:v0.1` and capture SHA-256.
 - [ ] **W1.A.3.d** — Commit: `feat(sandbox): microsandbox install + verdict-sift-tools rootfs pinned [W1.A.3]`
 
@@ -316,7 +307,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.4.a** — Install SGLang per upstream docs. Verify GPU detected (target: 80GB H100 or 2× A100).
 - [ ] **W1.A.4.b** — Serve Qwen3-30B-A3B-Thinking-2507 with `--tool-call-parser qwen` at port 30000. Verify `/v1/models` lists the model and a 10-call smoke test returns non-empty `tool_calls`.
 - [ ] **W1.A.4.c** — Serve GLM-4.5-Air with `--tool-call-parser glm` at port 30001 (or colocate behind the same SGLang server with model_name routing). Verify `/v1/models` lists the model and a 10-call smoke test returns non-empty structured output.
-- [ ] **W1.A.4.d** — Parser-name verification spike. Run `python -m sglang.launch_server --help` on the pinned SGLang version and record the accepted parser names in `docs/BUILD.md`; if the installed version differs from current docs, update launch commands and lockfiles in the same task before any wrapper work lands.
+- [ ] **W1.A.4.d** — Parser-name verification spike. Run `python -m sglang.launch_server --help` on the pinned SGLang version and record the accepted parser names in `docs/RELEASE.md`; if the installed version differs from current docs, update launch commands and lockfiles in the same task before any wrapper work lands.
 - [ ] **W1.A.4.d** — Run synthetic 100-call tool-parse harness against each model. **Gate:** ≥98% non-empty `tool_calls` on both. If <98% → escalate; consider switching primary to GLM, or defer air-gap mode to v2.
 - [ ] **W1.A.4.e** — Commit: `feat(inference): SGLang + Qwen3 + GLM-4.5-Air serving with tool-call parsers [W1.A.4]`
 
@@ -331,7 +322,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
 
 ### W1.A.7 — Langfuse self-host (Tim)
-- [ ] **W1.A.7.a** — Stand up `docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/BUILD.md`.
+- [ ] **W1.A.7.a** — Stand up `docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
 - [ ] **W1.A.7.b** — Write smoke test `tests/observability/test_langfuse_smoke.py::test_one_trace_renders`. Send one synthetic trace via SDK; assert `/api/public/traces/{id}` returns 200.
 - [ ] **W1.A.7.c** — Commit: `feat(observability): Langfuse v2 self-host + smoke trace [W1.A.7]`
 
@@ -525,20 +516,20 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 
 ## Phase W1.G — Architecture-review docs + ops surface (Tim, ~1 day)
 
-### W1.G.1 — `docs/THREAT_MODEL.md`
+### W1.G.1 — `docs/RELEASE.md` threat model section
 - [ ] **W1.G.1.a** — Author per v4.5 line 369 (4 surfaces: insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker). Mitigations + residual risks per surface. Microsandbox escape documented as accepted v1 risk.
-- [ ] **W1.G.1.b** — Commit: `docs: THREAT_MODEL.md with 4 adversary surfaces [W1.G.1]`
+- [ ] **W1.G.1.b** — Commit: `docs(release): document 4 adversary surfaces [W1.G.1]`
 
 ### W1.G.2 — `docs/FAILURE_MODES.md`
 - [ ] **W1.G.2.a** — Author component × failure × detection × recovery × escalation table. Cover: microsandbox spawn timeout (30s + 1 retry), SGLang server crash, Langfuse fail-open, partial ledger write recovery, Claude API rate-limit, OpenCTI unreachable.
 - [ ] **W1.G.2.b** — Commit: `docs: FAILURE_MODES.md [W1.G.2]`
 
-### W1.G.3 — `docs/CLI.md`
+### W1.G.3 — `docs/RELEASE.md` CLI section
 - [ ] **W1.G.3.a** — Author full CLI surface: `verdict {init, resume, reverify, status, ls, show <id>, export <id>, validate <id>, mode, gc, health, doctor}`. Commands not implemented in v1 must be listed only in a clearly marked roadmap table, not exposed as callable placeholders.
-- [ ] **W1.G.3.b** — Commit: `docs: CLI.md enumerating verdict commands [W1.G.3]`
+- [ ] **W1.G.3.b** — Commit: `docs(release): enumerate verdict commands [W1.G.3]`
 
-### W1.G.4 — `docs/SCHEMA_MIGRATION.md`
-- [ ] **W1.G.4** — Author migration policy: `schema_version` field on all top-level schemas; breaking changes ship a `migrations/v{N}_to_v{N+1}.py` script. Commit: `docs: SCHEMA_MIGRATION.md [W1.G.4]`
+### W1.G.4 — `docs/RELEASE.md` schema migration section
+- [ ] **W1.G.4** — Author migration policy: `schema_version` field on all top-level schemas; breaking changes ship a `migrations/v{N}_to_v{N+1}.py` script. Commit: `docs(release): document schema migration policy [W1.G.4]`
 
 ### W1.G.5 — `Planner` Protocol + `CloudPlanner` + `LocalPlanner` (Beaver collaborates)
 - [ ] **W1.G.5.a** — Failing test `tests/planning/test_planner_protocol.py::test_protocol_returns_investigation_plan`. Plus `test_planner_bound_at_gateway_init` — assert mode-switching code lives in `runtime/mode_detect.py`, not in `planner_node`.
@@ -569,7 +560,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Langfuse UI loads + smoke trace renders | `curl http://localhost:3000/api/public/health` returns 200 |
 | Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
 | `vol_psscan` wrapper integration test passes | `uv run pytest tests/tools/test_vol_psscan.py -v` |
-| Three architecture-review docs present | `ls docs/{THREAT_MODEL,FAILURE_MODES,CLI,SCHEMA_MIGRATION}.md` |
+| Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES,CASE_ISOLATION}.md` |
 | `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
 | `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
 | All 6 v4.6 patches represented in current architecture | `grep -c "v4.6 P[1-6]" docs/spec/03-audit-v4.5.md` returns ≥6 and `docs/ARCHITECTURE.md` cites the current decisions |
@@ -802,7 +793,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.B.2 — TSI demo prep (Tim's W4.3 carryover)
 - [ ] **W3.B.2.a** — Set up tcpdump filters on host + inside microvm. Produce reproducible side-by-side recording.
-- [ ] **W3.B.2.b** — Document in `docs/DEMO_SEQUENCE.md` (see W6.A.1).
+- [ ] **W3.B.2.b** — Document in `docs/RELEASE.md` (see W6.A.1).
 - [ ] **W3.B.2.c** — Commit: `chore(demo): TSI tcpdump demonstration assets [W3.B.2]`
 
 ### W3.B.3 — Ledger redaction pass
@@ -861,8 +852,8 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 - [ ] **W3.E.3.b** — Implement.
 - [ ] **W3.E.3.c** — Commit: `feat(cli): verdict resume re-attaches LangGraph thread [W3.E.3]`
 
-### W3.E.4 — `docs/CHECKPOINTING.md`
-- [ ] **W3.E.4** — Author. Document single-writer + reducer pattern; per-case sqlite file rotation; WAL/fsync rationale. Commit: `docs: CHECKPOINTING.md [W3.E.4]`
+### W3.E.4 — `docs/RELEASE.md` checkpointing section
+- [ ] **W3.E.4** — Author. Document single-writer + reducer pattern; per-case sqlite file rotation; WAL/fsync rationale. Commit: `docs(release): document checkpointing [W3.E.4]`
 
 ### W3.E.5 — `trace_id` ↔ ledger cross-link
 - [ ] **W3.E.5.a** — Failing test `tests/observability/test_trace_link.py::test_ledger_entry_has_langfuse_trace_id`. Plus `test_langfuse_span_has_ledger_entry_id_attribute`.
@@ -1024,7 +1015,7 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 
 ### W4.G.1 — Measure Qwen3-vs-GLM disagreement correlation across 50 findings
 - [ ] **W4.G.1.a** — Author analysis script `inspect_ai/scripts/measure_disagreement_correlation.py`. Run both models against the 50-indicator ground truth; compute correlation matrix on disagreements.
-- [ ] **W4.G.1.b** — Output number to `docs/ACCURACY_REPORT.md`.
+- [ ] **W4.G.1.b** — Output number to `docs/RELEASE.md`.
 - [ ] **W4.G.1.c** — Commit: `feat(eval): Qwen3-vs-GLM disagreement-correlation measurement [W4.G.1]`
 
 ## Week 4 — acceptance gates
@@ -1037,8 +1028,8 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 | Three per-mode Inspect AI tasks green in CI | `.github/workflows/inspect-ai-evals.yml` runs green |
 | Hallucination rate ≤ 5% in all three modes | `inspect view <run>` + scorer report |
 | Agreement ≥ 0.85 in all three modes | Same |
-| MITRE sub-technique precision measurable + reported | `cat docs/ACCURACY_REPORT.md` |
-| Disagreement correlation number in accuracy report | `grep -c "disagreement_correlation" docs/ACCURACY_REPORT.md` ≥ 1 |
+| MITRE sub-technique precision measurable + reported | `cat docs/RELEASE.md` |
+| Disagreement correlation number in accuracy report | `grep -c "disagreement_correlation" docs/RELEASE.md` ≥ 1 |
 | Prompt budget CI assertion enforces ≤30K planner | `pytest tests/planning/test_prompt_budget.py -v` green |
 
 If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial reasoning prompt) → cut Case 003 → freeze tool count + spend remainder on prompt refinement.
@@ -1105,7 +1096,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 
 ## Phase W5.D — Polish docs (Tim, ~0.5 day)
 
-### W5.D.1 — `docs/SCOPE.md`
+### W5.D.1 — `docs/RELEASE.md` scope section
 - [ ] **W5.D.1** — Author. v1 = Windows DFIR; macOS / Linux / Win11-specific (SRUM/ETW/Cortana) / ESXi = v2 roadmap. Network forensics (FOR572) = v2. Examiner workflow integrations (Axiom XML, EnCase EWF, FTK CSV) = v2. Commit: `docs: SCOPE.md [W5.D.1]`
 
 ### W5.D.2 — Update `docs/ARCHITECTURE.md` with all v4.4-v4.6 additions
@@ -1113,10 +1104,10 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 
 ## Phase W5.E — Demo prep (Beaver + Tim, ~1 day)
 
-### W5.E.1 — `docs/ACCURACY_REPORT.md` final draft
+### W5.E.1 — `docs/RELEASE.md` accuracy final draft
 - [ ] **W5.E.1.a** — Tables: per-mode hallucination, agreement, FP rates, step_efficiency by tool, contested-resolution rate, MITRE sub-technique precision, negative-hypothesis quality, Qwen3-vs-GLM disagreement correlation.
 - [ ] **W5.E.1.b** — Two charts: Step Efficiency by tool, Contested-Finding Resolution per-mode.
-- [ ] **W5.E.1.c** — Commit: `docs: ACCURACY_REPORT.md [W5.E.1]`
+- [ ] **W5.E.1.c** — Commit: `docs(release): add accuracy report [W5.E.1]`
 
 ### W5.E.2 — Time-travel demo flow
 - [ ] **W5.E.2.a** — Beaver builds demo flow using `get_state_history()` to walk through a contested verdict. Recorded as a separate ~30s clip.
@@ -1147,7 +1138,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 | `--mode` override works | `pytest tests/cli/test_mode_override.py` green |
 | `verdict doctor` returns ok on dev rig | `verdict doctor \| tail -1` says `all components OK` |
 | OpenCTI + Velociraptor + REMnux adapters callable | `pytest tests/adapters/ -v` green |
-| `docs/ACCURACY_REPORT.md` shipped with all required tables | manual review |
+| `docs/RELEASE.md` shipped with all required accuracy tables | manual review |
 | Langfuse demo dashboard JSON committed | `ls docs/demo-assets/langfuse-dashboard.json` |
 | Rough demo cut exists | `ls docs/demo-assets/rough-cut.mp4` |
 | Time-travel clip exists | `ls docs/demo-assets/time-travel.mp4` |
@@ -1165,8 +1156,8 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 
 ## Phase W6.A — Demo final (Tim + Beaver, ~2 days)
 
-### W6.A.1 — `docs/DEMO_SEQUENCE.md`
-- [ ] **W6.A.1** — Author the 5-min sequence with timing per beat (cold open 30s, cloud 60s, airgap 90s with hero beats, dual 60s, recap 60s). Beat list per v4.5 lines 855–865 plus v4.4 hero beats (DKOM divergence, Hunt Evil masquerade, Amcache caveat acknowledgment, pivot vs replan, planner_critique CoVe). Commit: `docs: DEMO_SEQUENCE.md [W6.A.1]`
+### W6.A.1 — `docs/RELEASE.md` demo sequence section
+- [ ] **W6.A.1** — Author the 5-min sequence with timing per beat (cold open 30s, cloud 60s, airgap 90s with hero beats, dual 60s, recap 60s). Beat list per v4.5 lines 855–865 plus v4.4 hero beats (DKOM divergence, Hunt Evil masquerade, Amcache caveat acknowledgment, pivot vs replan, planner_critique CoVe). Commit: `docs(release): add demo sequence [W6.A.1]`
 
 ### W6.A.2 — Final cut
 - [ ] **W6.A.2.a** — Re-record against rehearsed flow. Each hero beat must land cleanly.
@@ -1175,8 +1166,8 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 
 ## Phase W6.B — Judge checklist + dry runs (Beaver, ~0.5 day)
 
-### W6.B.1 — `docs/SANS_JUDGE_CHECKLIST.md`
-- [ ] **W6.B.1** — 15-item checklist from v4.4 (image hash verify; SANS-canonical first move; pslist+psscan divergence; ≥2 artifact classes per execution claim; Amcache caveat acknowledged; UTC `Z` timestamps; pivot in action; epistemic vocabulary; sub-techniques; Hunt Evil masquerade; never asserts attribution; ledger records environment metadata; <20 min end-to-end; explicit UNVERIFIABLE; planner_critique fires visibly). Commit: `docs: SANS_JUDGE_CHECKLIST.md [W6.B.1]`
+### W6.B.1 — `docs/RELEASE.md` judge checklist section
+- [ ] **W6.B.1** — 15-item checklist from v4.4 (image hash verify; SANS-canonical first move; pslist+psscan divergence; ≥2 artifact classes per execution claim; Amcache caveat acknowledged; UTC `Z` timestamps; pivot in action; epistemic vocabulary; sub-techniques; Hunt Evil masquerade; never asserts attribution; ledger records environment metadata; <20 min end-to-end; explicit UNVERIFIABLE; planner_critique fires visibly). Commit: `docs(release): add SANS judge checklist [W6.B.1]`
 
 ### W6.B.2 — Three dry runs
 - [ ] **W6.B.2** — Dry run final demo against checklist three times. Iterate until all 15 tick green. Commit: `chore(demo): three dry runs against judge checklist [W6.B.2]`
@@ -1189,13 +1180,13 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 ### W6.C.2 — `docs/ARCHITECTURE.md`
 - [ ] **W6.C.2** — Full system diagram + node-by-node walkthrough. Reference v4.5 + v4.6 + this plan as authorities. Commit: `docs: ARCHITECTURE.md [W6.C.2]`
 
-### W6.C.3 — `docs/BUILD.md`
-- [ ] **W6.C.3** — Exact build steps from a fresh SIFT VM. Verified by reproducing on a second VM. Commit: `docs: BUILD.md [W6.C.3]`
+### W6.C.3 — `docs/RELEASE.md` build section
+- [ ] **W6.C.3** — Exact build steps from a fresh SIFT VM. Verified by reproducing on a second VM. Commit: `docs(release): add fresh VM build steps [W6.C.3]`
 
 ### W6.C.4 — `CONTRIBUTING.md` + `LICENSE` (MIT)
 - [ ] **W6.C.4** — Standard MIT + project-specific contributing notes. Commit: `docs: CONTRIBUTING.md + LICENSE [W6.C.4]`
 
-### W6.C.5 — `docs/PRODUCTION_AUDIT.md`
+### W6.C.5 — `docs/RELEASE.md` production audit section
 - [ ] **W6.C.5** — The v4 triage doc enumerating what landed in v1 vs deferred to v2. Reference v4.5 §Production-maturity audit. Commit: `docs: PRODUCTION_AUDIT.md [W6.C.5]`
 
 ### W6.C.6 — Submission writeup
@@ -1207,7 +1198,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
 - [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM rendered visual [W6.C.7]`
 
-### W6.C.8 — `docs/EVIDENCE_DATASET.md` (Devpost-required)
+### W6.C.8 — `docs/RELEASE.md` evidence dataset section (Devpost-required)
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (with finding_ids referencing accuracy report). (5) Limitations: Windows-only; no live-response; no Win11/macOS/Linux/network.
 - [ ] **W6.C.8.b** — Cross-reference from README + ACCURACY_REPORT.md + Devpost form.
 - [ ] **W6.C.8.c** — Commit: `docs: EVIDENCE_DATASET.md [W6.C.8]`
@@ -1218,7 +1209,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.9.c** — Run against all three demo cases; produce `submission/execution-logs/case_{001,002,003}.jsonl`; commit alongside accuracy report.
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
-### W6.C.10 — `docs/NOVEL_CONTRIBUTION.md` (Devpost-required)
+### W6.C.10 — `docs/RELEASE.md` novel contribution section (Devpost-required)
 - [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README + Devpost form.
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
@@ -1758,7 +1749,7 @@ steps:
 
 # Appendix D — Demo sequence (refined for v4.6)
 
-Per W6.A.1 task. References v4.5 lines 855–865 plus v4.4 hero beats. See `docs/DEMO_SEQUENCE.md` post-W6.A.1 for full timing.
+Per W6.A.1 task. References v4.5 lines 855–865 plus v4.4 hero beats. See `docs/RELEASE.md` post-W6.A.1 for full timing.
 
 Key beats for the 5-min cut:
 

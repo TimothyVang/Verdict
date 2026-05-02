@@ -5,6 +5,7 @@
 **Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `spec/`. Read `spec/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
 **Date:** May 2, 2026.
 **For Devpost compliance:** see `DEVPOST_COMPLIANCE.md`. For week-by-week build sequencing: `BUILD_PLAN.md`. For hard rules an agent must obey: see `../CLAUDE.md` §3.
+**Rendered diagram:** [`ARCHITECTURE_DIAGRAM.svg`](ARCHITECTURE_DIAGRAM.svg) with Mermaid source in [`ARCHITECTURE_DIAGRAM.mmd`](ARCHITECTURE_DIAGRAM.mmd).
 
 ### How to edit this doc
 - This is the **single architectural authority.** Never duplicate decisions into other docs; cross-link instead.
@@ -458,13 +459,13 @@ class CaseConclusion(BaseModel):
 - Live-endpoint mode (Velociraptor, GRR core flow) — needs **5th `live_executor` fanout branch**; live-evidence chain-of-custody differs from offline (NIST SP 800-86 §5.1.4 different requirements)
 - Examiner-workflow integrations (Axiom XML, EnCase EWF, FTK CSV) — architecture supports export interface; format adapters in v2
 
-The 4-fixed-branch fanout topology in v1 is an explicit architectural constraint. v2 expansion to 5+ branches is supported by the LangGraph reducer pattern. See `BUILD_PLAN.md` Phase W5.D.1 for `docs/SCOPE.md` deliverable.
+The 4-fixed-branch fanout topology in v1 is an explicit architectural constraint. v2 expansion to 5+ branches is supported by the LangGraph reducer pattern. See `RELEASE.md` for the current v1 scope and v2 deferrals.
 
 ---
 
 ## 9. Threat model (4 surfaces)
 
-Documented in `docs/THREAT_MODEL.md` per `BUILD_PLAN.md` Phase W1.G.1.
+Documented in `RELEASE.md` per `BUILD_PLAN.md` Phase W1.G.1.
 
 | Surface | Mitigation | Residual risk |
 |---|---|---|
@@ -505,7 +506,7 @@ Every hero beat must land cleanly; record beats as separate clips during weeks 4
 
 These were raised during the v4.4 research and v4.5 system-design review. They're not blockers; they're worth thinking through during build.
 
-1. **Cross-family verification's epistemic foundation has a known weakness:** correlated false negatives. If both Qwen3 and GLM miss a rare LOLBin pattern (post-pretraining-cutoff persistence technique) because their training corpora share the same gap, both agree "no evil found" and quorum fires green on a wrong-negative. Empirical disagreement-correlation measurement in W4.G.1 will show this; no architectural fix in v1, just honest disclosure in `docs/ACCURACY_REPORT.md`.
+1. **Cross-family verification's epistemic foundation has a known weakness:** correlated false negatives. If both Qwen3 and GLM miss a rare LOLBin pattern (post-pretraining-cutoff persistence technique) because their training corpora share the same gap, both agree "no evil found" and quorum fires green on a wrong-negative. Empirical disagreement-correlation measurement in W4.G.1 will show this; no architectural fix in v1, just honest disclosure in `RELEASE.md`.
 
 2. **Schema strictness vs recall tradeoff.** `Finding` validators reject sloppy findings — good for credibility, but each invariant is a place a *legitimate* finding gets rejected for the wrong reason. Mitigation: have `executor_work` *infer* `artifact_classes` deterministically from `artifact_paths` (e.g. paths matching `\Prefetch\*.pf` → `PREFETCH`) so the LLM never has to know the enum exists. Validator-as-projection rather than validator-as-gate.
 
@@ -513,7 +514,7 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 
 4. **Plan-then-Execute is fundamentally batch; DFIR is fundamentally adaptive.** `pivot_max=15` recreates ReAct in a more constrained form. If demo runs show 90% sequential pivots, the topology pays overhead for a parallelism that doesn't materialize. Lean the demo narrative on the *audit-trail review story* (sequential is fine; structure is what reviewability needs) rather than runtime parallelism.
 
-5. **The 4-fixed-fanout cap is real but documented.** `docs/SCOPE.md` names the v2 extension points (5th `net_executor`, 5th `live_executor`).
+5. **The 4-fixed-fanout cap is real but documented.** `RELEASE.md` names the v2 extension points (5th `net_executor`, 5th `live_executor`).
 
 ---
 

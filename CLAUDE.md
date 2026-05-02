@@ -147,7 +147,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 | Microsoft Agent Framework | premature, license terms |
 | AGPL clean-room rewrites | strategic risk |
 
-Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in `docs/PRODUCTION_AUDIT.md`.
+Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in `docs/RELEASE.md`.
 
 ### 3.9 Credential isolation
 
@@ -356,7 +356,7 @@ git tag v-submit && git push origin v-submit    # fires .github/workflows/devpos
 
 ### 11.1 The 15-item SANS judge checklist
 
-Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in the demo recording:
+Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo recording:
 
 1. Image hash verified before opening evidence.
 2. SANS-canonical first move (`windows.info` for memory; `mmls` + `fsstat` for disk).
@@ -374,7 +374,7 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 14. Agent gives up explicitly (`UNVERIFIABLE` + `interrupt()`) when it cannot resolve.
 15. `planner_critique_node` fires visibly in the Langfuse trace.
 
-### 11.2 Demo video (5-min cut, `docs/DEMO_SEQUENCE.md`)
+### 11.2 Demo video (5-min cut, `docs/RELEASE.md`)
 
 - **0:00 – 0:30** cold open + architecture diagram flash.
 - **0:30 – 1:30** cloud-only mode: n=3 with three distinct seeds, Langfuse sibling spans visible.
@@ -386,12 +386,10 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 
 1. `README.md` — problem statement, architecture, demo link, install, mode reference, license, contributing.
 2. `docs/ARCHITECTURE.md`
-3. `docs/BUILD.md` — exact build steps from a fresh SIFT VM, verified on a second VM.
+3. `docs/RELEASE.md` — exact build steps from a fresh SIFT VM, verified on a second VM, plus scope, CLI, demo, judge checklist, dataset, accuracy, production-audit, and novelty sections.
 4. `CONTRIBUTING.md` + `LICENSE` (MIT)
-5. `docs/PRODUCTION_AUDIT.md` — v4 triage: what landed v1 vs v2.
-6. `docs/SANS_JUDGE_CHECKLIST.md`
-7. `docs/ACCURACY_REPORT.md` — per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings.
-8. `docs/DEMO_SEQUENCE.md` — 5-min sequence with timing per beat.
+5. `docs/DEVPOST_COMPLIANCE.md` — rule-to-artifact mapping and submission checklist.
+6. `docs/RELEASE.md` — v4 triage, judge checklist, per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings, and 5-min sequence with timing per beat.
 
 ## 12. Pointers (read directly, do not summarise from memory)
 

@@ -45,6 +45,13 @@ Code wins over docs. If code is right and a doc is wrong, fix the doc — don't 
 | [`FAILURE_MODES.md`](FAILURE_MODES.md) | Runtime failure matrix: sandbox spawn, tool errors, fanout timeout, TSI failure, ledger write failures, and UNVERIFIABLE semantics. | Before implementing error paths or explaining graceful degradation to judges. |
 | [`CASE_ISOLATION.md`](CASE_ISOLATION.md) | Case, chain, checkpoint, reverify, export, approval, and mode-lock boundaries. | Before implementing `verdict reverify`, `resume`, `export`, `approve`, or `validate`. |
 
+### Release deliverables
+
+| File | Role | When to read |
+|------|------|--------------|
+| [`RELEASE.md`](RELEASE.md) | Consolidated release guide: build, reproducibility, scope, CLI, checkpointing, schema migration, dataset, accuracy, demo, judge checklist, production audit, novelty, and packaging. | Before packaging, demo dry-runs, or answering submission-readiness questions. |
+| [`ARCHITECTURE_DIAGRAM.svg`](ARCHITECTURE_DIAGRAM.svg) | Rendered architecture diagram required by Devpost. | In README, Architecture, and Devpost form. |
+
 ### Audits (cross-doc consistency)
 
 | File | Role | When to read |
@@ -80,19 +87,7 @@ These are cited by `../CLAUDE.md` and `BUILD_PLAN.md` but not yet written. Each 
 
 | Doc | Task ID |
 |-----|---------|
-| `BUILD.md` — exact build steps from a fresh SIFT VM, verified on a second VM | W1.A.2.a |
-| `THREAT_MODEL.md` — four threat surfaces (insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker) | W1.G.1 |
-| `CLI.md` — full `verdict` command surface | W1.G (TBD) |
-| `CHECKPOINTING.md` — SqliteSaver + WAL + reducer pattern | W1.G (TBD) |
-| `SCOPE.md` — v1 = Windows DFIR; v2 roadmap (macOS / Linux / ESXi) | W1.G (TBD) |
-| `SCHEMA_MIGRATION.md` — breaking-change migration policy | W1.G (TBD) |
-| `SANS_JUDGE_CHECKLIST.md` — 15-item demo rubric | W6 |
-| `PRODUCTION_AUDIT.md` — v4 triage (v1 vs v2) | W6 |
-| `DEMO_SEQUENCE.md` — 5-min storyboard with timing | W6 |
-| `ACCURACY_REPORT.md` — per-mode tables + correlation analysis | W6 |
-| `ARCHITECTURE_DIAGRAM.svg` — rendered Devpost architecture diagram | W6.C.7 |
-| `EVIDENCE_DATASET.md` — sources, hashes, and findings per test dataset | W6.C.8 |
-| `NOVEL_CONTRIBUTION.md` — new hackathon work vs. pre-existing OSS | W6.C.10 |
+| `ARCHITECTURE_DIAGRAM.png` — PNG fallback rendered from `ARCHITECTURE_DIAGRAM.mmd` or SVG | W6.C.7 |
 
 ## Editing rules
 

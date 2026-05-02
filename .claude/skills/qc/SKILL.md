@@ -98,7 +98,7 @@ Run `git show HEAD --stat --name-status` on the commit you just made. For each t
 | Added / removed / renamed a CLI flag, command, or env var | `CLAUDE.md` §10 (CLI surface), `README.md` "CLI surface" one-liner |
 | Added / changed / removed a schema field, validator, enum member, Pydantic model | `docs/ARCHITECTURE.md` §4 (Schemas), `CLAUDE.md` §3.x rule that cites it (if any) |
 | Added / changed / removed a playbook rule, caveat, MITRE technique cite | `CLAUDE.md` §3.3 (caveats) / §3.5 (MITRE) / §7 (doctrine), `docs/TLDR.md` if cited, `verdict/prompts/examiner_caveats.md` |
-| Added / removed a dependency, changed a version pin | `CONTRIBUTING.md` §2 toolchain table, `docs/PRODUCTION_AUDIT.md`, `CLAUDE.md` §5 (tech-stack one-liner) |
+| Added / removed a dependency, changed a version pin | `CONTRIBUTING.md` §2 toolchain table, `docs/RELEASE.md`, `CLAUDE.md` §5 (tech-stack one-liner) |
 | Vendored / removed a skill or MCP server | `docs/SKILLS_FRAMEWORK.md` (skills) or `docs/MCP_FRAMEWORK.md` (MCPs), `docs/SKILLS_LICENSE_AUDIT.md` |
 | Added / renamed / removed a LangGraph node | `docs/ARCHITECTURE.md` §1–§2, `CLAUDE.md` §4 |
 | Changed a verifier strategy semantics or budget | `docs/ARCHITECTURE.md` §1, `CLAUDE.md` §8 |

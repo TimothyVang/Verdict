@@ -24,6 +24,8 @@ Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS *FIND EV
 
 **Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md` → `spec/` archive. Code wins over docs; if code is right, fix the doc.
 
+**Release docs:** setup, reproducibility, scope, CLI, demo, judge checklist, dataset, accuracy, production audit, and novelty live in [`docs/RELEASE.md`](docs/RELEASE.md). Devpost rule traceability lives in [`docs/DEVPOST_COMPLIANCE.md`](docs/DEVPOST_COMPLIANCE.md); the rendered architecture diagram is [`docs/ARCHITECTURE_DIAGRAM.svg`](docs/ARCHITECTURE_DIAGRAM.svg).
+
 ---
 
 ## What VERDICT does

@@ -39,7 +39,7 @@
    └───────────────────────────────┘
 ```
 
-**Release artifact status:** `docs/BUILD.md`, `docs/ARCHITECTURE_DIAGRAM.svg`, `docs/EVIDENCE_DATASET.md`, `docs/ACCURACY_REPORT.md`, `docs/NOVEL_CONTRIBUTION.md`, and `submission/execution-logs/*.jsonl` are planned release deliverables, not present yet. Do not claim submission readiness until `docs/DEVPOST_COMPLIANCE.md` Part 6 is fully checked.
+**Release artifact status:** `docs/RELEASE.md`, `docs/ARCHITECTURE_DIAGRAM.svg`, and `submission/execution-logs/*.jsonl` are the consolidated release deliverables. Do not claim submission readiness until `docs/DEVPOST_COMPLIANCE.md` Part 6 is fully checked.
 
 ---
 

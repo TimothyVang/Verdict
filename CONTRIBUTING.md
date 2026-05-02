@@ -19,7 +19,7 @@ Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` �
 > - Did you add/rename/remove a file under `verdict/`? Grep `docs/` + `CLAUDE.md` + `README.md` for the old path; update every reference.
 > - Did you add/change/remove a CLI command, flag, or env var? Update `CLAUDE.md` §10 and `README.md` "CLI surface".
 > - Did you add/change/remove a schema field, validator, enum member, or playbook rule? Update `docs/ARCHITECTURE.md` §4 and any `CLAUDE.md` §3.x rule that cites it.
-> - Did you add/remove a dependency, change a version pin, or vendor a skill/MCP? Update `CONTRIBUTING.md` §2 toolchain table + `docs/PRODUCTION_AUDIT.md` (deps) or `docs/SKILLS_FRAMEWORK.md` / `docs/MCP_FRAMEWORK.md` + license audit (vendored).
+> - Did you add/remove a dependency, change a version pin, or vendor a skill/MCP? Update `CONTRIBUTING.md` §2 toolchain table + `docs/RELEASE.md` (deps) or `docs/SKILLS_FRAMEWORK.md` / `docs/MCP_FRAMEWORK.md` + license audit (vendored).
 > - Did you change a LangGraph node, verifier strategy, mode behavior, or caveat? Update `docs/ARCHITECTURE.md` §1–§2, `CLAUDE.md` §3.3 / §4 / §8, and `docs/TLDR.md` if cited.
 > - Did you discover an audit-history claim in `docs/spec/` is wrong? Log it in `docs/DOCS_ACCURACY_REPORT.md`. **Do NOT edit `spec/`** — it's frozen.
 >
@@ -231,7 +231,7 @@ Concretely, when a verified fact lands:
 | New schema field, validator, or enum member | `docs/ARCHITECTURE.md` §4 (and `CLAUDE.md` §3.x if it's a hard rule) |
 | Tool wrapper added or behavior changed | `docs/ARCHITECTURE.md` §6 |
 | MITRE technique / sub-technique presence or absence | `CLAUDE.md` §3.5 examples and any doc that cites it |
-| Dependency added, removed, or version pinned | this `CONTRIBUTING.md` §2 + `docs/PRODUCTION_AUDIT.md` |
+| Dependency added, removed, or version pinned | this `CONTRIBUTING.md` §2 + `docs/RELEASE.md` |
 | LangGraph node added / removed / renamed | `docs/ARCHITECTURE.md` §2 + `docs/BUILD_PLAN.md` task body |
 | Verifier strategy semantics changed | `docs/ARCHITECTURE.md` §1 + `CLAUDE.md` §8 |
 | Caveat list changed | `CLAUDE.md` §3.3 + `docs/TLDR.md` (if cited) + `verdict/prompts/examiner_caveats.md` |

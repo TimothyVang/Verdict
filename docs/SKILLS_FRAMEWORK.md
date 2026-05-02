@@ -86,7 +86,7 @@ When a vendored skill conflicts with a Verdict hard rule, **`verdict-house-rules
 |---|---|---|
 | Pre-commit hook fails on a TDD commit | A generic `executing-plans` instruction might suggest `git commit --no-verify` to unblock | **§3.7 forbids `--no-verify`.** Fix the underlying lint/test issue, re-stage, create a NEW commit. |
 | Test is hard to write because a service isn't running | A generic `test-driven-development` instruction might suggest mocking the service | **§3.10 forbids it.** Bring the service up; re-run. If unable to in the current environment, surface the conflict to the human; do not paper over. |
-| New dependency speeds development | A generic `writing-plans` instruction might add it casually | **§3.8 audit gate.** License must be MIT or Apache-2.0; if not, refuse. Update `docs/SKILLS_LICENSE_AUDIT.md` or `docs/PRODUCTION_AUDIT.md`. |
+| New dependency speeds development | A generic `writing-plans` instruction might add it casually | **§3.8 audit gate.** License must be MIT or Apache-2.0; if not, refuse. Update `docs/SKILLS_LICENSE_AUDIT.md` or `docs/RELEASE.md`. |
 | Commit message doesn't carry a task ID | A generic `finishing-a-development-branch` instruction might omit it | **§3.7 task-ID required.** Look up `BUILD_PLAN.md`; fall back to `[W1.A.0]` only for repo-wide foundational work. |
 
 ## 5. Skill triggers (hooks)
