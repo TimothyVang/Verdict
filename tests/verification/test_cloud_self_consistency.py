@@ -143,3 +143,17 @@ def test_payloads_are_deterministic() -> None:
     a = s.build_call_payloads(**h)
     b = s.build_call_payloads(**h)
     assert a == b, "build_call_payloads must be deterministic for audit replay"
+
+
+def test_accepts_temperature_one_point_zero() -> None:
+    """Boundary: temperature=1.0 must NOT raise.
+
+    The guard is 0 < temp <= 1 -- 1.0 is the upper inclusive bound.
+    Without this test, a future refactor that accidentally tightens to
+    temp < 1.0 would pass all existing tests and silently break the
+    contract (reviewer finding BLOCK 2).
+    """
+    # Must not raise InvalidTemperatureError or any other exception.
+    strategy = CloudSelfConsistency(temperature=1.0)
+    assert strategy.temperature == 1.0
+
