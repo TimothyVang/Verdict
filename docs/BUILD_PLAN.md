@@ -31,7 +31,7 @@ Use the ID in commit messages: `feat(schema): add ArtifactClass enum [W1.B.1]`. 
 VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 1. **Three operational modes** (cloud-only / air-gap-only / dual) auto-selected by infrastructure detection; operator overrides via `--mode={cloud,airgap,dual}`. Mode locked at `case_init`.
-2. **Plan-then-Execute LangGraph topology** with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` → `executor_work` (split into `DenyRuleWrapper → ToolExecutor → LedgerEmitter`) → `pivot_node` → `quorum` → `replan` (or `unverifiable_finalize`) → `finalize`.
+2. **Plan-then-Execute LangGraph topology** (9 nodes) with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` (per-branch composition: `DenyRuleWrapper → ToolExecutor → LedgerEmitter`; the composition is referred to internally as `executor_work` and is a sub-state of fanout, not a separate top-level node) → `pivot_node` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
 3. **12 SIFT tool wrappers** as MCP tools running in per-call ephemeral microsandbox VMs: `mmls`, `fls`, `fsstat`, `vol3` (10 plugins), `hayabusa` (split: csv-timeline + filter), `plaso` (split: extract + filter), `MFTECmd`, `RECmd`, `PECmd`, `bulk_extractor`, `exiftool`, `capa`.
 4. **Three-layer immutability defense**: Layer 1 = Claude PreToolUse hook (best-effort, version-dependent caveat per #33106/#37210); Layer 2 = LangGraph `DenyRuleWrapper` (architectural guarantee, all modes); Layer 3 = Microsandbox read-only mount (kernel-enforced).
 5. **Cryptographic chain-of-custody**: HMAC-signed append-only JSONL ledger with `prev_entry_hash`, three-tier ID hierarchy (`case_id` / `langfuse_trace_id` / `langgraph_checkpoint_id`), per-output-file SHA-256, examination-environment metadata (`microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version`).
@@ -562,7 +562,7 @@ If any gate is RED on May 8: **descope before slipping**. Drop in this priority 
 # WEEK 2 (May 9 – May 15): Tool surface + Plan-then-Execute refactor
 
 **Theme:** Wrap all 12 SIFT tools as MCP tools. Refactor LangGraph topology to explicit Plan-then-Execute. Add `planner_critique_node`. Wire per-tool args validators. Split plaso/Hayabusa.
-**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 9 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` → `executor_work` (split into 3) → `pivot` → `quorum` → `replan`/`unverifiable_finalize` → `finalize`.
+**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 9 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` (composes DenyRuleWrapper / ToolExecutor / LedgerEmitter per branch) → `pivot` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
 **If this week slips:** week 3 verifier work pushes; cut pivot_node + unverifiable_finalize from v1; ship pure replan_max=3 → quietly stuck CONTESTED (v4.4 SHOULD-FIX leaks back in).
 **Cumulative team-days:** Tim ~5, Beaver ~5, Haley ~1, KP ~3.
 
@@ -1194,7 +1194,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
 ### W6.C.10 — `docs/NOVEL_CONTRIBUTION.md` (Devpost-required)
-- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014.001 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README + Devpost form.
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 
@@ -1607,7 +1607,7 @@ optional_tools:
   - vol3.windows.handles
   - bulk_extractor
   - exiftool
-mitre_techniques_in_scope: [T1055, T1543.003, T1547, T1218, T1036.005, T1059, T1014.001]
+mitre_techniques_in_scope: [T1055, T1543.003, T1547, T1218, T1036.005, T1059, T1014]
 ---
 
 # Windows Triage skill
@@ -1633,7 +1633,7 @@ steps:
   - {order: 1,  tool: vol3.windows.info,     mitre_technique_hint: null}
   - {order: 2,  tool: vol3.windows.pslist,   mitre_technique_hint: null}
   - {order: 3,  tool: vol3.windows.psscan,   mitre_technique_hint: null,
-                rule: "DKOM_divergence: set(psscan_pids) - set(pslist_pids) ≠ ∅ → Hypothesis(T1014.001, high, [PROCESS_MEMORY])"}
+                rule: "DKOM_divergence: set(psscan_pids) - set(pslist_pids) ≠ ∅ → Hypothesis(T1014, high, [PROCESS_MEMORY])"}
   - {order: 4,  tool: vol3.windows.pstree,   depends_on: [2]}
   - {order: 5,  tool: vol3.windows.cmdline,  depends_on: [2],
                 rule: "LOLBIN_match: cmdline pattern in lolbins.yml → Hypothesis(T1218.<sub>, high)"}
@@ -1739,7 +1739,7 @@ Key beats for the 5-min cut:
 
 - **0:00–0:30** Cold open + architecture diagram flash with v4.6 node sequence (planner → planner_critique → comprehension_gate → executor_fanout → pivot → quorum → replan/unverifiable_finalize).
 - **0:30–1:30** Cloud-only mode, n=3 with three distinct seeds at temp=0.7 (narrate "different seeds, same case ID for reproducibility"). Three Langfuse sibling spans converging.
-- **1:30–3:00** Air-gap hero shot. Pull the cable. Comprehension gate fires. Hero beat 1: pslist+psscan DKOM divergence → T1014.001. Hero beat 2: Hunt Evil masquerade catch (`scvhost.exe` parent=cmd.exe). Hero beat 3: Amcache caveat acknowledgment in Finding rationale. Hero beat 4: pivot in action (1 pivot, 0 replans). Hero beat 5: Qwen3-vs-GLM disagreement → CONTESTED → replan → VERIFIED_AIRGAP. Hero beat 6: tcpdump TSI proof. Hero beat 7: kill -9 between super-steps + `verdict resume`.
+- **1:30–3:00** Air-gap hero shot. Pull the cable. Comprehension gate fires. Hero beat 1: pslist+psscan DKOM divergence → T1014. Hero beat 2: Hunt Evil masquerade catch (`scvhost.exe` parent=cmd.exe). Hero beat 3: Amcache caveat acknowledgment in Finding rationale. Hero beat 4: pivot in action (1 pivot, 0 replans). Hero beat 5: Qwen3-vs-GLM disagreement → CONTESTED → replan → VERIFIED_AIRGAP. Hero beat 6: tcpdump TSI proof. Hero beat 7: kill -9 between super-steps + `verdict resume`.
 - **3:00–4:00** Dual mode (new case, mode-locked). Three-way verification → VERIFIED_DUAL.
 - **4:00–5:00** Architecture recap + accuracy table per mode (hallucination, agreement, FP rates, step_efficiency, MITRE sub-technique precision, negative-hypothesis quality, Qwen3-vs-GLM disagreement correlation).
 

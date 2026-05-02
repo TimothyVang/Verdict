@@ -1,6 +1,7 @@
 # VERDICT — Docs Accuracy Audit
 
 **Audited:** 2026-05-02
+**Resolved:** 2026-05-02 (all 11 punchlist items closed; see *Resolution log* at bottom).
 **Scope:** README.md, ARCHITECTURE.md, BUILD_PLAN.md, DEVPOST_COMPLIANCE.md (project root). Archive treated as historical reference, not authority — but cross-checked when it disagrees with the current docs.
 **Methodology:** (1) cross-reference claims across the four authority docs; (2) verify external technical claims against MITRE ATT&CK, arXiv, GitHub, NIST, vendor pages, and the Devpost rules page; (3) re-count tables and lists where the docs assert totals.
 
@@ -185,3 +186,26 @@ These were checked and hold up.
 11. **M4**: Add `verdict reverify` to the README's Quick Reference CLI block.
 
 **Estimated fix effort:** under 90 minutes total. None require re-architecting; all are find-and-replace or single-paragraph rewrites. Do them before the W1.B schema freeze (May 8) so the docs match the schemas you're locking.
+
+---
+
+## Resolution log (2026-05-02)
+
+All 11 punchlist items closed in two passes:
+
+| # | Item | Status | Where |
+|---|---|---|---|
+| C1 | `T1014.001` → `T1014` | ✅ closed | `README.md`, `docs/ARCHITECTURE.md`, `docs/DEVPOST_COMPLIANCE.md` |
+| C2 | "RFC-2119 standard MIT" → "OSI-canonical MIT" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.0.b |
+| C3 | vol3 example version `2.10.0` → `2.28.0` (with build-time pin note) | ✅ closed | `docs/ARCHITECTURE.md` Pattern 1 |
+| H1 | vol3 plugin count: dropped `windows.info` from typed list (10 plugins, matches BUILD_PLAN). Note: `windows.info` is still invokable through the dynamic vol3 allow-list (`§6 Tool-call argument validation`). | ✅ closed | `docs/ARCHITECTURE.md` §6 |
+| H2 | "19 wrappers" → "23 wrappers" (10 vol3 + 2 hayabusa + 2 plaso + 9 other) | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 89 |
+| H3 | 9-node count: aligned by removing "executor_work" as a separate node in CLAUDE.md and BUILD_PLAN.md (it's the in-fanout composition); clarified `clarify_node` is a sub-state of `comprehension_gate` in ARCHITECTURE.md §2 | ✅ closed | `CLAUDE.md` §4, `docs/BUILD_PLAN.md` Week 2 critical-path, `docs/ARCHITECTURE.md` §2 |
+| H4 | "12 documentation files" → "16 documentation files" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` line 146 |
+| H5 | "all 18 boxes ticked" → "all 19 boxes ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a |
+| H6 | README W2 roadmap "9 vol3 wrappers" reference removed during 2026-05-02 doc refactor | ✅ closed | `README.md` (no current occurrence) |
+| M1 | `blake3` API: `blake3(enc, derive_key_context=...)` constructor pattern (not `instance.derive_key`) | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet |
+| M3 | Pattern 2 TSI vs Pattern 1 `network=False`: explicit one-paragraph clarification added | ✅ closed | `docs/ARCHITECTURE.md` Pattern 2 |
+| M4 | `verdict reverify` surfaced in README CLI block with parallel-chain note | ✅ closed | `README.md` Quick reference |
+
+**Re-audit cadence:** re-run this audit before the W1.B schema freeze and before each major doc commit; track new findings as `C/H/M/L` items appended to the relevant section above.
