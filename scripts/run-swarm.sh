@@ -173,7 +173,7 @@ echo "   run dir        : ${RUN_DIR}"                            | tee -a "${LOG
 echo "   tail this log  : tail -f ${LOGFILE}"                    | tee -a "${LOGFILE}"
 echo                                                             | tee -a "${LOGFILE}"
 
-claude "${EXTRA_FLAGS[@]}" -p "${PROMPT}" >> "${LOGFILE}" 2>&1
+claude "${EXTRA_FLAGS[@]}" --verbose --output-format stream-json -p "${PROMPT}" >> "${LOGFILE}" 2>&1
 EXIT_CODE=$?
 
 END_TS="$(date +%s)"
