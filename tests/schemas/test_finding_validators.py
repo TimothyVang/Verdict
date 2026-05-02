@@ -35,6 +35,7 @@ from verdict.schemas.finding import Finding, VerdictStatus
 # §3.2/§3.3 validators, not earlier field constraints.
 # ---------------------------------------------------------------------------
 
+
 def _base_kwargs() -> dict:
     """A Finding that satisfies every validator once they are implemented.
 
@@ -80,9 +81,9 @@ def test_execution_claim_requires_two_classes_bare_parent(parent: str) -> None:
     with pytest.raises(ValidationError) as exc_info:
         Finding(**kw)
     msg = str(exc_info.value).lower()
-    assert any(word in msg for word in ("execution", "distinct", "classes", "class")), (
-        f"Expected validator message for {parent}; got: {exc_info.value}"
-    )
+    assert any(
+        word in msg for word in ("execution", "distinct", "classes", "class")
+    ), f"Expected validator message for {parent}; got: {exc_info.value}"
 
 
 @pytest.mark.parametrize("parent", EXECUTION_PARENTS)
@@ -278,6 +279,64 @@ def test_non_triggered_artifact_class_accepted_without_caveat(cls: ArtifactClass
     without any caveat acknowledgment."""
     kw = _base_kwargs()
     kw["mitre_technique"] = "T1014"
-    kw["artifact_classes"] = [cls, ArtifactClass.SYSMON_1 if cls != ArtifactClass.SYSMON_1 else ArtifactClass.EVTX_4688]
+    kw["artifact_classes"] = [
+        cls,
+        ArtifactClass.SYSMON_1 if cls != ArtifactClass.SYSMON_1 else ArtifactClass.EVTX_4688,
+    ]
     kw["caveats_acknowledged"] = []
     Finding(**kw)
+
+
+# ---------------------------------------------------------------------------
+# §3.5 — MITRE technique regex constraint on Finding.mitre_technique.
+# Field(pattern=r"^T\d{4}(\.\d{3})?$") enforces shape at the field layer
+# before any model_validator runs.
+# ---------------------------------------------------------------------------
+
+
+def test_mitre_bare_technique_accepted() -> None:
+    """§3.5 — a well-formed bare technique (T####) is accepted."""
+    kw = _base_kwargs()
+    kw["mitre_technique"] = "T1055"
+    Finding(**kw)
+
+
+def test_mitre_sub_technique_accepted() -> None:
+    """§3.5 — a well-formed sub-technique (T####.###) is accepted."""
+    kw = _base_kwargs()
+    kw["mitre_technique"] = "T1055.012"
+    kw["artifact_classes"] = [
+        ArtifactClass.PROCESS_MEMORY,
+        ArtifactClass.PROCESS_MEMORY,
+    ]
+    Finding(**kw)
+
+
+@pytest.mark.parametrize(
+    "bad_technique",
+    [
+        "T123",  # too few digits in technique number
+        "T12345",  # too many digits in technique number
+        "t1055",  # lowercase T
+        "1055",  # missing T prefix
+        "T1055.",  # trailing dot without sub-technique digits
+        "T1055.12",  # sub-technique only two digits (must be three)
+        "T1055.1234",  # sub-technique four digits (must be exactly three)
+        "T1055.abc",  # sub-technique non-numeric
+        "",  # empty string
+    ],
+)
+def test_malformed_mitre_technique_rejected(bad_technique: str) -> None:
+    """§3.5 — malformed MITRE technique strings are rejected by Field(pattern=...)."""
+    kw = _base_kwargs()
+    kw["mitre_technique"] = bad_technique
+    with pytest.raises(ValidationError) as exc_info:
+        Finding(**kw)
+    # Pydantic v2 pattern validation surfaces "string_pattern_mismatch"
+    errors = exc_info.value.errors()
+    assert any(
+        e.get("type") in ("string_pattern_mismatch", "string_too_short")
+        or "pattern" in str(e).lower()
+        or "mitre" in str(e).lower()
+        for e in errors
+    ), f"Expected pattern-mismatch error for {bad_technique!r}; got: {exc_info.value}"

@@ -116,7 +116,10 @@ class Finding(BaseModel):
     description: str = Field(min_length=1)
 
     # §3.5 — shape-validated MITRE technique.
-    mitre_technique: str
+    # Pattern ^T\d{4}(\.\d{3})?$ enforces: bare technique (e.g. T1014) OR
+    # sub-technique (e.g. T1055.012). Malformed strings (T123, T10059, etc.)
+    # are rejected by Pydantic before any model_validator runs.
+    mitre_technique: str = Field(pattern=r"^T\d{4}(\.\d{3})?$")
 
     # §3.2 — multi-artifact corroboration. Both fields min_length=2.
     artifact_paths: list[str] = Field(min_length=2)
