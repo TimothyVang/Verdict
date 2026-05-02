@@ -51,6 +51,7 @@ Why a separate ``build_call_payloads`` method? Two reasons:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from verdict.verification.derive_seeds import derive_seeds
 
@@ -108,9 +109,10 @@ class CloudSelfConsistency:
     model: str = DEFAULT_MODEL
     max_tokens: int = DEFAULT_MAX_TOKENS
 
-    # Public class-level constant so callers + tests can assert on n=3
-    # without depending on instance state.
-    N_SAMPLES: int = N_SAMPLES
+    # ClassVar so N_SAMPLES is excluded from __init__: calling
+    # CloudSelfConsistency(N_SAMPLES=5) raises TypeError at construction time
+    # rather than silently creating an instance where self.N_SAMPLES != len(seeds).
+    N_SAMPLES: ClassVar[int] = 3
 
     def __post_init__(self) -> None:
         if not (0.0 < self.temperature <= 1.0):

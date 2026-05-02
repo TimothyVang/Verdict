@@ -157,3 +157,15 @@ def test_accepts_temperature_one_point_zero() -> None:
     strategy = CloudSelfConsistency(temperature=1.0)
     assert strategy.temperature == 1.0
 
+def test_n_samples_is_classvar_not_field() -> None:
+    """N_SAMPLES must be a ClassVar, not a dataclass instance field.
+
+    If N_SAMPLES is a plain dataclass field, ``CloudSelfConsistency(N_SAMPLES=5)``
+    silently constructs an instance where ``self.N_SAMPLES == 5`` while
+    ``build_call_payloads`` calls ``derive_seeds`` which always yields exactly 3
+    seeds -- the field and the actual loop count silently disagree, producing
+    invalid audit-ledger metadata. A ClassVar is excluded from ``__init__``,
+    so passing it raises TypeError immediately (reviewer advisory).
+    """
+    with pytest.raises(TypeError):
+        CloudSelfConsistency(N_SAMPLES=5)  # type: ignore[call-arg]
