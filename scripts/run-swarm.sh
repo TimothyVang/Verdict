@@ -1,20 +1,34 @@
 #!/usr/bin/env bash
-# run-swarm.sh — launch the autonomous build swarm for VERDICT.
+# run-swarm.sh — FALLBACK swarm path (subagent-driven, 20-wide).
 #
-# Authority: docs/SWARM_AUTONOMY_CONFIG.md (when it lands), docs/AGENT_SWARM.md,
-# CLAUDE.md §3 hard rules, swarm/deps.yaml requires_human list.
+# PRIMARY ENTRYPOINT IS scripts/run-team.sh (Claude Code Agent Teams, 4-5
+# teammates per launch, sequential batches). This script remains as a fallback
+# for cases where the experimental Agent Teams feature glitches (no /resume
+# for in-process teammates, lead-shutdown-before-done, orphaned tmux, etc.).
+#
+# Architecture difference: run-team.sh creates a real Agent Team where
+# teammates self-claim from a shared task list and message each other.
+# run-swarm.sh (this file) drives an in-prompt Opus orchestrator that
+# dispatches general-purpose Agent tool calls — same model tiering via
+# subagent_type, but no inter-teammate messaging and no native task list.
+#
+# Authority: docs/AGENT_SWARM.md, CLAUDE.md §3 hard rules, swarm/deps.yaml
+# requires_human list.
 #
 # Uses Claude Code (`claude -p`) as the harness. Auth via CLAUDE_CODE_OAUTH_TOKEN
-# from .env (Claude Pro/Max subscription billing). The swarm dispatches role
-# subagents to drive RED→GREEN→commit→push→draft-PR per BUILD_PLAN.md task.
+# from .env (Claude Pro/Max subscription billing).
 #
 # Usage:
 #   bash scripts/run-swarm.sh                  # foreground, watch live
 #   nohup bash scripts/run-swarm.sh &          # overnight, detached
 #   bash scripts/run-swarm.sh --skip-perms     # autonomous, no prompts (only after smoke)
+#   N_PARALLEL=10 bash scripts/run-swarm.sh    # cap parallelism
 #
-# Kill switches inside the prompt: 50 tasks max, 60 turns/task, halt on 3
-# consecutive failures, exit at 4h wall-clock.
+# Resume-aware: discovers SHIPPED/IN_FLIGHT/BLOCKED/READY from `gh pr list` +
+# swarm/deps.yaml at boot. Kill switches inside the prompt: TASK_CEILING new
+# tasks max, PER_TASK_TURNS turns/task, halt on 5 consecutive failures, exit
+# at MAX_SECONDS wall-clock. Override via env: N_PARALLEL, TASK_CEILING,
+# PER_TASK_TURNS, MAX_SECONDS.
 
 set -euo pipefail
 

@@ -25,21 +25,26 @@ Risks acknowledged up front: API cost, prompt-driven hallucination, drift betwee
 
 ## 2. Substrate
 
-**Claude Agent SDK, headless, Python.** Coordinator is a long-running process; workers are SDK invocations spawned per task in a worker pool of N=2–4.
+**Claude Code Agent Teams, headless, Python helper modules.** Primary entrypoint is `scripts/run-team.sh` — a Claude Code session opens with `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and creates a 4–5 teammate team per launch. Sequential batches (~6–10 launches drain the remaining backlog). Each teammate is a full Claude Code session with its own context window, model, and tool allowlist.
+
+A subagent-driven fallback path lives in `scripts/run-swarm.sh` for cases where Agent Teams' experimental quirks bite (no `/resume` for in-process teammates, lead-shutdown-before-done).
 
 | Decision | Choice | Why |
 |---|---|---|
-| SDK vs CLI | Claude Agent SDK | Programmatic control over tool surface, model selection, system-prompt composition, token accounting. Subagents run inside Claude Code; coordinator needs to live outside any single session. |
-| Model — workers | `claude-opus-4-7` (1M ctx) | Code synthesis quality; long context for reading authority chain + task entry + adjacent code in one call. |
-| Model — reviewer | `claude-sonnet-4-6` | Mechanical pass/fail on lint/test output. Cheaper, faster, deterministic-friendly. |
-| Model — auditor | `claude-haiku-4-5-20251001` | Pattern-match scan over a diff. Even cheaper. |
-| Concurrency | `asyncio` + per-worker subprocess for git/gh/cargo | SDK is async-native; shelling out for git is unavoidable. |
-| Storage | SQLite WAL + fsync | Same discipline as the runtime ledger (CLAUDE.md §9). One-file durability; no Postgres dep. |
-| Auth | Anthropic API key, per-instance | OAuth tokens are not redistributable per CLAUDE.md §3.9. The swarm never carries the team's interactive Claude Code OAuth. |
+| Dispatch | Claude Code Agent Teams (experimental, v2.1.32+) | Native shared task list with file-locked self-claim, mailbox messaging, TaskCompleted hook gate. No bespoke async pool. |
+| Pool size per launch | 4–5 teammates | Per Agent Teams docs — "three focused teammates often outperform five scattered ones." Diminishing returns above 5; file-conflict risk on shared edits. |
+| Model — orchestrator (lead session) | `claude-opus-4-7` (1M ctx) | Long-running coordination, resume-set diffing, multi-task synthesis. |
+| Model — `planning-engineer` | `claude-opus-4-7` | LangGraph topology, CoVe critique, replan budgets — reasoning-heavy. |
+| Model — `schema/sandbox/tool-wrapper/eval-engineer` | `claude-sonnet-4-6` | Bulk implementation work; mechanical with judgment. ~5× cheaper than Opus, fits §14 budget. |
+| Model — reviewer (TaskCompleted hook) | `claude-sonnet-4-6` | Mechanical pass/fail on lint/test output. Runs as a hook script, not a teammate. |
+| Model — auditor (TaskCompleted hook) | `claude-haiku-4-5` | Pattern-match scan over a diff. Cheapest tier. Runs as a hook script, not a teammate. |
+| Storage (cross-launch state) | SQLite WAL + fsync (`swarm/state.db`) | Same discipline as the runtime ledger (CLAUDE.md §9). Agent Teams' shared task list lives at `~/.claude/tasks/<team>/` and does NOT survive cleanup; persistent state belongs in `swarm/state.db`. |
+| Auth | `CLAUDE_CODE_OAUTH_TOKEN` (Pro/Max subscription) | Each teammate is a full Claude Code session inheriting the lead's auth. `ANTHROPIC_API_KEY` documented as the fallback if subscription rate limits throttle 4–5 concurrent Opus + Sonnet workers. |
+| Per-task token ceiling | $20 USD | Tracked in `swarm/state.py:tasks.token_spend_usd`. Worker exceeds → exits `turn_budget_exceeded`. |
 
-Why not subagents: they're tied to an interactive Claude Code session. The conductor needs to live independently and dispatch tens of tasks unattended.
+Why not bespoke `asyncio` SDK pool: Agent Teams already provides shared task list + mailbox + TaskCompleted hook + file-locked claim. Reimplementing those in `swarm/worker.py` is duplication; the SDK path is the *fallback*, not the default.
 
-Why not GitHub Actions: per-job container spin-up is 30–60 s and runners cost more per minute than direct API calls when the unit of work is a single TDD loop. GHA may host CI later (W1.A.1 includes `.github/workflows/`); it's the wrong substrate for the worker pool itself.
+Why not GitHub Actions: per-job container spin-up is 30–60 s and runners cost more per minute than direct subscription calls when the unit of work is a single TDD loop. GHA may host CI later (W1.A.1 includes `.github/workflows/`); it's the wrong substrate for the worker pool itself.
 
 ---
 
@@ -159,11 +164,11 @@ Transitions:
 - `pending → claimed`: atomic SQL `UPDATE … WHERE status='pending' AND owner IS NULL`. Exactly one winner per row.
 - `claimed → red`: worker has pushed a failing test commit.
 - `red → green`: worker has pushed an implementation commit that turns the test green.
-- `green → review`: branch pushed, PR opened.
-- `review → audit`: Reviewer approves.
-- `review → claimed`: Reviewer requests changes (worker retries; counter `attempts`).
-- `audit → human_review`: Auditor finds nothing blocking.
-- `audit → blocked`: Auditor finds a blocking violation.
+- `green → review`: branch pushed, PR opened. Teammate signals task complete; Claude Code's `TaskCompleted` hook fires `.claude/hooks/task-completed.sh`, which runs Reviewer + Auditor in one pass against the worktree. (When using the SDK fallback in `run-swarm.sh`, Reviewer + Auditor are dispatched as separate subagent calls instead.)
+- `review → audit`: Reviewer (in-hook) reports clean.
+- `review → claimed`: Reviewer reports failures; hook exits with `{"decision":"block"}` and the teammate revises (`attempts` increments).
+- `audit → human_review`: Auditor (in-hook) finds nothing blocking. Hook exits 0; task marks complete.
+- `audit → blocked`: Auditor finds a BLOCKING violation; hook exits with `{"decision":"block"}` and the teammate revises before the task can re-complete.
 - `human_review → merged`: human approves and merges.
 - `human_review → blocked`: human requests changes the swarm cannot resolve.
 - `blocked` is terminal until `swarm unblock <task-id>` clears the reason and resets to `pending`.
@@ -407,22 +412,22 @@ A swarm task that fails in Phase 1 with low-novelty (schema typo, lint miss) is 
 ## 13. File layout
 
 ```
-swarm/
-├── README.md                     # 5-line pointer to docs/AGENT_SWARM.md
-├── conductor.py                  # task picker + dispatcher
-├── worker.py                     # single-task TDD driver
-├── reviewer.py                   # local CI gate runner
-├── auditor.py                    # rule-compliance scanner
-├── doctor.py                     # health-check (mirrors verdict doctor)
-├── state.py                      # SQLite schema + atomic claim
-├── deps.yaml                     # cross-phase deps + requires_human list
-├── requirements.txt              # Phase-0 deps (anthropic, gitpython, langfuse)
+swarm/                              # Python helper modules + role specs (canonical)
+├── README.md                       # 5-line pointer to docs/AGENT_SWARM.md
+├── conductor.py                    # plan parser + dep DAG (used by lead session)
+├── worker.py                       # single-task TDD driver — fallback path only
+├── reviewer.py                     # local CI gate runner — invoked from hook
+├── auditor.py                      # rule-compliance scanner — invoked from hook
+├── doctor.py                       # health-check (mirrors verdict doctor)
+├── state.py                        # SQLite schema + atomic claim (cross-launch state)
+├── deps.yaml                       # cross-phase deps + requires_human list
+├── requirements.txt                # Phase-0 deps (anthropic, gitpython, langfuse)
 ├── runtime/
-│   ├── worktree.py               # git worktree manager
-│   └── gh.py                     # PR + label helpers
-└── agents/
-    ├── _prefix.md                # shared system-prompt prefix
-    ├── conductor.md
+│   ├── worktree.py                 # git worktree manager
+│   └── gh.py                       # PR + label helpers
+└── agents/                         # canonical role specs (long-form discipline)
+    ├── _prefix.md                  # shared system-prompt prefix
+    ├── conductor.md                # advisory only; lead session is the conductor
     ├── reviewer.md
     ├── auditor.md
     ├── schema-engineer.md
@@ -430,9 +435,28 @@ swarm/
     ├── sandbox-engineer.md
     ├── tool-wrapper-engineer.md
     └── eval-engineer.md
+
+.claude/                            # Claude Code harness handles
+├── settings.local.json             # CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 + hooks block
+├── agents/                         # subagent overlays (referenced as teammate types)
+│   ├── schema-engineer.md          # frontmatter: model + tools; body points at swarm/agents/
+│   ├── planning-engineer.md
+│   ├── sandbox-engineer.md
+│   ├── tool-wrapper-engineer.md
+│   ├── eval-engineer.md
+│   ├── reviewer.md                 # fallback; primary path is the TaskCompleted hook
+│   └── auditor.md                  # fallback; primary path is the TaskCompleted hook
+└── hooks/
+    └── task-completed.sh           # runs reviewer + auditor; exit-2 blocks completion
+
+scripts/
+├── run-team.sh                     # PRIMARY entrypoint (Claude Code Agent Teams)
+└── run-swarm.sh                    # FALLBACK (subagent-driven 20-wide pool)
 ```
 
-Phase-0 code is intentionally minimal — `python -m swarm.conductor --dry-run` parses BUILD_PLAN.md and prints the dep DAG; no live SDK calls. Real Agent SDK invocations land in a follow-up PR after token-budget and model-tier sign-off.
+The two `agents/` directories are **not duplicates** — `swarm/agents/*.md` holds canonical long-form role specs (~60–105 lines each: discipline, blocking matrix, common pitfalls); `.claude/agents/*.md` are thin harness overlays whose frontmatter exposes `model` + `tools` to Claude Code and whose body is a pointer instructing the teammate to load the swarm/agents/ spec for full discipline. Edit specs in `swarm/agents/`; edit model tiering or tool allowlists in `.claude/agents/`.
+
+Phase-0 code remains minimal. The lead session does Phase-0 resume discovery + Phase-1 dispatch in-prompt (see `scripts/run-team.sh`). `swarm/worker.py:cmd_run` is still stubbed; it's a Phase-1 follow-on for the SDK fallback path only.
 
 ---
 
@@ -441,10 +465,11 @@ Phase-0 code is intentionally minimal — `python -m swarm.conductor --dry-run` 
 Time-stamped; ratify before each phase transition.
 
 - **Should the swarm have its own task IDs?** A `W0.X` family for swarm work itself (state schema migrations, prompt revisions) would make swarm changes auditable in BUILD_PLAN.md. Decision needed by **2026-05-04** (before Phase 1).
-- **Token budget per task.** $5 keeps Opus runs short; $20 buys longer context but burns the weekly budget faster. Affects model-tier choice. Decision needed before Phase 1.
-- **Reviewer model.** Sonnet 4.6 vs Haiku 4.5 — speed/cost vs catch-rate. Empirical question; pick after first 10 PRs and look at false-approval rate.
+- **Token budget per task.** ✅ **Closed 2026-05-02: $20 USD/task.** Tracked in `swarm/state.py:tasks.token_spend_usd`. Worker exceeds → exits `turn_budget_exceeded`, slot frees. Engineer-tier shift to Sonnet (below) keeps the average per-task burn well under the cap.
+- **Reviewer model.** ✅ **Closed 2026-05-02: `claude-sonnet-4-6`** for the in-hook reviewer. Auditor settled at `claude-haiku-4-5` (was Sonnet, decided cheaper tier sufficient for pattern-match scans).
+- **Engineer model tier.** ✅ **Closed 2026-05-02: Sonnet 4.6 for `schema/sandbox/tool-wrapper/eval-engineer`**, Opus 4.7 retained only for `planning-engineer` (LangGraph topology + CoVe critique). Earlier table assigned Opus to all five — empirically too expensive at ~70 tasks remaining; departure from the prior §2 line is recorded in the updated substrate table above.
 - **HMAC-key handling for ledger work (W3.D).** Default: humans only. The swarm should not hold the runtime ledger HMAC key. Confirm with PUG before W3 starts.
-- **OAuth vs API key.** CLAUDE.md §3.9 forbids redistributing OAuth tokens. The swarm uses Anthropic API keys provisioned per-instance, never the team's interactive Claude Code OAuth. Confirmed.
+- **OAuth vs API key.** Per CLAUDE.md §3.9 OAuth tokens are not redistributable. **Active mode (2026-05-02): `CLAUDE_CODE_OAUTH_TOKEN`** (Pro/Max subscription) for both lead and teammates — Tim's solo-developer rig, no redistribution. `ANTHROPIC_API_KEY` documented as the fallback for cases where subscription rate limits throttle 4–5 concurrent workers. Re-evaluate if rate-limit interruptions become recurring.
 - **Auditor blocking power.** Default: blocking on §3.1, §3.2, §3.7, §3.8, §3.10; advisory on §3.5, §3.6. Re-evaluate after first 20 audits — if advisory rules drift unchecked, promote.
 - **CODEOWNERS file.** Needed in W1 to enforce "no swarm self-merge." Add as part of `.github/` scaffolding when CI lands (BUILD_PLAN W3.F).
 - **What happens if the swarm finds a bug in `BUILD_PLAN.md` itself?** Default: open a PR against the plan with the proposed fix, blocked on human review. Plan changes are not in any worker's prompt scope.
