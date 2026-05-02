@@ -18,16 +18,58 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 
 ## 2. Authority chain (read in this order)
 
+`docs/README.md` is the **wiki front door** — every doc under `docs/` is indexed there with role + when-to-read. The table below is the load-bearing subset that governs runtime behavior and submission compliance.
+
+### Entry points
+
 | Doc | Role | When to consult |
 |-----|------|-----------------|
-| `README.md` | **Entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
+| `README.md` | **Project entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
+| `docs/README.md` | **Doc wiki index.** Every file under `docs/` with role, audience, when-to-read. | Before opening any other doc; as the navigational map. |
+| `docs/TLDR.md` | ~5-min visual primer. Living, teammate-shareable. | Hand to a new human teammate. |
+
+### Current authority (single sources of truth)
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
 | `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/spec/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
 | `docs/BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day TDD plan with task IDs (W1.A.3.a, W1.B.7, …), ownership, hours, acceptance gates. | Pick your next task; use task IDs in commits; use weekly gates as the definition of done. |
 | `docs/DEVPOST_COMPLIANCE.md` | **Submission rule-to-artifact mapping.** Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging. |
-| `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit. | When docs appear to contradict each other. |
-| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches + original TL;DR. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
+
+### Audits (cross-doc consistency)
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit (counts, labels, MITRE IDs, version pins, terminology). | When docs appear to contradict each other; before a major doc edit. |
+| `docs/AGENTIC_WORKFLOW_REVIEW.md` | Sister audit: runtime LangGraph loop *and* dev TDD loop. Filtered to not overlap with the accuracy report. | When evaluating coherence between §3 hard rules and the runtime topology. |
+
+### Engineering frameworks (scaffolding — *not* runtime authority)
+
+These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe how dev tooling is wired; they do not extend the runtime topology and never override §3.
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/AGENT_SWARM.md` | Build-side LLM swarm spec — conductor / worker / reviewer / auditor agents that take `BUILD_PLAN.md` task IDs and open PRs. The `swarm/` source tree is its executable skeleton. | Before reading anything under `swarm/`; before reviewing a PR authored by a `swarm:*` worker. |
+| `docs/MCP_FRAMEWORK.md` | MCP server allowlist + credential-isolation discipline. Every entry in `.mcp.json` traces here. License-gated by §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp.json`. |
+| `docs/SKILLS_FRAMEWORK.md` | How vendored skills under `.claude/skills/` compose into a Plan → TDD → subagent-driven-dev → Review → Commit pipeline. `verdict-house-rules` overlays §3 on upstream skill defaults. | Before authoring a workflow; before vendoring a new skill. |
+| `docs/SKILLS_LICENSE_AUDIT.md` | Per-skill license audit log. Every artifact under `.claude/skills/` (and any future MCP, hook, vendored artifact) gets a row per §3.8. | Before vendoring anything new; when answering "is X license-clean?". |
+
+### Hackathon context
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/hackathon/RULES.md` | Official SANS *FIND EVIL!* 2026 rules, scraped from Devpost on 2026-05-02. Upstream of `DEVPOST_COMPLIANCE.md`. | Before any submission decision. |
+| `docs/hackathon/OVERVIEW.md` | Hackathon overview + resource links (judge bios, prize structure, timeline). | Context-setting; not load-bearing. |
+
+### Frozen archive
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
 
 **Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
+
+**`protocol-sift/` is a git submodule** pinned to upstream `teamdfir/protocol-sift`. The two `CLAUDE.md` files inside it (`global/CLAUDE.md`, `case-templates/CLAUDE.md`) are upstream Claude Code framework templates, **not** Verdict authority — do not edit in place (it dirties the submodule). Verdict-side overrides go in this `CLAUDE.md` or in `.claude/skills/verdict-house-rules/SKILL.md`.
 
 ## 3. Hard rules — MUST / MUST NOT
 
@@ -353,15 +395,25 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 
 ## 12. Pointers (read directly, do not summarise from memory)
 
+`docs/README.md` is the wiki index — every doc under `docs/` is listed there. The pointers below are the most-asked questions.
+
 | When you need… | Read |
 |----------------|------|
+| The doc map (what lives where, who reads what) | `docs/README.md` |
+| 5-min visual primer for a new teammate | `docs/TLDR.md` |
 | Architecture, schemas, ledger, threat model, tool surface | `docs/ARCHITECTURE.md` |
 | Sequencing, ownership, weekly acceptance gates, task IDs | `docs/BUILD_PLAN.md` |
 | Submission rule-to-artifact mapping, judge-facing checklist | `docs/DEVPOST_COMPLIANCE.md` |
 | Cross-doc consistency audit + critical-fix log | `docs/DOCS_ACCURACY_REPORT.md` |
-| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..05` + `README.md`) |
-| Hackathon rules + resource links | https://findevil.devpost.com/ + `downloads/README.md` |
-| Upstream Claude Code config framework being extended | `protocol-sift/` |
+| Agentic-workflow audit (runtime + dev TDD loop) | `docs/AGENTIC_WORKFLOW_REVIEW.md` |
+| Build-side LLM swarm spec (consumer of `BUILD_PLAN.md` task IDs) | `docs/AGENT_SWARM.md` (executable in `swarm/`) |
+| MCP server allowlist + credential isolation | `docs/MCP_FRAMEWORK.md` (allowlist in `.mcp.json`) |
+| Vendored skill stack composition + house-rules overlay | `docs/SKILLS_FRAMEWORK.md` (stack in `.claude/skills/`) |
+| License audit for vendored skills/hooks/MCPs | `docs/SKILLS_LICENSE_AUDIT.md` |
+| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..04` + `README.md`) |
+| Official hackathon rules (scraped) | `docs/hackathon/RULES.md` |
+| Hackathon overview + resource links | `docs/hackathon/OVERVIEW.md` + https://findevil.devpost.com/ + `downloads/README.md` |
+| Upstream Claude Code config framework (read-only submodule) | `protocol-sift/` |
 
 **Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/`. Code wins over docs; if code is right, fix the doc.
 
