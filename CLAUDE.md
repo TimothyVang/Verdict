@@ -250,7 +250,7 @@ See §3.8 for the explicit hard NOs. Anything not on either list needs an entry 
 The workspace is currently a planning shell — no code exists yet. The first scaffolding work is **W1.A** of the master plan. Target tree (abridged; full version in `docs/spec/VERDICT_MASTER_BUILD_PLAN.md`):
 
 ```
-v2-sans-hackthon/
+Verdict/
 ├── CLAUDE.md                     ← this file
 ├── README.md
 ├── LICENSE                       ← MIT
