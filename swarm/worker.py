@@ -11,9 +11,12 @@ See docs/AGENT_SWARM.md §4.2 + §7.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from swarm.doctor import check_credential_present
 
 ROLE_FILES: dict[str, str] = {
     "schema": "schema-engineer.md",
@@ -94,11 +97,39 @@ def cmd_show(args: argparse.Namespace) -> int:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
-    """Phase-0 stub: refuses to execute. Placeholder for the SDK invocation."""
+    """Drive a task end-to-end. Gated behind VERDICT_SWARM_LIVE=1.
+
+    Three branches:
+      1. flag unset           -> Phase-0 stub message, exit 2.
+      2. flag set, no cred    -> auth failure message, exit 2.
+      3. flag set, cred ok    -> live-mode placeholder, exit 2 until the
+                                 SDK call site lands per docs/AGENT_SWARM.md
+                                 §12, §14 sign-off (Phase C of the
+                                 SWARM_AUTONOMY_CONFIG.md authorization
+                                 checklist).
+    """
+    if os.environ.get("VERDICT_SWARM_LIVE") != "1":
+        print(
+            "swarm.worker run: not implemented in Phase 0. The Agent SDK invocation "
+            "lands in a follow-up PR after token-budget and model-tier sign-off "
+            "(docs/AGENT_SWARM.md §12, §14). Set VERDICT_SWARM_LIVE=1 to opt in.",
+            file=sys.stderr,
+        )
+        return 2
+
+    cred_ok, cred_detail = check_credential_present()
+    if not cred_ok:
+        print(
+            f"swarm.worker run: VERDICT_SWARM_LIVE=1 but {cred_detail}. "
+            "See .env.example for credential precedence.",
+            file=sys.stderr,
+        )
+        return 2
+
     print(
-        "swarm.worker run: not implemented in Phase 0. The Agent SDK invocation "
-        "lands in a follow-up PR after token-budget and model-tier sign-off "
-        "(docs/AGENT_SWARM.md §12, §14).",
+        f"swarm.worker run: credential {cred_detail} ok, but live-mode is "
+        "not yet implemented. The Claude Agent SDK call site lands in a "
+        "follow-up PR (see docs/SWARM_AUTONOMY_CONFIG.md Phase C).",
         file=sys.stderr,
     )
     return 2

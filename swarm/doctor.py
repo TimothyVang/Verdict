@@ -11,6 +11,7 @@ Checks:
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -25,6 +26,25 @@ from swarm.runtime import gh as gh_lib
 GREEN = "\033[0;32m" if sys.stdout.isatty() else ""
 RED   = "\033[0;31m" if sys.stdout.isatty() else ""
 RESET = "\033[0m"   if sys.stdout.isatty() else ""
+
+
+def check_credential_present() -> tuple[bool, str]:
+    """Confirm at least one Anthropic credential path is configured.
+
+    Precedence matches .env.example: ANTHROPIC_API_KEY > CLAUDE_CODE_OAUTH_TOKEN
+    > ~/.claude/credentials.json > ANTHROPIC_API (legacy). Returns the path
+    name on success — never the value (CLAUDE.md §3.9).
+    """
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return True, "ANTHROPIC_API_KEY"
+    if os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"):
+        return True, "CLAUDE_CODE_OAUTH_TOKEN"
+    creds = Path.home() / ".claude" / "credentials.json"
+    if creds.exists():
+        return True, f"~/.claude/credentials.json ({creds})"
+    if os.environ.get("ANTHROPIC_API"):
+        return True, "ANTHROPIC_API"
+    return False, "no credential (set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN)"
 
 
 def check_anthropic_reachable() -> tuple[bool, str]:
@@ -93,6 +113,7 @@ def main(argv: list[str] | None = None) -> int:
     repo = repo_root()
     checks: list[tuple[str, tuple[bool, str]]] = [
         ("anthropic api reachable",   check_anthropic_reachable()),
+        ("anthropic credential",      check_credential_present()),
         ("gh CLI installed",          check_gh_installed()),
         ("gh authenticated",          check_gh_auth()),
         (f"repo write access ({args.repo_slug})", check_repo_permission(args.repo_slug)),
