@@ -1,5 +1,7 @@
 # Devpost Compliance Checklist — SANS Find Evil! 2026
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · [Hackathon Rules](hackathon/RULES.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Authority:** Official Devpost rules at findevil.devpost.com (retrieved May 2, 2026).
 **Hard deadline:** **Submission Period closes Jun 15, 2026 at 11:45 PM EDT** (= Jun 15 23:45 EDT = Jun 16 03:45 UTC). Team-internal target: Jun 14 EOD = ~28-hour buffer.
 **Judging Period:** Jun 19, 2026 12:00 AM EDT – Jul 3, 2026 12:00 AM EDT.

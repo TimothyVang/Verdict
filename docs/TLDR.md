@@ -1,5 +1,7 @@
 # VERDICT — TL;DR with diagrams
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
+
 > **Share this with new human teammates. Read it first.**
 > One file, ~5-minute read, ASCII diagrams only — no install, no jargon-up-front.
 > When you're done, the rest of the doc tree (`docs/ARCHITECTURE.md`, `docs/BUILD_PLAN.md`, `CLAUDE.md`) makes sense in context.

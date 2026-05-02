@@ -1,5 +1,7 @@
 # SKILLS_FRAMEWORK — using the vendored skill stack in tandem
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [MCP Framework](MCP_FRAMEWORK.md) · [Skills License Audit](SKILLS_LICENSE_AUDIT.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Status:** Phase 0 (vendored, documented; per-task wiring lands as W2+ tasks are taken). This doc is **engineering scaffolding**, not part of Verdict's runtime authority chain. The Verdict runtime topology lives in `ARCHITECTURE.md`.
 
 **Authority:** below `BUILD_PLAN.md` and `CLAUDE.md`. The skill stack obeys every rule in `CLAUDE.md` §3 — `verdict-house-rules` is the overlay that enforces this. Nothing in this doc supersedes either.

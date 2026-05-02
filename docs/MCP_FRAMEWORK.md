@@ -1,5 +1,7 @@
 # MCP_FRAMEWORK — Model Context Protocol allowlist + isolation discipline
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Skills Framework](SKILLS_FRAMEWORK.md) · [Skills License Audit](SKILLS_LICENSE_AUDIT.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Status:** Phase 0 (allowlist landed; credential-isolation hooks deferred to W2). Engineering scaffolding, **not** part of the runtime authority chain. The Verdict runtime topology lives in `ARCHITECTURE.md`.
 
 **Authority:** below `BUILD_PLAN.md` and `CLAUDE.md`. Every MCP server in the allowlist obeys CLAUDE.md §3.8 (MIT/Apache-2.0 only) and §3.9 (credentials never enter a microsandbox). Nothing in this doc supersedes either.

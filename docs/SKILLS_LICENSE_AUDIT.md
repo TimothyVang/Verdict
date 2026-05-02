@@ -1,5 +1,7 @@
 # Skills License Audit
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Skills Framework](SKILLS_FRAMEWORK.md) · [MCP Framework](MCP_FRAMEWORK.md) · root [CLAUDE.md](../CLAUDE.md)
+
 Per CLAUDE.md §3.8, every vendored skill, hook, MCP, or external artifact requires an MIT or Apache-2.0 license. This file is the audit log.
 
 **Date:** 2026-05-02 (Week 1, Day 1).

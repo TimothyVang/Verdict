@@ -1,5 +1,7 @@
 # VERDICT — Agent swarm (engineering scaffolding)
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Skills Framework](SKILLS_FRAMEWORK.md) · [MCP Framework](MCP_FRAMEWORK.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Status:** Phase 0 (skeleton landed; SDK calls deferred). This doc is **engineering scaffolding**, not part of the Verdict runtime authority chain. The Verdict *runtime* topology — the planner → fanout → quorum LangGraph — lives in [`ARCHITECTURE.md`](ARCHITECTURE.md) and is out of scope here. The two are different "agents": runtime executors are tool-call dispatchers operating on evidence; this swarm is LLM workers operating on source code.
 
 **Authority:** below `BUILD_PLAN.md` and `CLAUDE.md`. The swarm consumes `BUILD_PLAN.md` task IDs read-only and obeys every rule in `CLAUDE.md` §3. Nothing in this doc supersedes or modifies either.

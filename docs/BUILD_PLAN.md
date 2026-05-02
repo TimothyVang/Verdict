@@ -1,5 +1,7 @@
 # VERDICT — Master Build Plan (v1)
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Document type:** Comprehensive 6-week TDD execution plan. Covers every task from v4.5 architecture + v4.6 schema patches + v4.4 deferred items + foundational infrastructure. This document is the single source of truth from May 2 through June 14, 2026.
 **Authority chain:** Devpost rules (always win) + `DEVPOST_COMPLIANCE.md` (rule-to-artifact mapping) + v4.5 (architecture) + v4.6 (schema amendments) + this document (execution). Where execution details disagree with v4.5, this plan wins for execution; v4.5 wins for architecture rationale.
 **Owner:** Tim (lead) + Beaver (LangGraph) + Haley (inference) + KP (forensics).

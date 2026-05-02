@@ -1,5 +1,7 @@
 # VERDICT — Docs Accuracy Audit
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · [Workflow Review](AGENTIC_WORKFLOW_REVIEW.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Audited:** 2026-05-02
 **Resolved:** 2026-05-02 (all 11 punchlist items closed; see *Resolution log* at bottom).
 **Scope:** README.md, ARCHITECTURE.md, BUILD_PLAN.md, DEVPOST_COMPLIANCE.md (project root). Archive treated as historical reference, not authority — but cross-checked when it disagrees with the current docs.

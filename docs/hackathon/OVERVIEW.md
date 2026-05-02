@@ -1,5 +1,7 @@
 # FIND EVIL! Hackathon — Overview
 
+> **Wiki:** [Index](../README.md) · [TL;DR](../TLDR.md) · [Architecture](../ARCHITECTURE.md) · [Build Plan](../BUILD_PLAN.md) · [Devpost](../DEVPOST_COMPLIANCE.md) · [Hackathon Rules](RULES.md) · root [CLAUDE.md](../../CLAUDE.md)
+
 Source: https://findevil.devpost.com/
 Scraped: 2026-05-02
 

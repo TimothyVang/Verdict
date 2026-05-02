@@ -18,7 +18,7 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 
 ## 2. Authority chain (read in this order)
 
-`docs/README.md` is the **wiki front door** — every doc under `docs/` is indexed there with role + when-to-read. The table below is the load-bearing subset that governs runtime behavior and submission compliance.
+`docs/README.md` is the **wiki front door** — every doc under `docs/` is indexed there with role + when-to-read. Every doc under `docs/` (except the frozen `spec/` archive) also carries a one-line `> **Wiki:** [Index](README.md) · …` nav strip directly under its H1, so any page is one hop from the index and from its closest siblings. The table below is the load-bearing subset that governs runtime behavior and submission compliance.
 
 ### Entry points
 

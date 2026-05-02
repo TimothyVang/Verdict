@@ -1,6 +1,10 @@
 # docs/ — VERDICT documentation wiki
 
+> **Wiki home.** Project root: [README](../README.md) · [CLAUDE.md](../CLAUDE.md) · [CONTRIBUTING](../CONTRIBUTING.md) · [SECURITY](../SECURITY.md) · [LICENSE](../LICENSE)
+
 Single front door for everything in `docs/`. The repo root `README.md` is the project entry point; this file is the **doc index** — every file under `docs/` has a row here with its role, audience, and when to read it.
+
+Every doc under `docs/` (except `spec/` archive) carries a one-line `> **Wiki:** …` nav strip directly under its H1, linking back here plus to its closest siblings. That makes any page a one-hop jump from the index — no need to climb back manually.
 
 If you are an LLM/Claude Code session, read this file before opening anything else under `docs/`.
 
@@ -93,6 +97,7 @@ These are cited by `../CLAUDE.md` and `BUILD_PLAN.md` but not yet written. Each 
 - **`ARCHITECTURE.md` is the single architectural authority.** If a component changes, update it here, not in the spec archive.
 - **`BUILD_PLAN.md` task IDs are immutable** once a contributor has committed against them. New work gets a new ID.
 - **Keep this index in sync.** Any new file under `docs/` needs a row above; any rename or deletion needs to be reflected here. Same for the authority table in `../CLAUDE.md` §2.
+- **Wiki-nav header on every new doc.** Any new `docs/*.md` (except files under `spec/`) must carry a one-line `> **Wiki:** [Index](README.md) · …` strip directly under its H1, linking to the index plus 4–6 closest siblings. Subdirectory docs use `../` prefixes (see `hackathon/RULES.md` for the pattern).
 - **Engineering-scaffolding docs (`AGENT_SWARM.md`, `MCP_FRAMEWORK.md`, `SKILLS_FRAMEWORK.md`, `SKILLS_LICENSE_AUDIT.md`, `AGENTIC_WORKFLOW_REVIEW.md`)** must keep their "below `BUILD_PLAN.md` and `CLAUDE.md`" disclaimer in their headers — they are not allowed to drift into supplanting authority.
 
 ## Note on `protocol-sift/`

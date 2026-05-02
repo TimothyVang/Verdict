@@ -1,5 +1,7 @@
 # VERDICT — Agentic Workflow Review
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · [Accuracy Report](DOCS_ACCURACY_REPORT.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Audited:** 2026-05-02
 **Scope:** the **agentic workflow** — both the runtime loop the tool runs at investigation time (LangGraph planner → executor → quorum cycle, mode-locked verifier strategies, ledger discipline) and the development loop humans+Claude use to build it (TDD cycle, hard rules in `CLAUDE.md` §3, Conventional Commits, weekly gates). Sister audit: `docs/DOCS_ACCURACY_REPORT.md` (counts/labels/MITRE IDs).
 **Methodology:** (1) two parallel agent passes — one for runtime, one for dev workflow — against `README.md`, `CLAUDE.md`, `docs/ARCHITECTURE.md`, `docs/BUILD_PLAN.md`, `docs/DEVPOST_COMPLIANCE.md`, `CONTRIBUTING.md`, `SECURITY.md`; (2) cross-doc claim verification with grep+read; (3) findings filtered against the prior accuracy report so the two audits don't overlap.
