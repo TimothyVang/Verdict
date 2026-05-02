@@ -70,6 +70,14 @@ gh auth setup-git
 
 Verdict ships three runtimes. Pin everything; no `latest`.
 
+**Quick path — one command:**
+```bash
+bash scripts/bootstrap-dev.sh
+```
+Idempotent. Installs uv + Python 3.11, Rust 1.88, Node 20 + pnpm, and Microsandbox (Linux only) at the pinned versions in the table below. Skips anything already at the right version. Re-run any time you want to re-verify the toolchain.
+
+**Manual path** (use this if `bootstrap-dev.sh` fails on your platform — macOS host, exotic distro, etc., and tell PUG so the script gets a fix):
+
 | Component | Pinned version | Install |
 |---|---|---|
 | Python | 3.11.x | `uv python install 3.11` (https://github.com/astral-sh/uv) |
@@ -77,6 +85,7 @@ Verdict ships three runtimes. Pin everything; no `latest`.
 | Rust | 1.88 | `rustup install 1.88 && rustup default 1.88` |
 | Node | 20.x LTS | `nvm install 20 && nvm use 20` |
 | Node pkg mgr | `pnpm` (corepack) | `corepack enable && corepack use pnpm` |
+| Microsandbox | v0.4.x | `curl -fsSL https://install.microsandbox.dev \| sh` (Linux/SIFT VM only) |
 | Linters | `ruff`, `cargo clippy`, `eslint` | wired via pre-commit; see Step 5 |
 
 **Where to develop.** Two supported configurations:
