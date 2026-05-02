@@ -1,6 +1,10 @@
 # VERDICT — TL;DR with diagrams
 
-**One sentence:** A forensic LLM agent that catches its own hallucinations using two AI models cross-checking each other, encodes SANS investigative discipline as code (not prompts), and produces a courtroom-grade audit trail. Built for the SANS Find Evil! hackathon, June 14, 2026 deadline.
+> **Share this with new human teammates. Read it first.**
+> One file, ~5-minute read, ASCII diagrams only — no install, no jargon-up-front.
+> When you're done, the rest of the doc tree (`docs/ARCHITECTURE.md`, `docs/BUILD_PLAN.md`, `CLAUDE.md`) makes sense in context.
+
+**One sentence:** A forensic LLM agent that catches its own hallucinations using two AI models cross-checking each other, encodes SANS investigative discipline as code (not prompts), and produces a courtroom-grade audit trail. Built for the SANS *FIND EVIL!* hackathon — Devpost upload **Jun 14 2026 EOD** (team target); official deadline **Jun 15 2026 11:45 PM EDT**.
 
 ---
 
@@ -16,7 +20,7 @@
    │  1. Plans the investigation   │   "Where would evil hide?"
    │  2. Runs forensic tools       │   vol3, hayabusa, plaso, MFTECmd...
    │  3. Two models cross-check    │   Qwen3 vs GLM-4.5-Air
-   │  4. Quorum decides verdict    │   VERIFIED / CONTESTED / UNVERIFIABLE
+   │  4. Quorum decides verdict    │   VETTED / CONTESTED / UNVERIFIABLE
    │  5. HMAC-signs the audit log  │   Tamper-evident chain
    └───────────────────────────────┘
                  │
@@ -56,7 +60,7 @@
 │  │ self-        │    │ cross-engine │    │ Qwen3 + GLM  │      │
 │  │ consistency  │    │ quorum       │    │ three-way    │      │
 │  │              │    │              │    │              │      │
-│  │ → VETTED     │    │ → VERIFIED_  │    │ → VERIFIED_  │      │
+│  │ → VETTED     │    │ → VETTED_    │    │ → VETTED_    │      │
 │  │   _CLOUD     │    │   AIRGAP     │    │   DUAL       │      │
 │  │ (best-effort)│    │ (true cross- │    │ (strongest)  │      │
 │  │              │    │   family)    │    │              │      │
@@ -121,7 +125,7 @@
               ┌──────────┼──────────┐
               ▼          ▼          ▼
         ┌─────────┐ ┌─────────┐ ┌─────────┐
-        │VERIFIED │ │CONTESTED│ │UNVERIFI-│
+        │ VETTED  │ │CONTESTED│ │UNVERIFI-│
         │         │ │         │ │ ABLE    │
         │ HMAC-   │ │ Replan  │ │ Agent   │
         │ sign &  │ │ (max 3) │ │ gives up│
@@ -129,6 +133,8 @@
         │         │ │ unverif.│ │ ly      │
         └─────────┘ └─────────┘ └─────────┘
 ```
+
+VETTED is the schema's vetted-by-quorum outcome; the persisted Finding carries the mode-specific status `VETTED_CLOUD` / `VETTED_AIRGAP` / `VETTED_DUAL` per `CLAUDE.md §3.6`.
 
 ---
 
@@ -145,7 +151,7 @@
    │  LAYER 1 — Claude PreToolUse hook                    │
    │  (cloud + dual modes only; air-gap = no Claude)     │
    │                                                      │
-   │  ⚠️  Best-effort: anthropics/claude-code #33106     │
+   │  ⚠  Best-effort: anthropics/claude-code #33106      │
    │      means deny is buggy for MCP tools. Logged but  │
    │      not the architectural guarantee.               │
    └──────────────────┬──────────────────────────────────┘
@@ -333,7 +339,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
        │  Pull network cable on camera. Mode re-detects → airgap.
        │
        │  ⓵ DKOM divergence: pslist + psscan diverge
-       │     → automatic Hypothesis(T1014.001)
+       │     → automatic Hypothesis(T1014)
        │     "textbook rootkit signature"
        │
        │  ⓶ Hunt Evil masquerade: scvhost.exe parent=cmd.exe
@@ -349,7 +355,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
        │
        │  ⓹ Disagreement: Qwen3 hallucinates path; GLM
        │     disagrees → CONTESTED → replan → both agree
-       │     → VERIFIED_AIRGAP (HMAC-signed)
+       │     → VETTED_AIRGAP (HMAC-signed)
        │
        │  ⓺ TSI proof: tcpdump shows API key on host egress,
        │     NOT inside microvm. Credentials never enter VM.
@@ -359,7 +365,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
        │
 3:00 ─┤ DUAL MODE (60s)
        │  • Plug cable back. New case (mode locked at init).
-       │  • Three-way verification → VERIFIED_DUAL
+       │  • Three-way verification → VETTED_DUAL
        │
 4:00 ─┤ Architecture recap + per-mode accuracy table
        │  • Hallucination rate per mode
@@ -378,7 +384,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 ┌─────────────────────────────────────────────────────────┐
 │ RISK #1 — Microsandbox hits a blocker week 4+           │
 │                                                         │
-│  Likelihood: MEDIUM (it's beta)                         │
+│  Likelihood: MEDIUM (pre-1.0; latest 0.1.x)             │
 │  Impact:     HIGH (kills TSI hero shot)                 │
 │  Mitigation: Test it HARD in week 2 (chaos exercise),   │
 │              not week 4. Have bubblewrap+nsjail         │
@@ -436,7 +442,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │                                                            │
 │   2. IR ACCURACY                                           │
 │      Artifact-pair rule, Tier-1 caveats, MITRE sub-        │
-│      techniques, VETTED_CLOUD vs VERIFIED honesty,         │
+│      techniques, VETTED_CLOUD vs VETTED honesty,           │
 │      Hunt Evil masquerade, DKOM auto-detection.            │
 │      Five Inspect AI scorers per mode.                     │
 │                                                            │
@@ -457,12 +463,13 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │      environment metadata (NIST SP 800-86).                │
 │                                                            │
 │   6. USABILITY AND DOCUMENTATION                           │
-│      Reproducible from fresh SIFT VM. verdict doctor       │
-│      pre-flight. 16 doc files. Conventional Commits        │
-│      with task IDs. agentskills.io portable skills.        │
+│      Reproducible from a fresh SIFT VM. verdict doctor     │
+│      pre-flight. Reproducible doc set. Conventional        │
+│      Commits with task IDs. agentskills.io portable        │
+│      skills.                                               │
 │                                                            │
 │  Cost: ~76 teammate-days over 6 weeks, 4 people.           │
-│  Risk: ~4 days slack budget. Microsandbox is beta.         │
+│  Risk: ~4 days slack budget. Microsandbox is pre-1.0.      │
 │                                                            │
 │  Hard deadline: Jun 15, 2026 11:45 PM EDT.                 │
 │  Team target:   Jun 14 EOD = ~28h buffer.                  │
@@ -477,22 +484,147 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 
 ---
 
+## What you need to run / contribute
+
+Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface** (Claude Code session). All three are pinned; nothing is `latest`. The fastest path is `bash scripts/bootstrap-dev.sh` (idempotent), then `verdict doctor` to verify.
+
+### Toolchain (host)
+
+| Component | Pin | Why |
+|---|---|---|
+| **OS** | SIFT Workstation 24.04 (Ubuntu) — canonical | Forensic tools, microsandbox, libkrun resolve here |
+| **Python** | 3.11 (via `uv`) | Runtime for `verdict` agent, schemas, planner |
+| **Rust** | 1.88 | FastMCP 3.x gateway |
+| **Node** | 20.x LTS + `pnpm` | MCP servers (deferred v2) |
+| **Microsandbox** | v0.4.x (libkrun-based) | Read-only `/evidence` mount, ~200 ms cold microVM |
+| **Linters** | `ruff`, `cargo clippy`, `eslint` | Pre-commit + CI gates |
+| **Git signing** | GPG or SSH ed25519 | Every commit on `main` must be verified |
+
+### Services (run-time)
+
+| Service | Required for | How |
+|---|---|---|
+| **SGLang** serving Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) | Air-gap + dual modes (planner/executor) | `sglang_server_v1 --model-path … --tool-call-parser qwen3_xml --port 30000` |
+| **SGLang** serving GLM-4.5-Air (MIT) | Air-gap + dual modes (verifier only) | `sglang_server_v1 --model-path … --tool-call-parser glm45 --port 30001` |
+| **Anthropic API** | Cloud + dual modes | `ANTHROPIC_API_KEY` exported; OAuth tokens are per-contributor (not redistributable) |
+| **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose up -d` |
+| **HMAC signing key** | Ledger integrity (CLAUDE.md §3.9) | TPM (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` |
+
+`verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, Langfuse healthy, HMAC key resolvable. CI fails closed if it fails.
+
+### Skills — `.claude/skills/` (auto-loaded by Claude Code)
+
+17 vendored skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). All MIT-licensed; full audit in `docs/SKILLS_FRAMEWORK.md` §License audit.
+
+```
+verdict-house-rules        ← Verdict (custom). Re-states CLAUDE.md §3 hard rules
+                              as a skill so the agent obeys them on every action.
+                              Auto-triggers on every session.
+
+using-superpowers          ← obra/superpowers — index of the framework
+
+  brainstorming            ← Socratic refinement before any code
+  writing-plans            ← Decompose feature → 2–5 min tasks
+  executing-plans          ← Batch-execute with human checkpoints
+  test-driven-development  ← RED → GREEN → REFACTOR (with [W#.#.#] task ID overlay)
+  subagent-driven-development  ← Dispatch to subagent + review subagent
+  dispatching-parallel-agents  ← Concurrent subagent workflows
+  using-git-worktrees      ← Isolated parallel branches
+  systematic-debugging     ← 4-phase root-cause loop
+  verification-before-completion  ← Confirm fix landed before "done"
+  requesting-code-review   ← Pre-review checklist
+  receiving-code-review    ← Structured response to feedback
+  finishing-a-development-branch  ← Merge / PR decision → /qc commit + push
+  writing-skills           ← How to author additional skills
+
+grill-me                   ← mattpocock/skills — relentless interview on a plan
+grill-with-docs            ← mattpocock/skills — same, but cross-checks ARCH.md
+```
+
+### MCPs — `.mcp.json` (project-scoped, six servers, MIT/Apache-2.0 only)
+
+```
+filesystem            modelcontextprotocol/servers (MIT)
+                      Local read access to ledger / evidence manifest / case meta.
+
+fetch                 modelcontextprotocol/servers (MIT)
+                      Threat-intel + MITRE live lookup. Cloud/dual only — TSI-audited.
+
+sequential-thinking   modelcontextprotocol/servers (MIT)
+                      Structured multi-step reasoning for planner_critique CoVe.
+
+github                github/github-mcp-server (Apache-2.0)
+                      PR review + commit chain audit + [W#.#.#] correlation.
+                      env: GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+
+mitre-attack          stoyky/mitre-attack-mcp (MIT)
+                      Technique lookup + sub-technique validation (CLAUDE.md §3.5).
+
+context7              upstash/context7-mcp (MIT)
+                      Up-to-date library/API docs (Pydantic v2, LangGraph,
+                      Inspect AI, Anthropic SDK). Stateless; no credentials.
+```
+
+**Forbidden:** any MCP that's not MIT or Apache-2.0 — Daytona MCP (AGPL-3.0), REMnux MCP (GPL-3.0). Full disqualified-candidates table in `docs/MCP_FRAMEWORK.md` §3.
+
+### Environment variables
+
+```bash
+# Required for cloud / dual mode
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Required for the github MCP (PAT scoped to TimothyVang/Verdict)
+export GITHUB_TOKEN="ghp_..."
+
+# Required for air-gap / dual mode (after SGLang is up)
+export SGLANG_BASE_URL="http://localhost:30000"
+export SGLANG_VERIFIER_BASE_URL="http://localhost:30001"
+
+# Required: microsandbox network closed by default
+export MICROSANDBOX_NETWORK_DEFAULT=false
+
+# Optional — Langfuse self-host (if observability is on)
+export LANGFUSE_HOST="http://localhost:3000"
+export LANGFUSE_PUBLIC_KEY="pk-lf-..."
+export LANGFUSE_SECRET_KEY="sk-lf-..."
+```
+
+Full template in `.env.example`. **Never** commit `.env` — `.gitignore` covers `.env*`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`, `*.gpg`, `cases/`.
+
+### One-command bootstrap
+
+```bash
+bash scripts/bootstrap-dev.sh   # toolchain (uv, rustup, nvm, microsandbox), pinned versions, idempotent
+uv sync                         # Python deps
+docker-compose up -d            # Langfuse v2
+verdict doctor                  # pre-flight: all of the above must be green
+```
+
+Then pick a `[W#.#.#]` task from `docs/BUILD_PLAN.md` and follow the TDD loop in `CLAUDE.md` §3.7.
+
+---
+
 ## Where to read more
 
 ```
   Need:                                  Read:
   ─────                                  ─────
-  Devpost rule-to-artifact mapping       DEVPOST_COMPLIANCE_CHECKLIST.md
-  Why we picked X over Y                 VERDICT_AUDIT_v4.5.md
-  Schema patches + DFIR rules            VERDICT_v4.6_SPEC_PLAN.md
-  Day-by-day TDD task plan               VERDICT_MASTER_BUILD_PLAN.md
-  Tier-1 examiner caveats                agent-config/MEMORY.md
-  Tool sequencing playbooks              agent-config/PLAYBOOK.md
-  Project conventions                    CLAUDE.md
+  Devpost rule-to-artifact mapping       docs/DEVPOST_COMPLIANCE.md
+  Architecture, schemas, threat model    docs/ARCHITECTURE.md
+  Day-by-day TDD task plan               docs/BUILD_PLAN.md
+  Hard rules an agent must obey          CLAUDE.md  (§3 in particular)
+  Tier-1 examiner caveats                CLAUDE.md  §3.3
+  Why we picked X over Y                 docs/spec/  (frozen audit history)
+  Contributor onboarding                 CONTRIBUTING.md
+  Vulnerability reporting                SECURITY.md
 ```
 
 **Authority order for "are we satisfying the rules?":**
-1. Devpost rules at findevil.devpost.com (always wins)
-2. DEVPOST_COMPLIANCE_CHECKLIST.md (rule-to-artifact mapping)
-3. VERDICT_MASTER_BUILD_PLAN.md (task sequencing)
-4. VERDICT_AUDIT_v4.5.md + VERDICT_v4.6_SPEC_PLAN.md (architecture rationale)
+1. Devpost rules at https://findevil.devpost.com/ (always wins)
+2. `docs/DEVPOST_COMPLIANCE.md` (rule-to-artifact mapping)
+3. `docs/ARCHITECTURE.md` (current architectural authority)
+4. `docs/BUILD_PLAN.md` (task sequencing)
+5. `CLAUDE.md` (project conventions + hard rules)
+6. `docs/spec/` (frozen audit history — reference only)
+
+Code wins over docs. If code is right and a doc disagrees, fix the doc.
