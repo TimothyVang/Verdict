@@ -78,19 +78,37 @@ def test_universal_self_consistency_conforms_to_protocol() -> None:
 
 
 def test_strategy_returns_verdict_result() -> None:
-    """W1.C.3.a stub contract: hardcoded VETTED_CLOUD on a minimal call."""
+    """Post W3.A.3 — ``verify(..., candidates=...)`` returns a
+    ``VerdictResult`` (delegating to ``judge``).
+
+    The W1.C.3 stub returned a hardcoded ``VETTED_CLOUD``; W3.A.3
+    replaces that with real substance-clustering. With a 2-of-3
+    substance majority the result is a vetted ``VerdictResult``;
+    with no candidates ``verify`` raises ``NotImplementedError``
+    (covered by ``test_universal_self_consistency.py``). This test
+    pins the Protocol-level "verify returns a VerdictResult"
+    contract on the candidates-supplied path.
+    """
+    from verdict.verification.engine_output import EngineOutput
+
+    common = ["a", "b"]
+    candidates = [
+        EngineOutput(engine="eng-a", artifact_paths=common, mitre_technique="T1003.001"),
+        EngineOutput(engine="eng-b", artifact_paths=common, mitre_technique="T1003.001"),
+        EngineOutput(engine="eng-c", artifact_paths=["x"], mitre_technique="T1059.001"),
+    ]
     result = UniversalSelfConsistency().verify(
         case_id="case_001_lolbins",
         hypothesis="Evidence consistent with rundll32 invoking comsvcs.MiniDump.",
         mitre_technique="T1003.001",
         evidence_summary="Sysmon ID 1; Prefetch RUNDLL32.EXE-...",
+        candidates=candidates,
     )
     assert isinstance(result, VerdictResult), (
         f"verify(...) must return VerdictResult, got {type(result).__name__}"
     )
-    assert result.status == VerdictStatus.VETTED_CLOUD, (
-        "W1.C.3 stub returns VETTED_CLOUD; W3.A.3 lands the real Chen 2023 logic."
-    )
+    # 2-of-3 substance majority must NOT be CONTESTED.
+    assert result.status != VerdictStatus.CONTESTED
 
 
 def test_verdict_result_status_must_be_canonical() -> None:
@@ -129,16 +147,22 @@ def test_dual_requires_locals_agree_flag_is_true() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_usc_stub_does_not_pretend_to_implement_chen_2023() -> None:
-    """The stub must announce itself. W3.A.3 is the real implementation;
-    until then the stub MUST flag that it is not Chen 2023 -- otherwise
-    a casual reader could plumb it into a quorum and ship a verdict that
-    looks vetted but isn't."""
-    # Either the class docstring or a class attribute must explicitly
-    # mark this as a W1.C.3 stub.
-    cls = UniversalSelfConsistency
-    text = (cls.__doc__ or "") + " " + str(getattr(cls, "STUB_FOR", ""))
-    assert "stub" in text.lower() or "w3.a.3" in text.lower(), (
-        "UniversalSelfConsistency must announce itself as a W1.C.3 stub "
-        "until W3.A.3 lands the real Chen 2023 (UCSC) implementation."
+def test_usc_stub_marker_cleared_post_w3a3() -> None:
+    """Post W3.A.3 — the stub-vs-real boundary moved.
+
+    The W1.C.3 ``STUB_FOR`` class attribute was a regression-guard
+    signal: while the stub was in place it carried a non-empty
+    "W3.A.3 (Chen et al. 2023 ...)" string so a casual reader could
+    not plumb the stub into a real ``quorum_node``. W3.A.3 lands the
+    real strategy and clears the marker — empty string signals
+    "no stub-warning is owed".
+
+    The substantive coverage of USC's invariants lives in
+    ``test_universal_self_consistency.py``.
+    """
+    assert UniversalSelfConsistency.STUB_FOR == "", (
+        "W3.A.3 lands the real Chen 2023 USC; STUB_FOR must be cleared. "
+        "If you are seeing this assertion fail, either (a) you reverted to "
+        "the stub and need to revert this test too, or (b) the stub-vs-real "
+        "boundary moved again and the marker semantics need refreshing."
     )
