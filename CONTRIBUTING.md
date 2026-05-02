@@ -33,7 +33,7 @@ You need all four before you can push:
 
 1. **GitHub account** with 2FA enabled. Required for `gh auth login` and signed commits.
 2. **Devpost account** joined to the team submission. Confirm your name shows on the submission page.
-3. **Anthropic API key** (or Claude Code OAuth) for cloud-mode and dual-mode runs. Air-gap mode does not require this. OAuth tokens are *not* redistributable per Anthropic commercial terms — each contributor uses their own.
+3. **Anthropic API key** or Claude Code OAuth for cloud-mode and dual-mode runs. `OPENROUTER_API_KEY` is an optional host-side fallback for build-side AI agents. Air-gap mode does not require cloud credentials. OAuth/API tokens are *not* redistributable — each contributor uses their own, and secrets never enter microVMs.
 4. **Write access to `TimothyVang/Verdict`.** PUG (TSgt Vang) adds you. Confirm with `gh repo view TimothyVang/Verdict --json viewerPermission` after install — should report `WRITE` or higher.
 
 ---

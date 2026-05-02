@@ -28,15 +28,14 @@ Entrants must build *"a working software application that extends Protocol SIFT'
 - May leverage open-source libraries and existing SIFT codebase
 
 ## Submission Materials Required (8 components)
-1. **Public GitHub repository** with MIT or Apache 2.0 license
-2. **README** with setup instructions
-3. **Live demo URL** or local execution steps ("Try-It-Out Instructions")
-4. **Text description** of features (Devpost format)
-5. **Video demonstration** — under 5 minutes, screencast with narration showing agent working against real evidence
-6. **Architecture diagram** identifying security boundaries and architectural patterns
-7. **Evidence dataset documentation** detailing test data sources and findings
-8. **Accuracy report** — including identified false positives, missed artifacts, hallucinations, evidence integrity approach
-9. **Agent execution logs** with timestamps and tool traces
+1. **Code repository** — public GitHub repository with MIT or Apache 2.0 license and setup instructions in the README.
+2. **Demo video** — under 5 minutes, screencast with narration showing live terminal execution against real evidence and at least one self-correction sequence.
+3. **Architecture diagram** — identifies components, security boundaries, and architectural patterns.
+4. **Written project description** — Devpost format: what it does, how it was built, challenges, lessons learned, and what's next.
+5. **Evidence dataset documentation** — test data sources and findings.
+6. **Accuracy report** — false positives, missed artifacts, hallucinations, and evidence integrity approach.
+7. **Try-it-out instructions** — live deployment URL or clear local execution steps for the SIFT workstation.
+8. **Agent execution logs** — timestamps, tool traces, token usage, and agent-to-agent or iteration traces where applicable.
 
 ## Judging Criteria (Stage Two — six equally weighted factors)
 1. **Autonomous Execution Quality** *(tiebreaker)* — agent reasoning and self-correction capability

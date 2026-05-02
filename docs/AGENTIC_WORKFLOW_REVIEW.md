@@ -21,21 +21,17 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 ## CRITICAL — must fix before May 8
 
-### R1. `VerdictStatus` enum — three docs disagree, README mixes both spellings
+### R1. `VerdictStatus` enum — RESOLVED 2026-05-02
 
-**Where:** `CLAUDE.md` §3.6 line 77, `docs/ARCHITECTURE.md` §1 line 20, `docs/DEVPOST_COMPLIANCE.md` line 75, `README.md` lines 96 + 105.
+**Where:** `CLAUDE.md` §3.6, `docs/ARCHITECTURE.md` §1, `docs/DEVPOST_COMPLIANCE.md` Part 3, root `README.md` mode examples.
 
-**Claims (verbatim):**
-- `CLAUDE.md`: "Verdict statuses are exactly: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. No others."
-- `ARCHITECTURE.md` §1: "≥2-of-3 → `VETTED_CLOUD`; below → `DRAFT_CLOUD`."
-- `DEVPOST_COMPLIANCE.md`: "VerdictStatus enum distinguishes: DRAFT / VETTED_CLOUD / VERIFIED_AIRGAP / VERIFIED_DUAL / CONTESTED / UNVERIFIABLE / APPROVED / REJECTED"
-- `README.md` line 96: "→ 2-of-3 → VETTED_CLOUD" / line 105: "three-way verification → VERIFIED_DUAL"
+**Resolution:** Current authority docs now use the six canonical `VerdictStatus` values from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`.
 
-**Reality:** Three different value sets across three authority docs (`DRAFT_CLOUD` only in ARCH; `DRAFT`, `VERIFIED_*`, `APPROVED`, `REJECTED` only in DEVPOST_COMPLIANCE; `VETTED_*` and `EXHAUSTED_REPLAN` only in CLAUDE.md). README cites both `VETTED_CLOUD` and `VERIFIED_DUAL` in the same demo block. Per the authority chain (`CLAUDE.md` §2: Devpost → DEVPOST_COMPLIANCE → ARCH → BUILD_PLAN → CLAUDE.md), DEVPOST_COMPLIANCE technically wins — but DEVPOST_COMPLIANCE's list is also internally inconsistent (mixes prefixes).
+**Current rule:** `DRAFT`, `APPROVED`, and `REJECTED` are `Finding.review_state` values only. They are not verifier statuses. Engine-quorum verdict and persisted case verdict share the same six-value enum but live on different objects.
 
-**Impact:** Schema validators in W1.B reference an enum that doesn't exist as a single source of truth. Any agent reading the docs to write a Pydantic `Literal[…]` will pick the wrong values; that error then propagates through ledger event types, scorer code, and the demo's per-mode accuracy table.
+**Impact after fix:** Schema workers have a single enum target in W1.B.13.
 
-**Fix:** Adopt CLAUDE.md's 6-value list (`VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`) as canonical because (a) it's the operating charter the agents read first; (b) `VETTED_*` is more honest than `VERIFIED_*` for cloud mode (same-model self-consistency is vetting, not verification); (c) `DRAFT/APPROVED/REJECTED` are workflow states for findings-under-review and belong on `Finding.review_state`, a separate field. Update ARCH §1 line 20 (`DRAFT_CLOUD` → `CONTESTED`); rewrite DEVPOST_COMPLIANCE.md line 75; flip README line 105 `VERIFIED_DUAL` → `VETTED_DUAL`. Add a clarifying sentence to CLAUDE.md §3.6 distinguishing **engine-quorum verdict** (the immediate output of a `VerifierStrategy`) from **case verdict** (the stored `Finding.status`).
+**Fix status:** Done in current authority docs; frozen `docs/spec/` files retain historical terminology by design.
 
 ---
 
@@ -43,7 +39,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Where:** `CLAUDE.md` §8 (verifier strategies), `docs/ARCHITECTURE.md` §1 + §2 quorum_node.
 
-**Claim:** `AirGapCrossEngine` requires "Jaccard ≥ 0.80 AND identical `mitre_technique`". `DualLaneCrossEngine` requires "cloud agrees with ≥1 local AND locals agree". Demo beat ⓹ asserts "Disagreement → CONTESTED → replan → VERIFIED".
+**Claim:** `AirGapCrossEngine` requires "Jaccard ≥ 0.80 AND identical `mitre_technique`". `DualLaneCrossEngine` requires "cloud agrees with ≥1 local AND locals agree". Demo beat ⓹ asserts "Disagreement → CONTESTED → replan → VETTED".
 
 **Reality:** No rule defines what happens when (a) cloud returns `{T1055.012, prefetch_hit}`, Qwen3 returns `{T1055.012, registry_hit}`, GLM returns `{T1106, amcache_hit}` — partial MITRE agreement, low Jaccard, three different artifact tuples. Is that CONTESTED (replan) or UNVERIFIABLE (terminate)? Disagreement-level threshold for CONTESTED-vs-UNVERIFIABLE isn't defined.
 
@@ -119,7 +115,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 ---
 
-### R6. Executor fanout reducer behavior on branch timeout undefined
+### R6. Executor fanout reducer behavior on branch timeout — RESOLVED 2026-05-02
 
 **Where:** `docs/ARCHITECTURE.md` §2 executor_fanout, `BUILD_PLAN.md` (no failure-mode doc yet — `FAILURE_MODES.md` is W1.G.2).
 
@@ -127,7 +123,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** Reducer behavior on partial completion is unspecified. If 1 of 4 branches hangs at the libkrun layer (microsandbox stuck spawning), does the reducer wait the full 600s? Block forever? Emit a partial result after 3 finish? Mark the hung branch as UNVERIFIABLE? Demo "kill -9 + verdict resume" guarantees nothing if the kill happens *during* a hung fanout because there's no expected reducer outcome to compare against.
 
-**Fix:** Document in `docs/FAILURE_MODES.md` (W1.G.2) and reference from ARCH §2: reducer fires once `timeout` elapses OR all four branches return — whichever first. Hung branch emits `ToolOutput(status=TIMEOUT, parsed_artifacts=[])` and is treated as a CONTESTED contributor (per R3 — empty-set is DISAGREEMENT, not null vote). Reducer never blocks past `branch_timeout = 1.5 × tool_timeout = 900s`.
+**Fix status:** Done in `docs/FAILURE_MODES.md`. Reducer fires once all four branches return or `branch_timeout=900s` elapses, whichever happens first. Hung branches emit `ToolOutput(status=TIMEOUT, parsed_artifacts=[])` and quorum treats empty artifacts as disagreement.
 
 ---
 
@@ -143,7 +139,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 ---
 
-### R8. Reverify "parallel verdict chain" semantics vague
+### R8. Reverify "parallel verdict chain" semantics — RESOLVED 2026-05-02
 
 **Where:** `README.md` line 73, `docs/DEVPOST_COMPLIANCE.md` line 134, `CLAUDE.md` §3.4 + §10.
 
@@ -151,7 +147,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** "Parallel verdict chain" is undefined. Where does the fork happen — `case_init` or `planner_node`? How does `verdict show <case_id>` distinguish chains? When `verdict approve <finding_id>` runs and a finding exists in both chains, which one gets signed? Export format ambiguity for `verdict export <case_id>` — does it include all chains or default to original?
 
-**Fix:** Author `docs/CASE_ISOLATION.md` (already on the next-turn create list) with: chain forks at `planner_node` (carries forward `case_init`'s evidence manifest, mode lock = the new mode); `thread_id = f"{case_id}-reverify-{new_mode}-{utc_iso}"`; `verdict show <case_id>` lists all chains and their statuses; `verdict approve` requires `--chain-id` when more than one exists; `verdict export` defaults to the original chain, `--chain-id all` for both.
+**Fix status:** Done in `docs/CASE_ISOLATION.md`. Reverify creates a fresh chain before `planner_node`, copies the evidence manifest by reference, re-hashes evidence, uses a new `chain_id` / `langgraph_thread_id`, and requires `--chain-id` for ambiguous approve/export/resume operations.
 
 ---
 
@@ -193,7 +189,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 ## MEDIUM — clarify before judge demo
 
-### R10. Microsandbox `spawn()` failure path unspecified
+### R10. Microsandbox `spawn()` failure path — RESOLVED 2026-05-02
 
 **Where:** `docs/ARCHITECTURE.md` §6 Pattern 1 + Pattern 2.
 
@@ -201,11 +197,11 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** What happens if `spawn()` fails (kernel resource exhaustion, image missing, libkrun crash, host disk full)? Ledger event_type? Retry logic? Cascade to UNVERIFIABLE?
 
-**Fix:** Add to `docs/FAILURE_MODES.md` (W1.G.2): `microsandbox.spawn()` exception → `ToolExecutor` logs `LedgerEntry(event_type='sandbox_failure', error_detail=...)`, no retry (kernel-level errors are not transient), the associated finding is marked `UNVERIFIABLE` with `failure_reason='sandbox_spawn_failed'`. Reference R9.
+**Fix status:** Done in `docs/FAILURE_MODES.md`: `microsandbox.spawn()` exception logs `LedgerEntry(event_type='sandbox_failure', error_detail=...)`, does not retry kernel/resource failures, and marks the associated finding `UNVERIFIABLE` with `failure_reason='sandbox_spawn_failed'`.
 
 ---
 
-### R11. TSI proxy unreachable behavior unspecified
+### R11. TSI proxy unreachable behavior — RESOLVED 2026-05-02
 
 **Where:** `docs/ARCHITECTURE.md` §6 Pattern 2.
 
@@ -213,7 +209,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** What if the TSI proxy is down (host restarted, port closed, DNS fail)? `microsandbox.spawn()` raises `NetworkProxyError`? Counted against `tool_arg_retry_max`?
 
-**Fix:** Same FAILURE_MODES.md paragraph: `NetworkProxyError` is treated like any other tool failure — logged to ledger with `event_type='tool_call'` + `error_detail`, counts against `tool_arg_retry_max`. After exhaustion → UNVERIFIABLE.
+**Fix status:** Done in `docs/FAILURE_MODES.md`: `NetworkProxyError` is logged to the ledger with `event_type='tool_call'` and counts against `tool_arg_retry_max`; exhaustion produces `UNVERIFIABLE` with `failure_reason='tsi_proxy_unreachable'`.
 
 ---
 
@@ -249,7 +245,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** `BUILD_PLAN.md` schedules the workflow file in W4.D.4 — late week 4. By the time it lands, the metric only retroactively gates the *next* week's commits, not the four weeks of code that produced the >10% rate. No `.github/workflows/` file is staged today.
 
-**Fix:** Stage a stub workflow `.github/workflows/eval-hallucination-gate.yml` in W1.A.7 that runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` and fails on >10%. Stub the scorer to return 0.0 (always pass) until W4.D.1 implements the real one. This wires the gate into CI before any hallucination-producing code lands.
+**Fix:** Stage a real workflow `.github/workflows/eval-hallucination-gate.yml` in W1.A.9 that runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the job must fail closed with `scorer_not_implemented` rather than returning a passing score. W1-W3 may publish an advisory ≤10% trend report; W4+ release gates are hard ≤5%.
 
 ---
 
@@ -272,7 +268,7 @@ The following workflow claims were checked and hold up:
 
 ## Summary punchlist (priority order)
 
-1. **R1** — `VerdictStatus` enum cascade across 4 files. Adopt CLAUDE.md's 6-value list as canonical; rewrite ARCH §1 line 20 (`DRAFT_CLOUD` → `CONTESTED`); rewrite DEVPOST_COMPLIANCE.md line 75; flip README line 105 (`VERIFIED_DUAL` → `VETTED_DUAL`); add engine-quorum-vs-case-verdict distinction to CLAUDE.md §3.6.
+1. **R1 — RESOLVED** — `VerdictStatus` enum cascade across 4 files now uses CLAUDE.md's six-value list as canonical; engine-quorum-vs-case-verdict distinction lives in CLAUDE.md §3.6.
 2. **R2 + R3** — Add a quorum dispatch table to ARCH §1 covering all three strategies; add empty-set-is-DISAGREEMENT rule.
 3. **R4** — Spec `ModeLockedError` exit-code + stderr in CLAUDE.md §3.4.
 4. **R5** — Add `max_clarify_iterations=2` to ARCH §2 comprehension_gate.
@@ -282,7 +278,7 @@ The following workflow claims were checked and hold up:
 8. **D2** — BUILD_PLAN sweep: every `*.a` "Failing test" subtask names the literal RED assertion; add RED-line policy to BUILD_PLAN intro.
 9. **R12** — Caveat-trigger-keying note at top of CLAUDE.md §3.3 table.
 10. **R13** — Sub-technique-applies-to-negatives sentence appended to CLAUDE.md §3.5.
-11. **D4** — Stage `.github/workflows/eval-hallucination-gate.yml` stub task in W1.A.7.
-12. **R6, R10, R11, R8** — Defer to next-turn doc creation: `docs/FAILURE_MODES.md` (R6 + R10 + R11), `docs/CASE_ISOLATION.md` (R8). These were already on the post-DOCS_ACCURACY_REPORT punchlist.
+11. **D4** — Stage `.github/workflows/eval-hallucination-gate.yml` fail-closed task in W1.A.9.
+12. **R6, R10, R11, R8 — RESOLVED** — `docs/FAILURE_MODES.md` covers branch timeout, sandbox spawn failure, and TSI proxy failure; `docs/CASE_ISOLATION.md` covers reverify chain semantics.
 
 **Estimated fix effort:** ~75 minutes for items 1–11 (in-place edits to 5 existing docs); items 12 are next-turn doc creation already scoped.

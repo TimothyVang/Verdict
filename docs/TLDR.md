@@ -39,6 +39,8 @@
    └───────────────────────────────┘
 ```
 
+**Release artifact status:** `docs/BUILD.md`, `docs/ARCHITECTURE_DIAGRAM.svg`, `docs/EVIDENCE_DATASET.md`, `docs/ACCURACY_REPORT.md`, `docs/NOVEL_CONTRIBUTION.md`, and `submission/execution-logs/*.jsonl` are planned release deliverables, not present yet. Do not claim submission readiness until `docs/DEVPOST_COMPLIANCE.md` Part 6 is fully checked.
+
 ---
 
 ## Three modes — pick by environment, not config
@@ -151,7 +153,7 @@ VETTED is the schema's vetted-by-quorum outcome; the persisted Finding carries t
                       ▼
    ┌─────────────────────────────────────────────────────┐
    │  LAYER 1 — Claude PreToolUse hook                    │
-   │  (cloud + dual modes only; air-gap = no Claude)     │
+   │  (cloud + dual modes; air-gap relies on layers 2-3)  │
    │                                                      │
    │  ⚠  Best-effort: anthropics/claude-code #33106      │
    │      means deny is buggy for MCP tools. Logged but  │
@@ -417,7 +419,7 @@ Each ID is from [`BUILD_PLAN.md`](BUILD_PLAN.md). Pick the one that lines up wit
 ┌─────────────────────────────────────────────────────────┐
 │ RISK #1 — Microsandbox hits a blocker week 4+           │
 │                                                         │
-│  Likelihood: MEDIUM (pre-1.0; latest 0.1.x)             │
+│  Likelihood: MEDIUM (pre-1.0; pinned 0.4.x line)        │
 │  Impact:     HIGH (kills TSI hero shot)                 │
 │  Mitigation: Test it HARD in week 2 (chaos exercise),   │
 │              not week 4. Have bubblewrap+nsjail         │
@@ -477,6 +479,8 @@ Each ID is from [`BUILD_PLAN.md`](BUILD_PLAN.md). Pick the one that lines up wit
 ---
 
 ## Bottom line — mapped to all 6 official Devpost judging criteria
+
+Judging criteria are separate from submission artifacts. The eight required Devpost artifacts and the 19-item internal release checklist live in `docs/DEVPOST_COMPLIANCE.md`.
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -553,9 +557,9 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 
 | Service | Required for | How |
 |---|---|---|
-| **SGLang** serving Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) | Air-gap + dual modes (planner/executor) | `sglang_server_v1 --model-path … --tool-call-parser qwen3_xml --port 30000` |
-| **SGLang** serving GLM-4.5-Air (MIT) | Air-gap + dual modes (verifier only) | `sglang_server_v1 --model-path … --tool-call-parser glm45 --port 30001` |
-| **Anthropic API** | Cloud + dual modes | `ANTHROPIC_API_KEY` exported; OAuth tokens are per-contributor (not redistributable) |
+| **SGLang** serving Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) | Air-gap + dual modes (planner/executor) | `sglang_server_v1 --model-path … --tool-call-parser qwen --port 30000` |
+| **SGLang** serving GLM-4.5-Air (MIT) | Air-gap + dual modes (verifier only) | `sglang_server_v1 --model-path … --tool-call-parser glm --port 30001` |
+| **Anthropic / OpenRouter API** | Cloud + dual modes | `ANTHROPIC_API_KEY` preferred; `OPENROUTER_API_KEY` optional host-side AI-agent fallback. OAuth/API tokens are per-contributor and never enter microVMs. |
 | **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose up -d` |
 | **HMAC signing key** | Ledger integrity (CLAUDE.md §3.9) | TPM (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` |
 
@@ -563,7 +567,7 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 
 ### Skills — `.claude/skills/` (auto-loaded by Claude Code)
 
-17 vendored skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). All MIT-licensed; full audit in `docs/SKILLS_FRAMEWORK.md` §License audit.
+17 vendored skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). Skill and MCP licenses are tracked in `docs/SKILLS_LICENSE_AUDIT.md`.
 
 ```
 verdict-house-rules        ← Verdict (custom). Re-states CLAUDE.md §3 hard rules
@@ -590,14 +594,17 @@ grill-me                   ← mattpocock/skills — relentless interview on a p
 grill-with-docs            ← mattpocock/skills — same, but cross-checks ARCH.md
 ```
 
-### MCPs — `.mcp.json` (project-scoped, six servers, MIT/Apache-2.0 only)
+### MCPs — mode-scoped configs (MIT/Apache-2.0 only)
 
 ```
 filesystem            modelcontextprotocol/servers (MIT)
-                      Local read access to ledger / evidence manifest / case meta.
+                      Local workspace access to ledger / evidence manifest / case meta.
+                      Excluded from safe default because upstream exposes write-capable
+                      tools; cloud/dual developer configs only.
 
 fetch                 modelcontextprotocol/servers (MIT)
-                      Threat-intel + MITRE live lookup. Cloud/dual only — TSI-audited.
+                      Threat-intel + MITRE live lookup. Cloud/dual configs only;
+                      omitted from `.mcp.json` and `.mcp.airgap.json`.
 
 sequential-thinking   modelcontextprotocol/servers (MIT)
                       Structured multi-step reasoning for planner_critique CoVe.
@@ -611,8 +618,10 @@ mitre-attack          stoyky/mitre-attack-mcp (MIT)
 
 context7              upstash/context7-mcp (MIT)
                       Up-to-date library/API docs (Pydantic v2, LangGraph,
-                      Inspect AI, Anthropic SDK). Stateless; no credentials.
+                      Inspect AI, Anthropic SDK). Cloud/dual configs only.
 ```
+
+Safe default: `.mcp.json` loads only `sequential-thinking`. Use `.mcp.cloud.json` or `.mcp.dual.json` explicitly for research sessions that need `filesystem`, `fetch`, `github`, `mitre-attack`, or `context7`.
 
 **Forbidden:** any MCP that's not MIT or Apache-2.0 — Daytona MCP (AGPL-3.0), REMnux MCP (GPL-3.0). Full disqualified-candidates table in `docs/MCP_FRAMEWORK.md` §3.
 
@@ -620,7 +629,8 @@ context7              upstash/context7-mcp (MIT)
 
 ```bash
 # Required for cloud / dual mode
-export ANTHROPIC_API_KEY="sk-ant-..."
+export ANTHROPIC_API_KEY="<your-anthropic-api-key>"
+export OPENROUTER_API_KEY="<your-openrouter-api-key>"  # optional host-side AI-agent fallback
 
 # Required for the github MCP (PAT scoped to TimothyVang/Verdict)
 export GITHUB_TOKEN="ghp_..."

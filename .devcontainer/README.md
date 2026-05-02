@@ -40,7 +40,8 @@ The image carries **no secrets**. `devcontainer.json` uses `${localEnv:VAR}` ref
 
 | Var | Source | Where it ends up |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | host shell or `.env` | container env only — never written to disk inside the image |
+| `ANTHROPIC_API_KEY` | host shell or `.env` | preferred cloud credential; container env only — never written to disk inside the image |
+| `OPENROUTER_API_KEY` | host shell or `.env` | optional host-side AI-agent fallback; never passed into microsandboxes |
 | `GITHUB_TOKEN` | host shell | passed to the `github` MCP via `.mcp.json` (already env-var-ref only) |
 | `LANGFUSE_*` | host shell or `.env` | pointed at `host.docker.internal:3000` |
 | `SGLANG_*` | hard-coded to `host.docker.internal:{30000,30001}` | overrides the `.env` defaults of `localhost:*` so the container reaches the host |
@@ -72,6 +73,7 @@ docker run -it --rm \
   -v "$PWD":/workspaces/Verdict \
   -w /workspaces/Verdict \
   -e ANTHROPIC_API_KEY \
+  -e OPENROUTER_API_KEY \
   -e GITHUB_TOKEN \
   -e LANGFUSE_PUBLIC_KEY \
   -e LANGFUSE_SECRET_KEY \
@@ -101,9 +103,9 @@ curl -fsSL https://install.microsandbox.dev | sh
 
 # 3. SGLang (Linux + NVIDIA GPU only)
 sglang_server_v1 --model-path /path/to/qwen3 --port 30000 \
-  --tool-call-parser qwen3_xml &
-sglang_server_v1 --model-path /path/to/glm45  --port 30001 \
-  --tool-call-parser glm45 &
+  --tool-call-parser qwen &
+sglang_server_v1 --model-path /path/to/glm-4.5-air --port 30001 \
+  --tool-call-parser glm &
 
 # 4. HMAC ledger key (no TPM → gpg fallback)
 mkdir -p ~/.verdict ~/cases

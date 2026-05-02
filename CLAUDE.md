@@ -106,7 +106,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 - `LedgerEntry.mode_at_case_init` is set once and immutable.
 - `verdict resume <case_id>` reads the original mode and refuses to advance if the current `detect_mode()` differs. On mismatch it raises `ModeLockedError`, exits 2, and prints to stderr: `Case {case_id} was initialized in mode={original_mode}; current environment is mode={detected_mode}. To re-run under the new mode, use: verdict reverify {case_id} --mode {detected_mode}`.
 - Mode change is via `verdict reverify --mode <m>` only — that creates a **parallel verdict chain**, never mutating the original.
-- Cloud-only mode requires `ANTHROPIC_API` reachable; air-gap requires `SGLANG_BASE_URL` reachable; dual requires both. `verdict doctor` is the pre-flight.
+- Cloud-only mode requires a reachable cloud credential (`ANTHROPIC_API_KEY`, Claude Code OAuth, or optional host-side `OPENROUTER_API_KEY` fallback for build-side AI agents); air-gap requires `SGLANG_BASE_URL` reachable; dual requires cloud + local. `verdict doctor` is the pre-flight.
 
 ### 3.5 MITRE sub-technique precision
 
@@ -151,7 +151,7 @@ Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in
 
 ### 3.9 Credential isolation
 
-- API keys, OAuth tokens, and bearer tokens **never enter a microVM**. They are injected via TSI on host egress only; tcpdump-verifiable.
+- API keys, OAuth tokens, and bearer tokens **never enter a microVM**. This includes `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, GitHub tokens, Langfuse keys, and any bearer token used by host-side AI agents. They are injected via TSI on host egress only; tcpdump-verifiable.
 - HMAC ledger key is TPM-backed (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` with passphrase prompted at gateway init.
 - Ledger redaction strips `authorization`, `auth_user`, `api_key` **before** the entry is hashed and HMAC-signed (`verdict/ledger/redaction.py`).
 - Anthropic OAuth tokens (Claude Code interactive auth) are not redistributable per Anthropic's commercial terms — do not commit, do not bake into images.
@@ -187,7 +187,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 Three operational modes, auto-detected at `case_init` and **locked**:
 
-- `CLOUD` — Claude Code planner + local Qwen3 executor + `CloudSelfConsistency` (n=3, blake3-keyed seeds, temp=0.7).
+- `CLOUD` — Claude Code / Agent SDK planner-executor lane + `CloudSelfConsistency` (n=3, blake3-keyed seeds, temp=0.7). No local Qwen3 executor is required or assumed in cloud-only mode.
 - `AIRGAP` — Qwen3 planner+executor + `AirGapCrossEngine` (Qwen3 vs GLM-4.5-Air, Jaccard ≥ 0.80).
 - `DUAL` — parallel cloud+airgap lanes + `DualLaneCrossEngine` (cloud + ≥1 local; locals agree).
 
@@ -284,10 +284,10 @@ bash scripts/install.sh
 uv sync
 
 # SGLang serving (air-gap planner/executor)
-sglang_server_v1 --model-path /path/to/qwen3 --tool-call-parser qwen3_xml --port 30000
+sglang_server_v1 --model-path /path/to/qwen3 --tool-call-parser qwen --port 30000
 
 # SGLang serving (verifier-only)
-sglang_server_v1 --model-path /path/to/glm45  --tool-call-parser glm45  --port 30001
+sglang_server_v1 --model-path /path/to/glm-4.5-air --tool-call-parser glm --port 30001
 
 # Langfuse v2 self-host
 docker-compose up -d

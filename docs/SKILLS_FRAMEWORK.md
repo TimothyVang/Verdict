@@ -68,7 +68,7 @@ The composition is a single-pass pipeline. Each phase has a defined input, outpu
 | Phase | Skill(s) | CLAUDE.md hard rule(s) enforced | Output (gate to next phase) |
 |---|---|---|---|
 | 0. Always-on overlay | `verdict-house-rules` | All §3 rules | Loaded at session start. Wins on conflict with vendored skills. |
-| 1. Understand | `brainstorming`, `grill-me`, `grill-with-docs` | §3.6 epistemic vocabulary, §3.3 caveat awareness | A bullet list of resolved decisions. `grill-with-docs` writes ADR-style notes back into `docs/ARCHITECTURE.md` or `docs/BUILD_PLAN.md` if architecture moves. |
+| 1. Understand | `brainstorming`, `grill-me`, `grill-with-docs` | §3.6 epistemic vocabulary, §3.3 caveat awareness | A bullet list of resolved decisions. If architecture or build sequencing must move, `grill-with-docs` drafts the proposed doc change for human-reviewed PR; it does not silently mutate authority docs. |
 | 2. Plan | `writing-plans` | §3.7 task-ID discipline, §3.10 real-services-first | A plan: `<task_id>`, files to touch, **tests written first**, acceptance gate. |
 | 3. Implement (TDD) | `test-driven-development` + `verdict-house-rules` | §3.7 RED→GREEN→commit, §3.10 no mocks, §3.2 multi-artifact corroboration in schemas | Failing test, then passing test, with diff staged. **One commit per task ID**. |
 | 3a. Parallel fan-out (optional) | `dispatching-parallel-agents`, `using-git-worktrees` | §3.7 (one task per worktree) | Independent worktrees per branch; merge order documented. |
@@ -105,7 +105,7 @@ Auto-trigger discipline matters because Superpowers' skills can fire at any prom
 The framework is intentionally Phase 0 — skills are vendored and documented, but **automatic triggering** lands later as we wire `.claude/settings.json` hooks. Tracked follow-ups:
 
 - **`tdd-guard` integration.** MIT-licensed Node tool that hard-blocks code edits without a failing test (CLAUDE.md §3.7 in code form). Install pin via `scripts/bootstrap-dev.sh`; wire `PreToolUse` hook in `.claude/settings.json`. Tracked under `[W1.A.0]` follow-on.
-- **MCP allowlist enforcement.** Pair this skill stack with `.mcp.json` — see `docs/MCP_FRAMEWORK.md`.
+- **MCP allowlist enforcement.** Pair this skill stack with the mode-scoped `.mcp*.json` configs — see `docs/MCP_FRAMEWORK.md`.
 - **Skill-trigger telemetry.** Langfuse traces should record which skill fired for which decision so we can audit drift between framework intent and observed behavior.
 - **Per-skill hard-rule citation.** Audit each vendored SKILL.md for places where a Verdict hard rule applies but isn't restated; add a citation in `verdict-house-rules` rather than editing upstream.
 

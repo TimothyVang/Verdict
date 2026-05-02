@@ -14,10 +14,11 @@ This is the single source of truth for "are we satisfying the rules?" Run agains
 
 ## Part 1 — Project Requirements (mandatory demonstrations)
 
-The rules require the Project to demonstrate **all three** of the following. Failure to demonstrate any one = Stage One pass/fail elimination.
+The rules require the Project to use Claude Code or OpenClaw as the primary execution engine and demonstrate **all three** autonomy qualities below. Failure to demonstrate any one = Stage One pass/fail elimination.
 
 | Required demonstration | What rules say | How VERDICT satisfies | Where shown | Status |
 |---|---|---|---|---|
+| **Primary execution engine** | "Uses Claude Code or OpenClaw as primary execution engine" | VERDICT is submitted as a Claude Code / Protocol SIFT extension. Claude Code drives the operator workflow, gateway invocation, ledger review, and cloud/dual planner lane. Air-gap mode is a local-inference lane for classified/offline operation, not a separate non-Claude product; it preserves the same VERDICT graph, tool contracts, ledger, and submission artifacts. | Architecture §1 mode table; TLDR mode diagram; demo shows cloud and dual Claude Code lanes plus air-gap local lane under the same CLI/runtime. | GATED on W1.A.5 + W2.B |
 | **Self-correction** | "the agent detects and resolves errors or inconsistencies in its own output without human intervention" | Cross-engine quorum CONTESTED → replan_node loops back to planner with conflict surfaced as hint; both engines re-converge on corrected finding. Also: planner_critique_node (CoVe) catches wrong plans before execution. | Demo air-gap segment hero beat ⓹ (Qwen3 hallucinates path → GLM disagrees → CONTESTED → replan → VETTED_AIRGAP). Architecture: v4.5 §LangGraph topology + v4.6 planner_critique. | GATED on W2.D.1 + W3.A.1 |
 | **Accuracy validation** | "all findings are traceable to specific artifacts, files, offsets, or log entries" | `Finding.artifact_paths: list[Path]` (min 2), `Finding.evidence_hashes: dict[Path, str]` (SHA-256 per artifact), `Finding.artifact_classes: list[ArtifactClass]` (FOR500 corroboration). Every finding cites both the file path AND the cryptographic hash AND the artifact class. | Schema: v4.6 §Phase 1. Demo: every Finding rendered shows `[file:path][sha256:abc...][class:PREFETCH]` chips. | GATED on W1.B.6–W1.B.10 |
 | **Analytical reasoning** | "output is presented as a structured investigative narrative, not a raw execution log" | `Finding.rationale` is natural-language narrative ("Amcache lists evil.exe at 2024-03-14T15:32Z; per FOR500, Amcache LastModified reflects catalog registration not execution. Execution corroborated by Prefetch run-count=1 + EVTX 4688 at 2024-03-14T15:34Z."). Plus planner CoT capture (gzipped in ledger; first 8KB on Langfuse span). | `verdict export <case_id> --format html` produces narrative report. v4.5 architecture + W2.D.3. | GATED on W2.D.3 |
@@ -142,7 +143,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 > "Can another practitioner deploy and build on this?"
 
 **How VERDICT scores:**
-- `scripts/install.sh` with three credential paths (CLAUDE_CODE_OAUTH_TOKEN, interactive, ANTHROPIC_API_KEY); auto-detects and configures
+- `scripts/install.sh` with cloud credential detection (`CLAUDE_CODE_OAUTH_TOKEN`, interactive Claude Code OAuth, `ANTHROPIC_API_KEY`, optional host-side `OPENROUTER_API_KEY`); auto-detects and configures without passing secrets into microVMs
 - `verdict doctor` pre-flight (W5.A.4) reports each component status before first use
 - `docs/BUILD.md` reproducible from a fresh SIFT VM (verified by reproducing on a second VM in W6.C.3)
 - Full CLI surface: `verdict {init, resume, reverify, status, ls, show, export, validate, mode, gc, health, doctor}`
@@ -204,9 +205,9 @@ Three hours before pushing the v-submit tag, verify ALL of the following are TRU
 - [ ] Demo video shows live terminal screencast with audio narration (NO slides, NO marketing)
 - [ ] Demo video shows ≥ 1 self-correction sequence (Qwen3-vs-GLM CONTESTED → replan beat)
 - [ ] Demo video has no third-party trademarks beyond fair-use tool identification, no copyrighted music
-- [ ] All 8 submission artifacts uploaded to Devpost form
+- [ ] All 8 Devpost submission components uploaded or linked in the Devpost form
 - [ ] Submission writeup text references all 6 judging criteria
-- [ ] No CLAUDE_CODE_OAUTH_TOKEN, no ANTHROPIC_API_KEY, no HMAC private key, no `.env` committed to repo
+- [ ] No CLAUDE_CODE_OAUTH_TOKEN, no ANTHROPIC_API_KEY, no OPENROUTER_API_KEY, no HMAC private key, no `.env` committed to repo
 - [ ] `git tag v-submit && git push origin v-submit` triggered
 - [ ] Devpost submission form Submitted, receipt email confirmed
 
@@ -214,9 +215,9 @@ If ANY checkbox is unchecked at Jun 14 21:00 EDT, abort the v-submit tag push an
 
 ---
 
-## Tasks added to master build plan (Week 6 amendments)
+## Tasks mirrored from master build plan (Week 6 amendments)
 
-These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them here as the source of truth; the master plan should be patched.
+These amendments have been patched into `BUILD_PLAN.md`; they remain here so every Devpost-specific artifact has a nearby compliance trace.
 
 ### W6.D.0 — GitHub repo metadata
 - [ ] **W6.D.0.a** — Set repo Public visibility.
@@ -262,7 +263,7 @@ When in doubt about a Devpost requirement, this is the resolution order:
 1. Devpost rules at `findevil.devpost.com` (always wins)
 2. `DEVPOST_COMPLIANCE.md` (this doc — interprets rules into our artifacts)
 3. `BUILD_PLAN.md` (sequences artifacts into TDD tasks)
-4. `archive/03-audit-v4.5.md` + `archive/04-spec-plan-v4.6.md` (architecture rationale)
+4. `docs/spec/03-audit-v4.5.md` + `docs/spec/04-spec-plan-v4.6.md` (architecture rationale)
 5. Project `CLAUDE.md` (build conventions)
 
 If Devpost amends rules between now and Jun 15, this doc updates first; everything downstream follows.

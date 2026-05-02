@@ -1,5 +1,5 @@
 {
-  "_comment": "Safe default MCP config. Air-gap compatible: no write-capable filesystem server, no network fetch, no credentialed GitHub MCP. Use .mcp.cloud.json or .mcp.dual.json explicitly for connected research sessions. See docs/MCP_FRAMEWORK.md.",
+  "_comment": "Explicit air-gap MCP config. No write-capable filesystem server, no network fetch, no credentialed GitHub MCP. See docs/MCP_FRAMEWORK.md.",
   "mcpServers": {
     "sequential-thinking": {
       "_origin": "modelcontextprotocol/servers (MIT)",

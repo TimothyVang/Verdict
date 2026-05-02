@@ -19,7 +19,7 @@ Two structural facts make per-task agent work tractable in this codebase:
 1. **No mocks (CLAUDE.md §3.10).** Every test runs against real services (SGLang, Microsandbox, Anthropic API, real `.E01` evidence). Green/red is unambiguous. There is no "the test passes but the integration is broken" failure mode an agent can paper over.
 2. **TDD with task IDs (§3.7).** Every commit is `<type>(scope): summary [W#.#.#]`. Provenance is mechanical to verify. Auditor agent grep-checks compliance per diff.
 
-Risks acknowledged up front: API cost, prompt-driven hallucination, drift between agent output and architectural intent. Mitigations: per-task token budget, reviewer + auditor agents, hard human merge gate, Langfuse traces for every call, daily cost digest. The swarm has no autonomous merge authority — every PR requires a human approval on top of agent approval.
+Risks acknowledged up front: API cost, prompt-driven hallucination, drift between agent output and architectural intent. Mitigations: per-task token budget, reviewer + auditor agents, human merge gate, Langfuse traces for every call, daily cost digest. The swarm has no autonomous merge authority; GitHub CODEOWNERS/branch protection is the target enforcement layer and remains a release blocker until configured.
 
 ---
 
@@ -39,7 +39,7 @@ A subagent-driven fallback path lives in `scripts/run-swarm.sh` for cases where 
 | Model — reviewer (TaskCompleted hook) | `claude-sonnet-4-6` | Mechanical pass/fail on lint/test output. Runs as a hook script, not a teammate. |
 | Model — auditor (TaskCompleted hook) | `claude-haiku-4-5` | Pattern-match scan over a diff. Cheapest tier. Runs as a hook script, not a teammate. |
 | Storage (cross-launch state) | SQLite WAL + fsync (`swarm/state.db`) | Same discipline as the runtime ledger (CLAUDE.md §9). Agent Teams' shared task list lives at `~/.claude/tasks/<team>/` and does NOT survive cleanup; persistent state belongs in `swarm/state.db`. |
-| Auth | `CLAUDE_CODE_OAUTH_TOKEN` (Pro/Max subscription) | Each teammate is a full Claude Code session inheriting the lead's auth. `ANTHROPIC_API_KEY` documented as the fallback if subscription rate limits throttle 4–5 concurrent Opus + Sonnet workers. |
+| Auth | `CLAUDE_CODE_OAUTH_TOKEN` (Pro/Max subscription) | Each teammate is a full Claude Code session inheriting the lead's auth. `ANTHROPIC_API_KEY` is the direct API fallback; `OPENROUTER_API_KEY` is an optional host-side fallback for build-side AI agents if direct Anthropic quota is constrained. |
 | Per-task token ceiling | $20 USD | Tracked in `swarm/state.py:tasks.token_spend_usd`. Worker exceeds → exits `turn_budget_exceeded`. |
 
 Why not bespoke `asyncio` SDK pool: Agent Teams already provides shared task list + mailbox + TaskCompleted hook + file-locked claim. Reimplementing those in `swarm/worker.py` is duplication; the SDK path is the *fallback*, not the default.
@@ -63,7 +63,7 @@ Why not GitHub Actions: per-job container spin-up is 30–60 s and runners cost 
                                                                     (rules scan)   │
                                                                                    ▼
                                                                             Human merge
-                                                                       (CODEOWNERS gate)
+                                                                        (CODEOWNERS once configured)
 ```
 
 Five worker specializations, one of each Conductor / Reviewer / Auditor. Workers parallelise; coordinator and reviewers are singletons (a second reviewer is fine, two conductors is a bug — atomic claim still works, but state ownership becomes a footgun).
@@ -84,7 +84,7 @@ N=2–4 parallel workers (cap configurable; CI worker count and Anthropic rate-l
 
 1. `git worktree add worktrees/<task-id> -b <type>/<task-id>-<slug> origin/main`
 2. Load shared system prompt + role-specialized override + the task's BUILD_PLAN entry verbatim
-3. Run TDD loop via Agent SDK: write failing test → commit → implement → commit → ensure green → run linters
+3. Run TDD loop via Agent SDK: write failing test → observe RED → implement → observe GREEN → run linters → make one final commit for the task ID
 4. Push branch, open PR via `gh pr create` with template body
 5. Hand to Reviewer; status → `review`
 
@@ -107,7 +107,7 @@ Single instance. Sonnet 4.6. On `review`:
 1. Fetch worker branch into a clean worktree
 2. Run the local CI gate: `ruff check`, `ruff format --check`, `cargo clippy --all-targets --all-features -- -D warnings` (if Cargo.toml present), `eslint .` (if applicable), `uv run pytest -q`, `uv run pre-commit run --all-files`
 3. Verify `git log --show-signature` shows good signatures on every new commit
-4. Verify TDD audit: ≥1 commit with a failing test followed by ≥1 commit that makes it pass (RED then GREEN)
+4. Verify TDD audit: PR body includes RED and GREEN command output, and the branch has one final Conventional Commit for the task ID
 5. On all-green: `gh pr review --approve` with summary; status → `audit`
 6. On any-red: `gh pr review --request-changes` with the failing log; status → `claimed` (worker retries up to 3 times, then escalates)
 
@@ -127,11 +127,11 @@ Single instance. Haiku 4.5. Passive on every PR after Reviewer approves. Scans t
 | §3.8 dependency hard-NO | Any new `daytona`, `langsmith`, `braintrust`, `arize-phoenix`, `modal`, or AGPL-licensed pkg in lockfiles → flag |
 | §3.10 no mocks | `MockExecutor`, `MockSandbox`, `MockLLM`, `unittest.mock.MagicMock` against `verdict.*`, `responses`, `httpx_mock`, `vcr.py`, `if MOCK or TEST_MODE`, `os.environ.get("VERDICT_TEST")` → flag |
 
-Findings posted as PR comments. **Blocking** on §3.1, §3.2, §3.7, §3.8, §3.10 (sets `blocking: true` label, CODEOWNERS protection plus the auditor label prevents merge). **Advisory** on §3.5, §3.6 (informational comment; does not block).
+Findings posted as PR comments. **Blocking** on §3.1, §3.2, §3.7, §3.8, §3.10 (sets `blocking: true` label; CODEOWNERS and branch protection make this non-bypassable once W1/W3 GitHub scaffolding lands). **Advisory** on §3.5, §3.6 (informational comment; does not block).
 
 ### 4.5 Human gate
 
-PUG (Tim) / Beaver / Haley / KP. CODEOWNERS in the repo enforces that every PR — swarm-authored or human — requires at least one human approval before merge. Branch protection on `main` makes this non-bypassable. Swarm has **no merge authority**, ever. `gh pr merge` from a swarm-token PAT returns 403; this is a feature.
+PUG (Tim) / Beaver / Haley / KP. Target state: CODEOWNERS plus branch protection requires at least one human approval before every merge. Until the CODEOWNERS file and branch rule are present, this is a human process gate, not an enforced GitHub control. Swarm has **no merge authority**, ever; any swarm-token PAT must be configured so `gh pr merge` returns 403.
 
 When humans review a swarm PR they read: (1) Reviewer's checks summary, (2) Auditor's findings, (3) the diff itself. If the swarm did its job, that's the entire mental load — no archeology, no reproduction.
 
@@ -269,8 +269,8 @@ Body:
 all  <!-- or cloud / airgap / dual -->
 
 ## TDD evidence
-- RED: <commit-sha> — failing test added
-- GREEN: <commit-sha> — implementation passes test
+- RED: `<command>` failed with `<short failure>` before implementation
+- GREEN: `<command>` passed after implementation
 
 ## Reviewer checks
 - [x] ruff
@@ -281,8 +281,6 @@ all  <!-- or cloud / airgap / dual -->
 
 ## Auditor scan
 No CLAUDE.md §3 violations detected.
-
-🤖 Authored by swarm worker `schema-engineer` (claude-opus-4-7)
 ```
 
 ---
@@ -347,7 +345,7 @@ If a row has zero CI columns checked, the swarm is the only thing standing betwe
 
 ## 9. Verification gates
 
-**Per-task** (Reviewer + Auditor): lint clean; build clean; test green; signed commits; ≥1 RED followed by ≥1 GREEN in the branch's commit history; task ID `[W#.#.#]` in every commit subject; no forbidden imports; no mock patterns.
+**Per-task** (Reviewer + Auditor): lint clean; build clean; test green; signed commit; RED and GREEN command output recorded in the PR body; exactly one final task commit unless the human explicitly approves a split; task ID `[W#.#.#]` in every commit subject; no forbidden imports; no mock patterns.
 
 **Per-phase** (humans): the weekly acceptance gate already defined in BUILD_PLAN.md — schemas frozen by 2026-05-08, etc. Swarm does not redefine these. Conductor reports phase rollup ("W1.B: 11/13 merged, 2 blocked") in `swarm status`.
 
@@ -456,7 +454,7 @@ scripts/
 
 The two `agents/` directories are **not duplicates** — `swarm/agents/*.md` holds canonical long-form role specs (~60–105 lines each: discipline, blocking matrix, common pitfalls); `.claude/agents/*.md` are thin harness overlays whose frontmatter exposes `model` + `tools` to Claude Code and whose body is a pointer instructing the teammate to load the swarm/agents/ spec for full discipline. Edit specs in `swarm/agents/`; edit model tiering or tool allowlists in `.claude/agents/`.
 
-Phase-0 code remains minimal. The lead session does Phase-0 resume discovery + Phase-1 dispatch in-prompt (see `scripts/run-team.sh`). `swarm/worker.py:cmd_run` is still stubbed; it's a Phase-1 follow-on for the SDK fallback path only.
+Phase-0 code remains minimal. The lead session does Phase-0 resume discovery + Phase-1 dispatch in-prompt (see `scripts/run-team.sh`). The SDK fallback worker command is not part of the supported surface until W1/W3 scaffolding implements it end-to-end; do not ship placeholder command paths.
 
 ---
 
@@ -469,7 +467,7 @@ Time-stamped; ratify before each phase transition.
 - **Reviewer model.** ✅ **Closed 2026-05-02: `claude-sonnet-4-6`** for the in-hook reviewer. Auditor settled at `claude-haiku-4-5` (was Sonnet, decided cheaper tier sufficient for pattern-match scans).
 - **Engineer model tier.** ✅ **Closed 2026-05-02: Sonnet 4.6 for `schema/sandbox/tool-wrapper/eval-engineer`**, Opus 4.7 retained only for `planning-engineer` (LangGraph topology + CoVe critique). Earlier table assigned Opus to all five — empirically too expensive at ~70 tasks remaining; departure from the prior §2 line is recorded in the updated substrate table above.
 - **HMAC-key handling for ledger work (W3.D).** Default: humans only. The swarm should not hold the runtime ledger HMAC key. Confirm with PUG before W3 starts.
-- **OAuth vs API key.** Per CLAUDE.md §3.9 OAuth tokens are not redistributable. **Active mode (2026-05-02): `CLAUDE_CODE_OAUTH_TOKEN`** (Pro/Max subscription) for both lead and teammates — Tim's solo-developer rig, no redistribution. `ANTHROPIC_API_KEY` documented as the fallback for cases where subscription rate limits throttle 4–5 concurrent workers. Re-evaluate if rate-limit interruptions become recurring.
+- **OAuth vs API key.** Per CLAUDE.md §3.9 OAuth and API tokens are not redistributable and never enter microVMs. **Active mode (2026-05-02): `CLAUDE_CODE_OAUTH_TOKEN`** (Pro/Max subscription) for both lead and teammates — Tim's solo-developer rig, no redistribution. `ANTHROPIC_API_KEY` is the direct API fallback; `OPENROUTER_API_KEY` is an optional host-side fallback for build-side AI agents if subscription/API rate limits throttle 4–5 concurrent workers. Re-evaluate if rate-limit interruptions become recurring.
 - **Auditor blocking power.** Default: blocking on §3.1, §3.2, §3.7, §3.8, §3.10; advisory on §3.5, §3.6. Re-evaluate after first 20 audits — if advisory rules drift unchecked, promote.
 - **CODEOWNERS file.** Needed in W1 to enforce "no swarm self-merge." Add as part of `.github/` scaffolding when CI lands (BUILD_PLAN W3.F).
 - **What happens if the swarm finds a bug in `BUILD_PLAN.md` itself?** Default: open a PR against the plan with the proposed fix, blocked on human review. Plan changes are not in any worker's prompt scope.

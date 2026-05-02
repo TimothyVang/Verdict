@@ -51,11 +51,11 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 | Need | Read |
 |---|---|
-| Architecture rationale | `archive/03-audit-v4.5.md` |
-| Schema patches + DFIR rule encoding | `archive/04-spec-plan-v4.6.md` |
+| Architecture rationale | `docs/spec/03-audit-v4.5.md` |
+| Schema patches + DFIR rule encoding | `docs/spec/04-spec-plan-v4.6.md` |
 | Project-level conventions | `CLAUDE.md` (this repo) |
-| Tier-1 examiner caveats | `agent-config/MEMORY.md` |
-| Per-evidence-type tool sequencing | `agent-config/PLAYBOOK.md` |
+| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `verdict/planning/prompts/examiner_caveats.md` |
+| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `verdict/playbooks/*.yml` |
 | Tool surface (Rust MCP) | `services/mcp/src/tools/` |
 | Tool surface (Python MCP) | `services/agent_mcp/` |
 | Decision history | `CHANGELOG.md` + `git log --oneline` |
@@ -67,11 +67,11 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 
 ## Stack lock-in (one paragraph each — full rationale in v4.5)
 
-- **Cloud agent:** Claude Code + Claude Agent SDK (Python). Used in cloud-only and dual modes. Three credential paths: `CLAUDE_CODE_OAUTH_TOKEN` env var, interactive `~/.claude/`, or `ANTHROPIC_API_KEY`. OAuth tokens are NOT redistributable per Anthropic commercial terms.
-- **Local inference primary:** SGLang (Apache-2.0). RadixAttention prefix cache; native `--tool-call-parser glm45` and `qwen3_xml`. Used in air-gap and dual modes.
+- **Cloud agent:** Claude Code + Claude Agent SDK (Python). Used in cloud-only and dual modes. Credential paths: `CLAUDE_CODE_OAUTH_TOKEN` env var, interactive `~/.claude/`, `ANTHROPIC_API_KEY`, or optional host-side `OPENROUTER_API_KEY` fallback for build-side AI agents. OAuth/API tokens are NOT redistributable and never enter microsandboxes.
+- **Local inference primary:** SGLang (Apache-2.0). RadixAttention prefix cache; native `--tool-call-parser glm` and `qwen` families per current SGLang docs. Used in air-gap and dual modes.
 - **Local inference fallback:** vLLM (Apache-2.0). Pinned to a release containing PR #39055 (Qwen3 reasoning-parser fix).
-- **Local Model A:** Qwen3-30B-A3B-Thinking-2507 (Apache-2.0). Air-gap planner; executor in all modes.
-- **Local Model B (verifier):** GLM-4.5-Air (MIT). Always executor, never planner. Cross-family verification partner.
+- **Local Model A:** Qwen3-30B-A3B-Thinking-2507 (Apache-2.0). Air-gap planner/executor; dual-mode local executor/verifier lane. Cloud-only remains Claude Code/Agent SDK only because the mode trigger is GPU absent.
+- **Local Model B (verifier):** GLM-4.5-Air (MIT). Verifier only; never planner. Cross-family verification partner for air-gap and dual modes.
 - **Orchestration:** LangGraph (MIT) state machine. Five core nodes per Plan-then-Execute, plus comprehension_gate (v4.3), planner_critique (v4.4 SHOULD-FIX), pivot_node (v4.4 SHOULD-FIX), unverifiable_finalize (v4.4 SHOULD-FIX).
 - **Schema layer:** Pydantic v2 + Pydantic-AI (MIT) for typed tool args + `ModelRetry` flow.
 - **MCP gateway:** FastMCP 3.x (Apache-2.0).
@@ -296,9 +296,9 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 
 ## Phase W1.A — Infrastructure stand-up (Tim, ~2 days)
 
-### W1.A.1 — `scripts/install.sh` with three credential paths
-- [ ] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Mock env with `CLAUDE_CODE_OAUTH_TOKEN`; assert install reports `mode=oauth`. Run → RED.
-- [ ] **W1.A.1.b** — Write the three-path detection logic (oauth env → interactive `~/.claude/` → `ANTHROPIC_API_KEY`) in `scripts/install.sh` + Python helper `verdict/cli/credentials.py`. Run → GREEN.
+### W1.A.1 — `scripts/install.sh` with cloud credential detection
+- [ ] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Launch the credentials helper in a subprocess with only `CLAUDE_CODE_OAUTH_TOKEN` set in that subprocess environment; assert install reports `mode=oauth`. Run → RED.
+- [ ] **W1.A.1.b** — Write credential detection logic (`CLAUDE_CODE_OAUTH_TOKEN` env → interactive `~/.claude/` → `ANTHROPIC_API_KEY` → optional `OPENROUTER_API_KEY`) in `scripts/install.sh` + Python helper `verdict/cli/credentials.py`. Run → GREEN. `OPENROUTER_API_KEY` is host-side only for AI-agent fallback; `verdict doctor` must fail if any cloud credential would be passed into a microsandbox env.
 - [ ] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
 
 ### W1.A.2 — SIFT VM provisioning (manual + scripted)
@@ -314,14 +314,15 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 
 ### W1.A.4 — SGLang + Qwen3 + GLM-4.5-Air on dev rig (Haley, ~1 day)
 - [ ] **W1.A.4.a** — Install SGLang per upstream docs. Verify GPU detected (target: 80GB H100 or 2× A100).
-- [ ] **W1.A.4.b** — Serve Qwen3-30B-A3B-Thinking-2507 with `--tool-call-parser qwen3_xml` at port 30000. Verify `/v1/models` lists the model.
-- [ ] **W1.A.4.c** — Serve GLM-4.5-Air with `--tool-call-parser glm45` at port 30001 (or colocate behind the same SGLang server with model_name routing).
+- [ ] **W1.A.4.b** — Serve Qwen3-30B-A3B-Thinking-2507 with `--tool-call-parser qwen` at port 30000. Verify `/v1/models` lists the model and a 10-call smoke test returns non-empty `tool_calls`.
+- [ ] **W1.A.4.c** — Serve GLM-4.5-Air with `--tool-call-parser glm` at port 30001 (or colocate behind the same SGLang server with model_name routing). Verify `/v1/models` lists the model and a 10-call smoke test returns non-empty structured output.
+- [ ] **W1.A.4.d** — Parser-name verification spike. Run `python -m sglang.launch_server --help` on the pinned SGLang version and record the accepted parser names in `docs/BUILD.md`; if the installed version differs from current docs, update launch commands and lockfiles in the same task before any wrapper work lands.
 - [ ] **W1.A.4.d** — Run synthetic 100-call tool-parse harness against each model. **Gate:** ≥98% non-empty `tool_calls` on both. If <98% → escalate; consider switching primary to GLM, or defer air-gap mode to v2.
 - [ ] **W1.A.4.e** — Commit: `feat(inference): SGLang + Qwen3 + GLM-4.5-Air serving with tool-call parsers [W1.A.4]`
 
 ### W1.A.5 — FastMCP gateway skeleton (Tim)
-- [ ] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway_skeleton.py::test_case_init_returns_handle`. Stub gateway with single tool `case_init`; assert it returns `{case_id, mode}`. Run → RED.
-- [ ] **W1.A.5.b** — Implement `verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire mode autodetect stub (returns hardcoded `Mode.CLOUD` for now; full impl in W5.A.1).
+- [ ] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway_case_init.py::test_case_init_returns_handle`. Start the real FastMCP gateway process and call the real `case_init` tool against a temporary case directory and read-only sample evidence path; assert it returns `{case_id, mode}` and writes a `case_init` ledger entry. Run → RED.
+- [ ] **W1.A.5.b** — Implement `verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire the real `detect_mode()` contract from day one: cloud requires Anthropic reachability, air-gap requires SGLang reachability, dual requires both. If neither prerequisite is reachable, fail closed with a diagnostic rather than returning a default mode.
 - [ ] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
 
 ### W1.A.6 — Microsandbox provider Pattern 1 (per-tool ephemeral microVM)
@@ -344,13 +345,13 @@ Pulls forward what `CONTRIBUTING.md` line 220 already promises and what `CLAUDE.
 - [ ] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
 - [ ] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `verdict/` and `tests/`.
 - [ ] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
-- [ ] **W1.A.9.d** — Stub `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate`, fails on >10%. Scorer stub returns 0.0 (always pass) until W4.D.1 implements the real scorer. Wires the gate into CI so the metric is measured before any hallucination-producing code lands.
+- [ ] **W1.A.9.d** — Add `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` against the real evaluator once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the workflow must fail with `scorer_not_implemented` rather than returning a passing score.
 - [ ] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
-- [ ] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI stub) [W1.A.9]`
+- [ ] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI gate) [W1.A.9]`
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
-This is the contract every teammate will code against. **Lock by Sunday May 4.** All tasks from `archive/04-spec-plan-v4.6.md` Phase 1 plus the v4.5-architecture-review schemas.
+This is the contract every teammate will code against. **Lock by Sunday May 4.** All tasks from `docs/spec/04-spec-plan-v4.6.md` Phase 1 plus the v4.5-architecture-review schemas.
 
 ### W1.B.1 — `ArtifactClass` enum
 - [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_13_required_members`. Run → RED.
@@ -358,7 +359,7 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
 
 ### W1.B.2 — `CaveatID` enum
-- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_covers_tier1_memory_md`. Assert all 7 from `agent-config/MEMORY.md`. Run → RED.
+- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_covers_tier1_examiner_caveats`. Assert all 7 from the current planned caveat source `verdict/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
 - [ ] **W1.B.2.b** — Implement `verdict/schemas/caveat_id.py` per Appendix A.2.
 - [ ] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from project MEMORY.md Tier-1 [W1.B.2]`
 
@@ -413,9 +414,14 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.B.12.c** — Commit: `feat(schema): schema_version discipline across top-level models [W1.B.12]`
 
 ### W1.B.13 — `VerdictStatus` enum
-- [ ] **W1.B.13.a** — Failing test: `test_verdict_status_has_all_v45_states`. Assert all 9 states from v4.5 line 295.
+- [ ] **W1.B.13.a** — Failing test: `test_verdict_status_has_canonical_states`. Assert exactly the six statuses from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. Assert `DRAFT`, `APPROVED`, and `REJECTED` live only on the separate `Finding.review_state` enum.
 - [ ] **W1.B.13.b** — Implement.
 - [ ] **W1.B.13.c** — Commit: `feat(schema): VerdictStatus enum [W1.B.13]`
+
+### W1.B.14 — `CaseConclusion` for no-evil terminal cases
+- [ ] **W1.B.14.a** — Failing test `tests/schemas/test_case_conclusion.py::test_no_evil_found_requires_playbook_steps`. Assert `CaseConclusion(status="NO_EVIL_FOUND", playbook_steps_executed=[])` raises validation error, and a conclusion with at least one playbook step plus evidence hashes validates.
+- [ ] **W1.B.14.b** — Implement `verdict/schemas/case_conclusion.py` with status values `NO_EVIL_FOUND`, `EVIL_FOUND`, `UNVERIFIABLE`; require `playbook_steps_executed: list[str] = Field(min_length=1)`, `evidence_hashes: dict[Path, str]`, and `rationale: str`. Do not add `NO_EVIL_FOUND` to `VerdictStatus`.
+- [ ] **W1.B.14.c** — Commit: `feat(schema): CaseConclusion for no-evil terminal cases [W1.B.14]`
 
 ## Phase W1.C — Verifier strategy seed-derivation fix (Beaver, ~1 hour)
 
@@ -425,14 +431,14 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.C.1.c** — Commit: `feat(verification): derive_seeds(case_id) for n=3 self-consistency [W1.C.1]`
 
 ### W1.C.2 — `CloudSelfConsistency` impl
-- [ ] **W1.C.2.a** — Failing test `tests/verification/test_cloud_self_consistency.py::test_three_distinct_seeds_in_api_calls`. Mock Claude client; assert 3 calls, 3 distinct seeds, `temperature=0.7`. Run → RED.
+- [ ] **W1.C.2.a** — Failing integration test `tests/verification/test_cloud_self_consistency.py::test_three_distinct_seeds_in_api_calls`. Require `verdict doctor --mode cloud` first; execute the real Anthropic/Claude client in a bounded smoke request and assert 3 calls, 3 distinct seeds, `temperature=0.7`, and non-empty verifier outputs. Run → RED.
 - [ ] **W1.C.2.b** — Implement `verdict/verification/cloud_self_consistency.py` per Appendix A.5.
 - [ ] **W1.C.2.c** — Commit: `fix(verification): CloudSelfConsistency samples 3 diverse paths (Wang 2022) [W1.C.2]`
 
-### W1.C.3 — `VerifierStrategy` Protocol + Universal Self-Consistency stub
-- [ ] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Stub returns hardcoded VETTED_CLOUD. Run → RED.
-- [ ] **W1.C.3.b** — Implement `verdict/verification/strategy.py` (Protocol) + `universal_self_consistency.py` (Chen et al. 2023 — stub for now, full impl in W3.A.3).
-- [ ] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC stub [W1.C.3]`
+### W1.C.3 — `VerifierStrategy` Protocol + Universal Self-Consistency baseline
+- [ ] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Define a tiny in-test concrete strategy that computes its result from supplied verifier outputs; assert it conforms to the `VerifierStrategy` Protocol without any hardcoded production verdict. Run → RED.
+- [ ] **W1.C.3.b** — Implement `verdict/verification/strategy.py` (Protocol) + a real `universal_self_consistency.py` fallback that takes already-produced verifier candidates, groups by `(artifact_paths, mitre_technique)`, and returns `CONTESTED` or the matching `VETTED_*`/`UNVERIFIABLE` result according to the documented quorum rule. No placeholder implementation lands.
+- [ ] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC baseline [W1.C.3]`
 
 ## Phase W1.D — PreToolUse caveat + smoke scaffold (Tim, ~30 min)
 
@@ -445,12 +451,12 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.D.2.a** — Append the Layer-1 caveat paragraph to v4.5 architecture caption (line 144).
 - [ ] **W1.D.2.b** — Commit: `docs(audit): v4.6 P2 — Layer-1 PreToolUse version-dependence caveat [W1.D.2]`
 
-## Phase W1.E — Tool surface stubs (Tim, ~2 hours)
+## Phase W1.E — Tool surface scaffolding (Tim, ~2 hours)
 
 The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `psscan` per v4.6 P3.
 
 ### W1.E.1 — `vol_psscan` MCP tool wrapper
-- [ ] **W1.E.1.a** — Failing test `tests/tools/test_vol_psscan.py::test_psscan_returns_pids`. Mock microsandbox; assert wrapper invokes `vol3 windows.psscan` with correct args; assert returns `ToolOutput` with `parsed_artifacts: list[Artifact]` of type `process`. Run → RED.
+- [ ] **W1.E.1.a** — Failing integration test `tests/tools/test_vol_psscan.py::test_psscan_returns_pids`. Require `verdict doctor --mode airgap` and a real memory image from `inspect_ai/ground_truth/case_001_lolbins/`; invoke `vol3 windows.psscan` through the real microsandbox provider; assert returned `ToolOutput` contains process artifacts and a valid invocation hash. Run → RED.
 - [ ] **W1.E.1.b** — Implement `verdict/tools/vol3/psscan.py` mirroring `vol_pslist` shape from project's `services/mcp/`.
 - [ ] **W1.E.1.c** — Commit: `feat(tools): vol_psscan wrapper for DKOM/T1014 cross-validation [W1.E.1]`
 
@@ -528,7 +534,7 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [ ] **W1.G.2.b** — Commit: `docs: FAILURE_MODES.md [W1.G.2]`
 
 ### W1.G.3 — `docs/CLI.md`
-- [ ] **W1.G.3.a** — Author full CLI surface: `verdict {init, resume, reverify, status, ls, show <id>, export <id>, validate <id>, mode, gc, health, doctor}`. Stub commands marked `(v2 roadmap)` allowed but the surface contracts in v1.
+- [ ] **W1.G.3.a** — Author full CLI surface: `verdict {init, resume, reverify, status, ls, show <id>, export <id>, validate <id>, mode, gc, health, doctor}`. Commands not implemented in v1 must be listed only in a clearly marked roadmap table, not exposed as callable placeholders.
 - [ ] **W1.G.3.b** — Commit: `docs: CLI.md enumerating verdict commands [W1.G.3]`
 
 ### W1.G.4 — `docs/SCHEMA_MIGRATION.md`
@@ -540,7 +546,7 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [ ] **W1.G.5.c** — Commit: `feat(planning): Planner Protocol + CloudPlanner + LocalPlanner [W1.G.5]`
 
 ### W1.G.6 — HMAC key handling (TPM-backed if present, else gpg-encrypted)
-- [ ] **W1.G.6.a** — Failing test `tests/ledger/test_hmac_key.py::test_tpm_path_when_dev_tpmrm0_present`. Mock `/dev/tpmrm0` → use TPM. Mock absence → fall back to gpg-encrypted at `~/.verdict/key.gpg`. Run → RED.
+- [ ] **W1.G.6.a** — Failing integration tests: `tests/ledger/test_hmac_key.py::test_tpm_path_when_dev_tpmrm0_present` runs only on hosts with `/dev/tpmrm0` and verifies the TPM-backed path; `test_gpg_path_when_dev_tpmrm0_absent` runs in the CI environment that lacks `/dev/tpmrm0` and verifies the gpg-encrypted fallback. If the host does not match a test prerequisite, fail with a prerequisite diagnostic rather than simulating the device.
 - [ ] **W1.G.6.b** — Implement `verdict/ledger/hmac_key.py` with both paths. Passphrase prompt at gateway init for the gpg path.
 - [ ] **W1.G.6.c** — Commit: `feat(ledger): HMAC key TPM-backed or gpg-encrypted [W1.G.6]`
 
@@ -566,7 +572,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Three architecture-review docs present | `ls docs/{THREAT_MODEL,FAILURE_MODES,CLI,SCHEMA_MIGRATION}.md` |
 | `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
 | `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
-| All 6 v4.6 patches applied to v4.5 audit doc | `grep -c "v4.6 P[1-6]" archive/03-audit-v4.5.md` returns ≥6 |
+| All 6 v4.6 patches represented in current architecture | `grep -c "v4.6 P[1-6]" docs/spec/03-audit-v4.5.md` returns ≥6 and `docs/ARCHITECTURE.md` cites the current decisions |
 | Conventional Commits enforced (no `--no-verify`) | `git log --oneline -50 | grep -c '^[a-f0-9]\+ \(feat\|test\|fix\|docs\|chore\)' = 50` |
 
 If any gate is RED on May 8: **descope before slipping**. Drop in this priority order: W1.G.7 → W1.G.6 → W1.A.7 (Langfuse v2; ship without it, fall back to OTel-only) → W1.G.1-3 (push docs to W6).
@@ -615,7 +621,7 @@ For each tool:
 
 ### W2.B.1 — Five core nodes
 - [ ] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_five_nodes_present`. Assert nodes `planner`, `executor_fanout`, `quorum`, `replan`, `finalize` exist on the compiled graph.
-- [ ] **W2.B.1.b** — Implement `verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `verdict/graph/nodes.py` with stubs for all five.
+- [ ] **W2.B.1.b** — Implement `verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `verdict/graph/nodes.py` with real minimal node bodies for all five. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
 - [ ] **W2.B.1.c** — Commit: `feat(graph): five-node Plan-then-Execute topology [W2.B.1]`
 
 ### W2.B.2 — `comprehension_gate` node (v4.3)
@@ -674,6 +680,11 @@ For each tool:
 - [ ] **W2.D.3.a** — Failing test `tests/planning/test_cot_capture.py::test_gzipped_cot_in_ledger`. Plus `test_8kb_attached_to_langfuse_span`.
 - [ ] **W2.D.3.b** — Implement extraction (Claude Agent SDK responses for cloud, Qwen3-Thinking `<think>` blocks for airgap), gzip, hash via `planner_cot_gzip_hash`, store via LedgerEmitter, attach first 8KB to Langfuse span attribute.
 - [ ] **W2.D.3.c** — Commit: `feat(observability): planner CoT capture (gzipped ledger + 8KB Langfuse) [W2.D.3]`
+
+### W2.D.4 — MCP mode-gating hook
+- [ ] **W2.D.4.a** — Failing smoke test `tests/smoke/test_mcp_mode_gating.py::test_airgap_blocks_fetch_and_filesystem`. Launch Claude Code with `VERDICT_MODE=airgap` and assert attempts to call `fetch` or `filesystem` are blocked before tool execution; assert `.mcp.json` lists only `sequential-thinking`.
+- [ ] **W2.D.4.b** — Implement `.claude/settings.json` PreToolUse mode-gating hook and helper script. In air-gap mode, block `fetch`, `filesystem`, `github`, `mitre-attack`, and `context7`; in cloud/dual mode, permit only the explicit mode config named by the operator. Do not rely on prompts for this boundary.
+- [ ] **W2.D.4.c** — Commit: `feat(hooks): mode-gate MCP configs by Verdict mode [W2.D.4]`
 
 ## Phase W2.E — Per-tool args validators (Beaver + Tim, ~1.5 days)
 
@@ -745,7 +756,7 @@ For each tool:
 
 | Gate | Verification |
 |---|---|
-| All 19 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
+| All 23 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
 | LangGraph compiles in all three modes | `pytest tests/graph/test_topology_compiles.py` green for cloud/airgap/dual |
 | `comprehension_gate` + `planner_critique_node` integrated | Inspect AI smoke run shows both nodes in trace |
 | `executor_work` is composition of 3 wrappers, three owners | `git blame` shows distinct authors on `deny_rule.py`, `tool_executor.py`, `ledger_emitter.py` |
@@ -779,7 +790,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.A.3 — Universal Self-Consistency full impl (Chen 2023)
 - [ ] **W3.A.3.a** — Failing test `tests/verification/test_universal_self_consistency.py::test_judge_picks_most_consistent_rationale_among_n3`. Assertion: given three Findings with rationale strings differing in structure but agreeing in substance on two of three, `UniversalSelfConsistency.judge(findings).selected_index in {0, 1}` (the two-of-three majority) and `result.status == VerdictStatus.CONTESTED` is NOT returned (USC is the judge of last resort before CONTESTED).
-- [ ] **W3.A.3.b** — Implement upgrade from W1.C.3 stub.
+- [ ] **W3.A.3.b** — Extend the W1.C.3 baseline into the full Chen 2023 judge implementation.
 - [ ] **W3.A.3.c** — Commit: `feat(verification): Universal Self-Consistency judge [W3.A.3]`
 
 ## Phase W3.B — TSI enrichment (Tim, ~1.5 days)
@@ -808,7 +819,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.C.2 — `verdict reverify` command
 - [ ] **W3.C.2.a** — Failing test: `verdict reverify <case_id> --mode dual` produces parallel verdict chain without mutating original.
-- [ ] **W3.C.2.b** — Implement in `verdict/cli/reverify.py`. Re-runs ONLY quorum_nodes against existing executor outputs.
+- [ ] **W3.C.2.b** — Implement in `verdict/cli/reverify.py`. Fork a new parallel chain with the original `EvidenceManifest`, a new `chain_id`, the requested `mode_at_case_init`, and fresh mode-appropriate planner/executor/quorum ledger entries. Never mutate the original chain.
 - [ ] **W3.C.2.c** — Commit: `feat(cli): verdict reverify produces parallel verdict chain [W3.C.2]`
 
 ## Phase W3.D — Pivot + replan + unverifiable_finalize (Beaver, ~1 day)
@@ -824,8 +835,8 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 - [ ] **W3.D.2.c** — Commit: `feat(schema): InvestigationPlan.replan_budget=3 explicit [W3.D.2]`
 
 ### W3.D.3 — `unverifiable_finalize_node`
-- [ ] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`. Plus `test_calls_interrupt`.
-- [ ] **W3.D.3.b** — Implement.
+- [ ] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`, `test_calls_interrupt`, and `test_resume_does_not_duplicate_exhausted_replan_ledger_entry`.
+- [ ] **W3.D.3.b** — Implement. Use deterministic idempotency key `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`; before writing the ledger entry, check whether that key already exists and skip the write on resume. No non-idempotent side effects may occur before `interrupt()`.
 - [ ] **W3.D.3.c** — Commit: `feat(graph): unverifiable_finalize_node + exhausted_replan event [W3.D.3]`
 
 ### W3.D.4 — Wire `interrupt()` properly
@@ -965,9 +976,9 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 - [ ] **W4.D.3** — Same. Commit: `feat(eval): verdict_eval_dual [W4.D.3]`
 
 ### W4.D.4 — Three CI jobs (one per mode) in `.github/workflows/inspect-ai-evals.yml`
-- [ ] **W4.D.4.a** — Failing CI: workflow fails if any mode hallucination_rate > 0.05 or agreement < 0.85.
+- [ ] **W4.D.4.a** — Failing CI: workflow fails if any mode hallucination_rate > 0.05 or agreement < 0.85. Earlier W1-W3 jobs may run an advisory ≤10% trend report, but W4+ release gates are hard ≤5%.
 - [ ] **W4.D.4.b** — Implement.
-- [ ] **W4.D.4.c** — Commit: `ci: per-mode Inspect AI eval CI gates [W4.D.4]`
+- [ ] **W4.D.4.c** — Commit: `chore(ci): per-mode Inspect AI eval gates [W4.D.4]`
 
 ## Phase W4.E — Five Inspect AI scorers (KP, ~1 day)
 
@@ -1024,7 +1035,7 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 | 50 ground-truth indicators across 3 cases | `ls inspect_ai/ground_truth/case_00{1,2,3}/` |
 | Case 001 produces engineered Qwen3-vs-GLM disagreement | Manual verification recorded in `docs/demo-assets/case_001.md` |
 | Three per-mode Inspect AI tasks green in CI | `.github/workflows/inspect-ai-evals.yml` runs green |
-| Hallucination rate ≤ 0.05 in all three modes | `inspect view <run>` + scorer report |
+| Hallucination rate ≤ 5% in all three modes | `inspect view <run>` + scorer report |
 | Agreement ≥ 0.85 in all three modes | Same |
 | MITRE sub-technique precision measurable + reported | `cat docs/ACCURACY_REPORT.md` |
 | Disagreement correlation number in accuracy report | `grep -c "disagreement_correlation" docs/ACCURACY_REPORT.md` ≥ 1 |
@@ -1230,7 +1241,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.D.2** — `git tag v-submit && git push origin v-submit`. Commit before tag: `chore(release): cut v-submit for SANS Find Evil! 2026 [W6.D.2]`
 
 ### W6.D.3 — Manual Devpost upload Jun 14 EOD
-- [ ] **W6.D.3.a** — Run `DEVPOST_COMPLIANCE.md` Part 6 — verify all 18 boxes ticked.
+- [ ] **W6.D.3.a** — Run `DEVPOST_COMPLIANCE.md` Part 6 — verify every checklist item is ticked.
 - [ ] **W6.D.3.b** — Upload zip + writeup + demo video link. Submit. Confirm receipt email. **Target Jun 14 EOD = ~28h before official deadline of Jun 15 11:45 PM EDT.**
 - [ ] **W6.D.3.c** — If Jun 14 21:00 EDT and any compliance box still unchecked: abort, resolve, retry Jun 15 morning.
 
@@ -1242,12 +1253,12 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 | Demo shows ≥1 self-correction sequence (Devpost-required) | Manual review of cut against air-gap hero beat ⓹ |
 | Demo is screencast + narration, NOT slides (Devpost-required) | Manual review |
 | Three green dry runs against `SANS_JUDGE_CHECKLIST.md` | Beaver's notes |
-| All Devpost-required documentation present | `ls docs/{ARCHITECTURE,ARCHITECTURE_DIAGRAM.svg,BUILD,EVIDENCE_DATASET,ACCURACY_REPORT,NOVEL_CONTRIBUTION,THREAT_MODEL,FAILURE_MODES,CLI,CHECKPOINTING,CASE_ISOLATION,SCOPE,SCHEMA_MIGRATION,SANS_JUDGE_CHECKLIST,PRODUCTION_AUDIT,DEMO_SEQUENCE}.md` |
+| All Devpost-required documentation present | `ls docs/ARCHITECTURE_DIAGRAM.svg && ls docs/{ARCHITECTURE,BUILD,EVIDENCE_DATASET,ACCURACY_REPORT,NOVEL_CONTRIBUTION,THREAT_MODEL,FAILURE_MODES,CLI,CHECKPOINTING,CASE_ISOLATION,SCOPE,SCHEMA_MIGRATION,SANS_JUDGE_CHECKLIST,PRODUCTION_AUDIT,DEMO_SEQUENCE}.md` |
 | README + LICENSE + CONTRIBUTING | `ls README.md LICENSE CONTRIBUTING.md` |
 | Repo public + MIT badge in GitHub About section (Devpost-required) | Manual browser check, logged-out |
 | Agent execution logs exported per case (Devpost-required) | `ls submission/execution-logs/case_{001,002,003}.jsonl` |
 | Devpost zip produced | `ls dist/verdict-devpost-v1.zip` |
-| Devpost compliance Part 6 checklist 18/18 ticked | Manual review |
+| Devpost compliance Part 6 checklist fully ticked | Manual review |
 | Devpost upload confirmed | Receipt email |
 | `v-submit` tag pushed | `git tag --list 'v-submit'` |
 
@@ -1453,7 +1464,7 @@ from enum import Enum
 class ArtifactClass(str, Enum):
     """Multi-artifact corroboration vocabulary.
     SANS FOR500 doctrine: no single artifact proves execution.
-    Cited from project agent-config/MEMORY.md ≥2-artifact rule."""
+    Cited from CLAUDE.md §3.2 and docs/ARCHITECTURE.md §4."""
     PREFETCH = "prefetch"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
@@ -1475,7 +1486,7 @@ class ArtifactClass(str, Enum):
 from enum import Enum
 
 class CaveatID(str, Enum):
-    """Tier-1 caveats from project agent-config/MEMORY.md.
+    """Tier-1 caveats from CLAUDE.md §3.3 and examiner_caveats.md.
     These are the misreads Rob Lee uses to spot a fake examiner."""
     AMCACHE_LASTMODIFIED_NOT_EXEC = "amcache_lastmodified_neq_execution"
     SHIMCACHE_ORDER_CHANGED_WIN81 = "shimcache_order_lru_pre81_insertion_post81"
