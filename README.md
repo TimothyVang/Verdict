@@ -144,6 +144,51 @@ RISK #3 — Schemas slip past May 8
 
 ---
 
+## Contributing
+
+Outside contributions are welcome before the **Jun 14 EOD** submission cut. In-team work is tracked by `W#.#.#` task IDs in [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md); outside PRs should pick from the same backlog and respect the §3 hard rules in [`CLAUDE.md`](CLAUDE.md).
+
+### Get involved
+
+| Channel | Use it for |
+|---|---|
+| [GitHub Discussions](https://github.com/TimothyVang/Verdict/discussions) | Q&A, ideas, hero-beat captures, polls. Category routing in the [welcome post](https://github.com/TimothyVang/Verdict/discussions/1). |
+| [GitHub Issues](https://github.com/TimothyVang/Verdict/issues) | Bug reports, regressions, tracked work. Cite the `W#.#.#` task ID if it maps to one. |
+| [`SECURITY.md`](SECURITY.md) | Vulnerabilities — **never** post privately exploitable detail in Discussions or Issues. |
+
+### Quickstart with an LLM agent
+
+This codebase is built to be navigated by an LLM coding agent. [`CLAUDE.md`](CLAUDE.md) is the operating charter — Claude Code auto-loads it on session start; Cursor / Continue / Cline / Aider behave similarly when pointed at the repo root.
+
+1. **Clone & cd**
+   ```bash
+   git clone https://github.com/TimothyVang/Verdict.git && cd Verdict
+   ```
+2. **Open the repo in your LLM agent.** It will auto-read [`CLAUDE.md`](CLAUDE.md) — §3 contains the hard rules, §10 documents the CLI + commands, and §2 is the authority chain when docs disagree.
+3. **Bring up real backing services** before touching code that depends on them (no mocks — see §3.10). The fastest path:
+   ```bash
+   bash scripts/bootstrap-dev.sh
+   ```
+   See [`CONTRIBUTING.md`](CONTRIBUTING.md) "Quick path — one command" for what this brings up.
+4. **Pick a task** from [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) by `W#.#.#` ID. Filter for unchecked `[ ]` boxes; respect ownership (Tim / Beaver / Haley / KP). Surface the relevant `W#.#.#` task body to your agent so it has the failing-test spec and acceptance gate.
+5. **Run the TDD loop** per `CLAUDE.md` §3.7: failing test → RED → implement → GREEN → one commit per task ID, format `feat(scope): summary [W#.#.#]`. **Never** `--no-verify`, **never** `git commit --amend`, **never** mock VERDICT-internal modules (§3.10).
+6. **Open a PR** with the `W#.#.#` task ID in the title.
+
+**Hard rules to surface to your agent before it edits code** (these are the load-bearing ones — full list in `CLAUDE.md` §3):
+
+- §3.1 — Evidence integrity (read-only `/evidence`, hash on entry, per-invocation hash, per-output-file SHA-256).
+- §3.2 — Multi-artifact corroboration (`Finding.artifact_paths` and `artifact_classes` both `min_length=2`; execution-class techniques need ≥2 distinct `ArtifactClass` values).
+- §3.5 — MITRE sub-technique precision (regex `^T\d{4}(\.\d{3})?$`; emit `T1055.012`, not bare `T1055`, when the sub is determinable).
+- §3.7 — Conventional Commits with `[W#.#.#]` task ID; no `--no-verify`, no `--amend`.
+- §3.8 — License allow-list: MIT or Apache-2.0 only. The Hard NOs table (Daytona AGPL, REMnux GPL, Llama 4 / Gemma 3 community, Modal / LangSmith / Braintrust / Phoenix / AutoGen / MS Agent Framework) is final.
+- §3.10 — No mocks anywhere in the codebase. Every layer wires against real services from the first commit.
+
+### Without an LLM
+
+Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-keyboard onboarding (account access → PAT → toolchain → GPG/SSH signing → clone → smoke investigation).
+
+---
+
 ## Quick reference
 
 | Need | Read |
@@ -154,6 +199,8 @@ RISK #3 — Schemas slip past May 8
 | Decision history ("why was X decided?") | `docs/spec/` |
 | Hard rules an agent must obey | `CLAUDE.md` §3 |
 | Contributor onboarding (PAT, GPG, clone, smoke test) | `CONTRIBUTING.md` |
+| Community Q&A, ideas, hero-beat captures | [GitHub Discussions](https://github.com/TimothyVang/Verdict/discussions) |
+| Bug reports + tracked work | [GitHub Issues](https://github.com/TimothyVang/Verdict/issues) |
 | Vulnerability reporting | `SECURITY.md` |
 | What large binaries to fetch and where | `downloads/README.md` |
 
