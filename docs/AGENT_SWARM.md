@@ -31,7 +31,7 @@ Risks acknowledged up front: API cost, prompt-driven hallucination, drift betwee
 | Model — workers | `claude-opus-4-7` (1M ctx) | Code synthesis quality; long context for reading authority chain + task entry + adjacent code in one call. |
 | Model — reviewer | `claude-sonnet-4-6` | Mechanical pass/fail on lint/test output. Cheaper, faster, deterministic-friendly. |
 | Model — auditor | `claude-haiku-4-5-20251001` | Pattern-match scan over a diff. Even cheaper. |
-| Concurrency | `asyncio` + per-worker subprocess for git/gh/cargo | SDK is async-native; shelling out for git is unavoidable. |
+| Concurrency | `asyncio` + per-worker subprocess for git/gh | SDK is async-native; shelling out for git is unavoidable. |
 | Storage | SQLite WAL + fsync | Same discipline as the runtime ledger (CLAUDE.md §9). One-file durability; no Postgres dep. |
 | Auth | Anthropic API key, per-instance | OAuth tokens are not redistributable per CLAUDE.md §3.9. The swarm never carries the team's interactive Claude Code OAuth. |
 
@@ -98,7 +98,7 @@ A generalist `infra-engineer` is folded into `tool-wrapper-engineer` (with a `mo
 Single instance. Sonnet 4.6. On `review`:
 
 1. Fetch worker branch into a clean worktree
-2. Run the local CI gate: `ruff check`, `ruff format --check`, `cargo clippy --all-targets --all-features -- -D warnings` (if Cargo.toml present), `eslint .` (if applicable), `uv run pytest -q`, `uv run pre-commit run --all-files`
+2. Run the local CI gate: `ruff check`, `ruff format --check`, `eslint .` (if applicable), `uv run pytest -q`, `uv run pre-commit run --all-files`
 3. Verify `git log --show-signature` shows good signatures on every new commit
 4. Verify TDD audit: ≥1 commit with a failing test followed by ≥1 commit that makes it pass (RED then GREEN)
 5. On all-green: `gh pr review --approve` with summary; status → `audit`
@@ -267,7 +267,6 @@ all  <!-- or cloud / airgap / dual -->
 
 ## Reviewer checks
 - [x] ruff
-- [x] cargo clippy
 - [x] pytest
 - [x] signed commits
 - [x] task ID in subject

@@ -4,7 +4,6 @@
 # Pinned versions (must match CONTRIBUTING.md Step 2):
 #   Python 3.11.x   via uv
 #   uv              latest
-#   Rust 1.88       via rustup
 #   Node 20.x LTS   via NodeSource apt repo
 #   pnpm            latest stable
 #   Microsandbox    v0.4.x (libkrun-backed microVM runtime)
@@ -23,7 +22,6 @@ set -euo pipefail
 # Pinned versions
 # ---------------------------------------------------------------------------
 PYTHON_VERSION="3.11"
-RUST_VERSION="1.88.0"
 NODE_MAJOR="20"
 
 # ---------------------------------------------------------------------------
@@ -86,8 +84,8 @@ if command -v uv >/dev/null 2>&1; then
 else
     info "installing uv via astral.sh installer"
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    # The installer drops uv into ~/.local/bin (or ~/.cargo/bin on older builds).
-    export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+    # The installer drops uv into ~/.local/bin.
+    export PATH="$HOME/.local/bin:$PATH"
     command -v uv >/dev/null 2>&1 || die "uv install completed but uv not on PATH; open a new shell and re-run"
     ok "installed: $(uv --version)"
 fi
@@ -101,34 +99,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Rust 1.88  via rustup
-# ---------------------------------------------------------------------------
-step "Rust ${RUST_VERSION}"
-
-if [ ! -x "$HOME/.cargo/bin/rustup" ] && ! command -v rustup >/dev/null 2>&1; then
-    info "installing rustup (no toolchain yet — we'll pin ${RUST_VERSION} next)"
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-        | sh -s -- -y --default-toolchain none --profile minimal --no-modify-path
-fi
-export PATH="$HOME/.cargo/bin:$PATH"
-
-if rustup toolchain list 2>/dev/null | grep -q "^${RUST_VERSION}-"; then
-    ok "Rust ${RUST_VERSION} toolchain already installed"
-else
-    info "installing Rust ${RUST_VERSION}"
-    rustup install "${RUST_VERSION}" --profile minimal
-fi
-
-CURRENT_DEFAULT="$(rustup default 2>/dev/null | awk '{print $1}' | sed 's/-.*//')"
-if [ "$CURRENT_DEFAULT" != "${RUST_VERSION}" ]; then
-    info "setting Rust ${RUST_VERSION} as default toolchain"
-    rustup default "${RUST_VERSION}"
-fi
-ok "rustc: $(rustc --version)"
-ok "cargo: $(cargo --version)"
-
-# ---------------------------------------------------------------------------
-# 3. Node 20 + pnpm
+# 2. Node 20 + pnpm
 # ---------------------------------------------------------------------------
 step "Node ${NODE_MAJOR}  +  pnpm"
 
@@ -169,7 +140,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Microsandbox  (Linux only — libkrun requires KVM)
+# 3. Microsandbox  (Linux only — libkrun requires KVM)
 # ---------------------------------------------------------------------------
 step "Microsandbox"
 
@@ -185,7 +156,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 5. Repo bootstrap (only if the lockfiles already exist — early in W1 they don't)
+# 4. Repo bootstrap (only if the lockfiles already exist — early in W1 they don't)
 # ---------------------------------------------------------------------------
 step "Repo bootstrap"
 
@@ -208,14 +179,6 @@ else
     skip "pre-commit config not present yet"
 fi
 
-if [ -f Cargo.toml ]; then
-    info "cargo build --workspace"
-    cargo build --workspace
-    ok "Rust workspace built"
-else
-    skip "no Cargo.toml yet"
-fi
-
 if [ -f pnpm-lock.yaml ]; then
     info "pnpm install --frozen-lockfile"
     pnpm install --frozen-lockfile
@@ -230,8 +193,6 @@ fi
 step "Toolchain summary"
 printf "    uv          %s\n" "$(uv --version 2>/dev/null || echo MISSING)"
 printf "    python      %s\n" "$(uv python find "${PYTHON_VERSION}" 2>/dev/null || echo MISSING)"
-printf "    rustc       %s\n" "$(rustc --version 2>/dev/null || echo MISSING)"
-printf "    cargo       %s\n" "$(cargo --version 2>/dev/null || echo MISSING)"
 printf "    node        %s\n" "$(node --version 2>/dev/null || echo MISSING)"
 printf "    pnpm        %s\n" "$(pnpm --version 2>/dev/null || echo MISSING)"
 if [ "$PLATFORM" = "linux" ]; then
@@ -248,5 +209,5 @@ Next steps (CONTRIBUTING.md):
   Step 6  Run a smoke investigation inside the SIFT VM
 
 Open a new shell — or run:  source ~/.bashrc
-to pick up updated PATH (uv, cargo, msb).
+to pick up updated PATH (uv, msb).
 EOF

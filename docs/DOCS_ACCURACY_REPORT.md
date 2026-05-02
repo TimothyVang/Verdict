@@ -146,31 +146,6 @@ def derive_seeds(case_id: str) -> tuple[int, int, int]:
 
 ---
 
-## LOW — verified accurate (no action)
-
-These were checked and hold up.
-
-- **arXiv 2203.11171** Wang et al. 2022 self-consistency — ✓ correct title, authors, date.
-- **arXiv 2309.11495** Dhuliawala 2023 Chain-of-Verification — ✓ correct title, authors, date.
-- **anthropics/claude-code #33106** PreToolUse deny not enforced for MCP tools — ✓ exists, status "closed: not planned" as of recent.
-- **anthropics/claude-code #37210** PreToolUse deny ignored for Edit tool — ✓ exists.
-- **NIST SP 800-86** "Guide to Integrating Forensic Techniques into Incident Response" — ✓ real publication, §5.1.x covers data preservation/acquisition (referenced section numbers are plausible; you can defend them by quoting page numbers).
-- **MITRE T1036.005** Match Legitimate Name or Location — ✓ valid sub-technique.
-- **MITRE T1055.012** Process Hollowing — ✓ valid sub-technique.
-- **MITRE T1059, T1106, T1204, T1218, T1543, T1547** (execution-claim trigger list) — all ✓ valid technique IDs.
-- **Qwen3-30B-A3B-Thinking-2507** released July 2025 under Apache-2.0 — ✓ confirmed on Hugging Face.
-- **GLM-4.5-Air** under MIT (zai-org) — ✓ confirmed on Hugging Face / GitHub.
-- **Microsandbox** Apache-2.0, libkrun-based — ✓ confirmed.
-- **SANS Find Evil** deadline Jun 15 2026 11:45 PM EDT — ✓ matches `findevil.devpost.com/rules`.
-- **Judging window** Jun 19 – Jul 3 2026, winners ~Jul 8 — ✓ matches.
-- **SANS Institute** as sponsor — ✓ matches.
-- **6 equally weighted judging criteria** — ✓ matches Devpost rules; the prior "5 of 6" framing is correctly called out as wrong (DEVPOST_COMPLIANCE Part 3 intro).
-- **License attributions** for the stack table (`ARCHITECTURE.md` §7) — spot-checked SGLang Apache-2.0, LangGraph MIT, Pydantic MIT, FastMCP Apache-2.0, NeMo Guardrails Apache-2.0, Inspect AI MIT — all match upstream.
-- **License "hard nos"** — Daytona AGPL-3.0, REMnux GPL-3.0 — match upstream.
-- **6-week window math** — May 2 → Jun 14 EOD against a Jun 15 23:45 EDT deadline = ~28h buffer. ✓ correct.
-
----
-
 ## Summary punchlist (priority order)
 
 1. **C1**: Replace `T1014.001` with `T1014` everywhere in `README.md`, `ARCHITECTURE.md`, `DEVPOST_COMPLIANCE.md`. (3 files, ~6 occurrences.)

@@ -64,7 +64,7 @@ CLAUDE.md → docs/ARCHITECTURE.md → docs/BUILD_PLAN.md → docs/AGENT_SWARM.m
 
 # Your operating model
 You are NOT one agent — you are a swarm orchestrator. For each task:
-1. Read docs/BUILD_PLAN.md and find the task by ID (e.g. "W1.B.1 — ArtifactClass enum").
+1. Find the task by ID. The plan is sliced: `docs/BUILD_PLAN.md` is the INDEX; per-week phases live in `docs/build/week-{N}.md` where {N} is the digit before the first dot (e.g. W1.B.1 → `docs/build/week-1.md`; search for `### W1.B.1`).
 2. Map phase prefix → role via swarm/conductor.py:PHASE_TO_SPECIALIZATION. W1.B → schema, W1.A.9 → tool-wrapper, W1.G/W2.A → planning, etc.
 3. Dispatch the work via the Agent tool with subagent_type="general-purpose". Build the subagent's system prompt by reading swarm/agents/_prefix.md + swarm/agents/<role>-engineer.md and concatenating with "\n\n---\n\n" between them. Pass the subagent the BUILD_PLAN entry verbatim, the branch name, and the explicit instruction to do TDD red→green→commit→push→draft PR.
 4. After the subagent returns, dispatch a reviewer subagent (system prompt = swarm/agents/_prefix.md + swarm/agents/reviewer.md). It runs \`gh pr diff\`, pytest, ruff, and posts findings via \`gh pr review --comment\` (no APPROVE/REQUEST_CHANGES tonight; reviewers comment only).
@@ -136,7 +136,7 @@ For each task, dispatch the role subagent with this user prompt (substitute the 
   9. Open a draft PR with \`gh pr create --draft --title "<commit-title>" --body "<task-id> + 3-line summary + the RED/GREEN test output snippets>"\`.
   10. Print the PR URL on the last line of your output.
 
-  BUILD_PLAN entry (verbatim):
+  BUILD_PLAN entry (verbatim, copied from \`docs/build/week-{N}.md\`):
   <paste the full task block here, from \`### {task_id}\` heading to the next \`### \`>
 
 # Branch naming

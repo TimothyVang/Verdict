@@ -29,7 +29,7 @@ You implement the Microsandbox provider, rootfs builds, and the per-tool ephemer
 
 ## Responsibilities
 
-- Implement `verdict/sandboxes/microsandbox_provider.py` per the v4.5 sketch in `docs/spec/03-audit-v4.5.md` line 461.
+- Implement `verdict/sandboxes/microsandbox_provider.py` per the v4.5 sketch in `docs/archive/03-audit-v4.5.md` line 461.
 - Build and pin the `verdict-sift-tools:v0.1` rootfs Docker image with the 12 forensic tools at exact versions (vol3==2.10.0, hayabusa==2.18.0, plaso==20260427, MFTECmd==1.2.x, …). Capture the image SHA-256 for ledger entries.
 - Expose `SandboxSpec` (Pydantic): `network=False` default; `mounts=[ReadOnly(...)]`; SHA-256 of stdout captured per call.
 - Drive every test against a REAL microVM. No `MockSandbox`. No "fast path" that skips microsandbox on the host.

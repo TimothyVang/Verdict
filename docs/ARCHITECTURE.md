@@ -1,12 +1,12 @@
 # VERDICT — Architecture (current authoritative)
 
-**Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `spec/`. Read `spec/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
+**Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `archive/`. Read `archive/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
 **Date:** May 2, 2026.
 **For Devpost compliance:** see `DEVPOST_COMPLIANCE.md`. For week-by-week build sequencing: `BUILD_PLAN.md`. For hard rules an agent must obey: see `../CLAUDE.md` §3.
 
 ### How to edit this doc
 - This is the **single architectural authority.** Never duplicate decisions into other docs; cross-link instead.
-- **Never edit `spec/`** — those files capture point-in-time audits and are cited from here.
+- **Never edit `archive/`** — those files capture point-in-time audits and are cited from here.
 - **`BUILD_PLAN.md` task IDs** are immutable once a contributor has committed against them. New work gets a new ID.
 
 ---

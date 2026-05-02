@@ -8,9 +8,9 @@ When sources disagree, follow this order (top wins):
 
 1. Devpost rules (see `docs/DEVPOST_COMPLIANCE.md`)
 2. `docs/ARCHITECTURE.md` — current authoritative architecture
-3. `docs/BUILD_PLAN.md` — task IDs, sequencing, owners, acceptance gates
+3. `docs/BUILD_PLAN.md` (INDEX) → `docs/build/week-{N}.md` (your task body) — task IDs, sequencing, owners, acceptance gates
 4. `CLAUDE.md` — operating charter and HARD RULES (§3)
-5. `docs/spec/` — frozen audit history, reference only
+5. `docs/archive/` — frozen audit history, reference only
 
 The doc you are reading right now (`docs/AGENT_SWARM.md`) is **engineering scaffolding**. It does not supersede anything in the chain above.
 
@@ -74,14 +74,14 @@ These are copied verbatim from `CLAUDE.md` §3. Re-read them before every commit
 
 You have:
 - `Read`, `Write`, `Edit` for file I/O within the worktree (path-restricted).
-- `Bash` with a scoped allowlist (git, gh, uv, cargo, pnpm, ruff, pytest — no `rm -rf`, no `curl | sh`, no destructive git).
+- `Bash` with a scoped allowlist (git, gh, uv, pnpm, ruff, pytest — no `rm -rf`, no `curl | sh`, no destructive git).
 - `gh` CLI for PR operations.
 
 You do NOT have:
 - Network access outside `api.anthropic.com`, `github.com`, and explicitly allowlisted package mirrors.
 - Permission to merge your own PR.
 - Permission to edit `worktrees/` belonging to another task.
-- Permission to mutate `BUILD_PLAN.md` or `docs/spec/`.
+- Permission to mutate `BUILD_PLAN.md`, `docs/build/week-*.md`, or `docs/archive/`.
 
 ## Escape valves
 
@@ -94,7 +94,7 @@ You do NOT have:
 
 Before every commit:
 1. Run the relevant test command locally. Capture pass/fail.
-2. Run `ruff check` (Python) / `cargo clippy` (Rust) / `eslint` (Node).
+2. Run `ruff check` (Python) / `eslint` (Node).
 3. Verify your commit subject contains `[W#.#.#]`.
 4. Confirm signing is on (`git config commit.gpgsign` returns `true`).
 

@@ -1,8 +1,9 @@
-"""Conductor — parses BUILD_PLAN.md, builds the dependency DAG, dispatches tasks.
+"""Conductor — parses the build plan, builds the dependency DAG, dispatches tasks.
 
-Phase-0: dry-run only. Reads BUILD_PLAN.md, populates SQLite, prints which tasks
-are ready to dispatch. Real Agent SDK invocations land in a later PR after
-token-budget and model-tier sign-off (docs/AGENT_SWARM.md §12).
+Phase-0: dry-run only. Reads `docs/build/week-*.md` (or the legacy single-file
+`docs/BUILD_PLAN.md`), populates SQLite, prints which tasks are ready to
+dispatch. Real Agent SDK invocations land in a later PR after token-budget
+and model-tier sign-off (docs/AGENT_SWARM.md §12).
 """
 
 from __future__ import annotations
@@ -52,18 +53,29 @@ PHASE_HEADING_RE = re.compile(r"^## Phase (W\d+\.[A-Z])\b")
 
 
 def parse_plan(plan_path: Path) -> list[tuple[str, str, str]]:
-    """Yield (task_id, phase, title) for every task heading in BUILD_PLAN.md."""
+    """Yield (task_id, phase, title) for every task heading.
+
+    Accepts either a single `.md` file (legacy) or a directory containing
+    `week-*.md` files (current layout — see `docs/build/`). Directory mode
+    walks files in sorted order so W1 phases parse before W2, etc.
+    """
+    if plan_path.is_dir():
+        files = sorted(plan_path.glob("week-*.md"))
+    else:
+        files = [plan_path]
+
     tasks: list[tuple[str, str, str]] = []
     current_phase = ""
-    for line in plan_path.read_text(encoding="utf-8").splitlines():
-        m = PHASE_HEADING_RE.match(line)
-        if m:
-            current_phase = m.group(1)
-            continue
-        m = TASK_HEADING_RE.match(line)
-        if m:
-            task_id, title = m.group(1), m.group(2).strip()
-            tasks.append((task_id, current_phase or task_id.rsplit(".", 1)[0], title))
+    for fp in files:
+        for line in fp.read_text(encoding="utf-8").splitlines():
+            m = PHASE_HEADING_RE.match(line)
+            if m:
+                current_phase = m.group(1)
+                continue
+            m = TASK_HEADING_RE.match(line)
+            if m:
+                task_id, title = m.group(1), m.group(2).strip()
+                tasks.append((task_id, current_phase or task_id.rsplit(".", 1)[0], title))
     return tasks
 
 
@@ -236,13 +248,13 @@ def main(argv: list[str] | None = None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_dry = sub.add_parser("dry-run", help="parse plan, print DAG summary, don't touch DB")
-    p_dry.add_argument("--plan", type=Path, default=Path("docs/BUILD_PLAN.md"))
+    p_dry.add_argument("--plan", type=Path, default=Path("docs/build"))
     p_dry.add_argument("--deps", type=Path, default=Path("swarm/deps.yaml"))
     p_dry.add_argument("--show", type=int, default=10)
     p_dry.set_defaults(func=cmd_dry_run)
 
     p_load = sub.add_parser("load", help="parse plan and populate SQLite")
-    p_load.add_argument("--plan", type=Path, default=Path("docs/BUILD_PLAN.md"))
+    p_load.add_argument("--plan", type=Path, default=Path("docs/build"))
     p_load.add_argument("--deps", type=Path, default=Path("swarm/deps.yaml"))
     p_load.add_argument("--db", type=Path, default=Path("swarm/swarm.db"))
     p_load.set_defaults(func=cmd_load)

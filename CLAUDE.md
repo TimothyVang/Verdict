@@ -21,13 +21,13 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 | Doc | Role | When to consult |
 |-----|------|-----------------|
 | `README.md` | **Entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
-| `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/spec/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
+| `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/archive/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
 | `docs/BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day TDD plan with task IDs (W1.A.3.a, W1.B.7, …), ownership, hours, acceptance gates. | Pick your next task; use task IDs in commits; use weekly gates as the definition of done. |
 | `docs/DEVPOST_COMPLIANCE.md` | **Submission rule-to-artifact mapping.** Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging. |
 | `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit. | When docs appear to contradict each other. |
-| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches + original TL;DR. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
+| `docs/archive/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches + original TL;DR. **Reference only**, not authority. See `docs/archive/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
 
-**Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
+**Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/archive/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
 
 ## 3. Hard rules — MUST / MUST NOT
 
@@ -90,7 +90,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 
 ### 3.8 Dependency / vendoring policy
 
-**Hard NOs** — these may not be added to `pyproject.toml`, `Cargo.toml`, or `package.json` under any circumstances:
+**Hard NOs** — these may not be added to `pyproject.toml` or `package.json` under any circumstances:
 
 | Forbidden | Reason |
 |-----------|--------|
@@ -155,7 +155,7 @@ Three-layer immutability defense: (1) Claude `PreToolUse` hook (best-effort, per
 
 ## 5. Tech stack (one line each)
 
-Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
+Python 3.11 (`uv` / `pytest` / `ruff`); Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
 
 → Full version pins, license notes, hard-NO list: **`docs/ARCHITECTURE.md` §7** (and §3.8 above for forbidden deps).
 
@@ -274,7 +274,7 @@ verdict health
 
 ```bash
 # Schema/playbook/knowledge gates (W1)
-uv run --directory services/agent pytest tests/schemas/    -v
+uv run pytest tests/schemas/   -v
 uv run pytest tests/playbooks/  -v
 uv run pytest tests/knowledge/  -v
 
@@ -359,15 +359,15 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 | Sequencing, ownership, weekly acceptance gates, task IDs | `docs/BUILD_PLAN.md` |
 | Submission rule-to-artifact mapping, judge-facing checklist | `docs/DEVPOST_COMPLIANCE.md` |
 | Cross-doc consistency audit + critical-fix log | `docs/DOCS_ACCURACY_REPORT.md` |
-| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..05` + `README.md`) |
+| Audit-history rationale ("why was X decided?") | `docs/archive/` (`01..05` + `README.md`) |
 | Hackathon rules + resource links | https://findevil.devpost.com/ + `downloads/README.md` |
 | Upstream Claude Code config framework being extended | `protocol-sift/` |
 
-**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/`. Code wins over docs; if code is right, fix the doc.
+**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this `CLAUDE.md` → `docs/archive/`. Code wins over docs; if code is right, fix the doc.
 
 ## 13. Working-mode reminders for Claude Code sessions
 
-- The `docs/spec/` directory is the **frozen audit archive**. Do not edit; cite from `ARCHITECTURE.md`.
+- The `docs/archive/` directory is the **frozen audit archive**. Do not edit; cite from `ARCHITECTURE.md`.
 - The five forbidden destructive git operations (see §3.7) apply once the repo exists.
 - New dependencies require a license check against §3.8 before installation.
 - Any rule in §3 that you find yourself wanting to bend is almost certainly load-bearing — surface the conflict to the user instead of working around it.

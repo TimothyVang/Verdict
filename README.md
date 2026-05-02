@@ -20,9 +20,9 @@ Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS *FIND EV
 | **Ledger / audit trail** | `CLAUDE.md` §9 → `docs/ARCHITECTURE.md` §5 → `docs/BUILD_PLAN.md` W2.D |
 | **CLI / submission** | `CLAUDE.md` §10 → `docs/BUILD_PLAN.md` W6.* → `docs/DEVPOST_COMPLIANCE.md` |
 | **Setting up your machine** | `CONTRIBUTING.md` §0–4 → `downloads/README.md` |
-| **Why a decision was made** | `docs/spec/` (`README.md` then the relevant `0N-*.md`) |
+| **Why a decision was made** | `docs/archive/` (`README.md` then the relevant `0N-*.md`) |
 
-**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md` → `spec/` archive. Code wins over docs; if code is right, fix the doc.
+**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md` → `archive/`. Code wins over docs; if code is right, fix the doc.
 
 ---
 
@@ -196,7 +196,7 @@ Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-key
 | Architecture details, schemas, threat model | `docs/ARCHITECTURE.md` |
 | Day-by-day TDD task plan, task IDs, ownership | `docs/BUILD_PLAN.md` |
 | Devpost rule-to-artifact mapping, judge checklist | `docs/DEVPOST_COMPLIANCE.md` |
-| Decision history ("why was X decided?") | `docs/spec/` |
+| Decision history ("why was X decided?") | `docs/archive/` |
 | Hard rules an agent must obey | `CLAUDE.md` §3 |
 | Contributor onboarding (PAT, GPG, clone, smoke test) | `CONTRIBUTING.md` |
 | Community Q&A, ideas, hero-beat captures | [GitHub Discussions](https://github.com/TimothyVang/Verdict/discussions) |

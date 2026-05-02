@@ -185,7 +185,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Reality:** No `.pre-commit-config.yaml` exists. Line 140 uses `test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks` — silently no-ops because the file is missing. Line 220's "hooks installed; green" is currently a lie. The grep gate at line 556 only catches missing prefixes after the fact (does not block bad commits). All §3.7 rules are unenforced.
 
-**Fix:** Pull `.pre-commit-config.yaml` creation into the W1.A.7 acceptance criteria (today it's implicit). Bare-minimum config: (a) `commitizen check` against a regex requiring `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$`; (b) `ruff check --select ALL`; (c) the `scripts/check_no_mocks.py` AST hook from D1; (d) `cargo fmt --check`. Once the file lands, drop the `test -f` short-circuit in `CONTRIBUTING.md` line 140.
+**Fix:** Pull `.pre-commit-config.yaml` creation into the W1.A.7 acceptance criteria (today it's implicit). Bare-minimum config: (a) `commitizen check` against a regex requiring `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$`; (b) `ruff check --select ALL`; (c) the `scripts/check_no_mocks.py` AST hook from D1. Once the file lands, drop the `test -f` short-circuit in `CONTRIBUTING.md` line 140.
 
 ---
 
@@ -248,23 +248,6 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 **Reality:** `BUILD_PLAN.md` schedules the workflow file in W4.D.4 — late week 4. By the time it lands, the metric only retroactively gates the *next* week's commits, not the four weeks of code that produced the >10% rate. No `.github/workflows/` file is staged today.
 
 **Fix:** Stage a stub workflow `.github/workflows/eval-hallucination-gate.yml` in W1.A.7 that runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` and fails on >10%. Stub the scorer to return 0.0 (always pass) until W4.D.1 implements the real one. This wires the gate into CI before any hallucination-producing code lands.
-
----
-
-## LOW — verified accurate (no action)
-
-The following workflow claims were checked and hold up:
-
-- The 9-node graph reconciliation (sister audit `H3`) is settled: ARCH §2 line 77 explicitly subsumes the clarify sub-state into `comprehension_gate`; CLAUDE.md §4 was updated in lockstep.
-- Pattern 1 (`network=False`) vs Pattern 2 (TSI) contradiction is resolved in ARCH §6 (sister audit `M3`).
-- `pivot_max=15` vs `replan_max=3` distinction is correctly stated in ARCH §2 Pivot vs replan + CLAUDE.md §8.
-- `case_id`-derived blake3 seeds use the correct constructor-time `derive_key_context` API (sister audit `M1` already remediated).
-- Three-layer immutability defence (PreToolUse hook + DenyRuleWrapper + microsandbox kernel mount) is internally consistent across CLAUDE.md §4 and ARCH §3.
-- The descope priority "kill-9 chaos test 100/100" vs never-cut "kill-9 resume" is unambiguous in `BUILD_PLAN.md` line 1380 + 1386 (chaos test is the 100/100 acceptance bar; resume is the basic feature).
-- Authority chain (Devpost > DEVPOST_COMPLIANCE > ARCH > BUILD_PLAN > CLAUDE.md > spec/) is consistent across all docs.
-- TDD policy ("never `--no-verify`, never `--amend`") is consistent across CLAUDE.md §3.7 + BUILD_PLAN line 16 + CONTRIBUTING.md §5 — though *enforcement* is the D3 finding above.
-- Hard-NO dependency list (Daytona AGPL, REMnux GPL out-of-process only, no Llama 4/Gemma 3/Modal/LangSmith/Braintrust/Phoenix/AutoGen v0.4) is consistent across CLAUDE.md §3.8 and DEVPOST_COMPLIANCE Part 5.
-- Three-tier ID hierarchy (`case_id` → `langfuse_trace_id` → `langgraph_checkpoint_id`) is consistent across CLAUDE.md §9 and ARCH §5.
 
 ---
 

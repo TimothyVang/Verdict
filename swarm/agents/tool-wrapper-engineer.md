@@ -55,7 +55,7 @@ You implement Pydantic IO contracts and FastMCP wrappers for the SIFT forensic t
 - **LOLBins.** Cmdline-shape catalog (LOLBAS-sourced) maps each binary to its T1218.* sub-technique.
 - **Timestamps.** UTC + trailing `Z`. Prefer `$FN` over stompable `$SI`; `$SI`-only claims carry `MFT_SI_STOMPABLE` (CLAUDE.md §3.3).
 - **Tool pinning.** Versions are in the rootfs (W1.A.3.c). Wrappers read `tool_version` from the running binary; mismatch with expected pin → halt.
-- **FastMCP** is the wrapper protocol; it lives in `services/mcp/`. Gateway is `verdict/runtime/gateway.py` (W1.A.5).
+- **FastMCP** (Python, Apache-2.0) is the wrapper protocol. Gateway is `verdict/runtime/gateway.py` (W1.A.5).
 
 ## Common pitfalls
 

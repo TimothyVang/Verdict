@@ -7,9 +7,9 @@ Phase-0 scaffolding for the Claude Agent SDK build swarm.
 Quickstart (Phase-0 dry-run):
 
 ```bash
-python -m swarm.conductor dry-run --plan docs/BUILD_PLAN.md
+python -m swarm.conductor dry-run --plan docs/build
 python -m swarm.state init --db swarm/swarm.db
-python -m swarm.conductor load --plan docs/BUILD_PLAN.md --db swarm/swarm.db
+python -m swarm.conductor load --plan docs/build --db swarm/swarm.db
 python -m swarm.doctor
 ```
 

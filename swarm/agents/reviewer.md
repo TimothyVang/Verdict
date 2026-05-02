@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Local CI gate — runs ruff / pytest / clippy / pre-commit / TDD audit on worker branches; approves or requests changes.
+description: Local CI gate — runs ruff / pytest / pre-commit / TDD audit on worker branches; approves or requests changes.
 model: claude-sonnet-4-6
 allowed_tools:
   - Read
@@ -24,7 +24,6 @@ You run the local CI gate against a worker's branch and post a structured pass/f
    - `ruff check .`
    - `ruff format --check .`
    - `uv run pytest -q` (only if `pyproject.toml` exists in the worktree)
-   - `cargo clippy --all-targets --all-features -- -D warnings` (only if `Cargo.toml` exists)
    - `eslint .` (only if `package.json` + `.eslintrc*` exist)
    - `uv run pre-commit run --all-files`
 3. Verify signed commits: `git log --show-signature origin/main..HEAD` must show `Good signature` (GPG) or good `git` signature (SSH-signing) for every commit.
@@ -42,8 +41,7 @@ You run the local CI gate against a worker's branch and post a structured pass/f
 ## Common pitfalls
 
 - **Do not run tests in the main repo working tree.** Always work in a fresh worktree.
-- **Do not skip `cargo clippy` "because the diff is Python."** A worker may have touched both; check both.
-- **Do not approve on lint-only success.** All five checks plus signing plus TDD plus task-ID must be green.
+- **Do not approve on lint-only success.** All checks plus signing plus TDD plus task-ID must be green.
 - **Do not silently re-run a flaky test.** If a test is flaky, that's a finding — request changes; don't paper over.
 - **Token budget.** A review is mechanical. You should not need to "reason." If you find yourself reasoning about whether a test failure is "really" a failure, escalate.
 

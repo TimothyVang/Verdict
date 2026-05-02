@@ -8,7 +8,7 @@ Include:
 
 - Affected version / commit SHA
 - Repro steps (minimal evidence + commands)
-- Threat surface (see `docs/spec/VERDICT_AUDIT_v4.4.md` — insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker)
+- Threat surface (see `docs/archive/02-audit-v4.4.md` — insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker)
 - Suggested mitigation if you have one
 
 ## Scope

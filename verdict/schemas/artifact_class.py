@@ -16,6 +16,8 @@ class ArtifactClass(str, Enum):
     TASK_SCHEDULER = "task_scheduler"
     WMI_SUBSCRIPTION = "wmi_subscription"
     MFT = "mft"                           # $MFT, $J/UsnJrnl
+    EVTX_4624 = "evtx_4624"              # Security/4624 logon events; LOGON_TYPE_3_VS_10 caveat trigger
+    USNJRNL = "usnjrnl"                  # USN Change Journal ($J); USNJRNL_WRAPS caveat trigger
     PROCESS_MEMORY = "process_memory"     # malfind/RWX/hollowed
     YARA_HIT = "yara_hit"
     SIGMA_HIT = "sigma_hit"
