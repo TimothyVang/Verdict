@@ -19,7 +19,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TypedDict
 
-import pytest
 from langgraph.graph import END, START, StateGraph
 
 from verdict.graph.gateway import CaseGateway
