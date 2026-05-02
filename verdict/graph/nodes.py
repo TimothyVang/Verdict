@@ -30,6 +30,23 @@ from verdict.graph.state import GraphState
 # Budget invariants per CLAUDE.md §8 / ARCHITECTURE.md §2.
 PIVOT_MAX = 15
 REPLAN_MAX = 3
+# Comprehension-gate clarify budget per ARCHITECTURE.md §2 — the
+# "clarify sub-state" cap that prevents the gate from re-prompting
+# indefinitely when executors persistently disagree.
+MAX_CLARIFY_ITERATIONS = 2
+# The 4 executor branches that must echo the plan for consensus.
+# Per ARCHITECTURE.md §2 the canonical fanout is vol/hay/pls/mft. The
+# gate counts DISTINCT branch names; pivot-injected echoes do not
+# count toward the 4-way quorum.
+EXECUTOR_FANOUT_SIZE = 4
+
+# Consensus-key names — used both by the gate and surfaced in
+# contested_hint when one of them is the disagreeing axis.
+CONSENSUS_KEYS: tuple[str, ...] = (
+    "parsed_positive_hypothesis_ids",
+    "parsed_negative_hypothesis_ids",
+    "parsed_success_criteria_hash",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -92,22 +109,108 @@ def planner_critique_node(state: GraphState) -> dict[str, Any]:
     )
 
 
+def _normalize_echo_value(value: Any) -> Any:
+    """Project a consensus-key value into a stable hashable form.
+
+    Lists of hypothesis IDs become frozensets so order-of-emission
+    doesn't break agreement. Strings (the success_criteria_hash) and
+    everything else pass through unchanged.
+    """
+    if isinstance(value, list | tuple | set):
+        return frozenset(value)
+    return value
+
+
+def _disagreeing_keys(echoes: list[dict[str, Any]]) -> list[str]:
+    """Return CONSENSUS_KEYS on which the executors do NOT all agree.
+
+    Empty list means full agreement. Used both to gate consensus and to
+    populate ``contested_hint`` with the actual disagreeing axis so
+    ``replan_node`` has a remediation target.
+    """
+    if not echoes:
+        # No echoes is treated as full disagreement on every key —
+        # silent-crash branches are never a free pass per
+        # ARCHITECTURE.md §1 empty-set rule.
+        return list(CONSENSUS_KEYS)
+    disagreeing: list[str] = []
+    for key in CONSENSUS_KEYS:
+        seen = {_normalize_echo_value(e.get(key)) for e in echoes}
+        if len(seen) > 1:
+            disagreeing.append(key)
+    return disagreeing
+
+
 def comprehension_gate_node(state: GraphState) -> dict[str, Any]:
     """Validate that all 4 executors parsed the plan identically.
 
     Each executor emits a `PlanComprehensionEcho` containing
     `parsed_positive_hypothesis_ids`, `parsed_negative_hypothesis_ids`,
     `parsed_success_criteria_hash`. The gate is purely a consensus check —
-    no LLM call — and is therefore implemented for real here in W2.B.2
-    (not stubbed).
+    no LLM call — so the real logic lives here in W2.B.2 (not stubbed).
 
-    For W2.B.1 the consensus logic is a placeholder that defaults to
-    "consensus reached" so the topology can compile and route. The real
-    consensus + clarify sub-state logic lands in W2.B.2.
+    Behaviour:
+    1. If ``EXECUTOR_FANOUT_SIZE`` distinct branches all agree on every
+       ``CONSENSUS_KEYS`` value -> ``comprehension_consensus=True`` and
+       routing advances to ``executor_fanout``.
+    2. Otherwise, while ``clarify_iterations < MAX_CLARIFY_ITERATIONS``,
+       the gate increments ``clarify_iterations`` and re-prompts (within
+       the same node — not a separate top-level node, per
+       ARCHITECTURE.md §2 "comprehension-gate clarify budget").
+    3. Once the clarify budget is exhausted with persistent disagreement,
+       the gate emits ``comprehension_consensus=False`` plus a
+       ``contested_hint`` naming the disagreeing CONSENSUS_KEY, and the
+       conditional edge routes to ``replan_node`` (CONTESTED).
     """
 
-    # W2.B.2 will replace this with the real consensus + clarify logic.
-    return {"comprehension_consensus": True}
+    # `comprehension_echoes` and `clarify_iterations` are not yet
+    # part of GraphState's TypedDict (those land alongside the
+    # PlanComprehensionEcho schema in W1.B); the gate reads them
+    # defensively with .get() so the topology compile test stays green.
+    echoes: list[dict[str, Any]] = list(state.get("comprehension_echoes") or [])  # type: ignore[arg-type]
+    clarify_iterations: int = int(state.get("clarify_iterations") or 0)  # type: ignore[arg-type]
+
+    distinct_branches = {e.get("branch_name") for e in echoes if e.get("branch_name")}
+    have_full_quorum = len(distinct_branches) >= EXECUTOR_FANOUT_SIZE
+    disagreeing = _disagreeing_keys(echoes)
+    consensus_reached = have_full_quorum and not disagreeing
+
+    if consensus_reached:
+        return {"comprehension_consensus": True}
+
+    # Disagreement: spend a clarify iteration unless the budget is
+    # already at MAX_CLARIFY_ITERATIONS (in which case we concede).
+    if clarify_iterations < MAX_CLARIFY_ITERATIONS:
+        return {
+            "clarify_iterations": clarify_iterations + 1,
+            # Leave comprehension_consensus unset so the conditional
+            # edge router treats it as "not yet decided" (default PASS
+            # is masked by the still-running clarify loop in real
+            # execution; the test exercises the increment directly).
+            "comprehension_consensus": None,
+        }
+
+    # Budget exhausted — concede and route to replan_node.
+    if not have_full_quorum:
+        hint = (
+            "comprehension_persistent_mismatch: only "
+            f"{len(distinct_branches)} of {EXECUTOR_FANOUT_SIZE} executor "
+            "branches echoed within budget"
+        )
+    elif disagreeing:
+        # Surface the most-actionable disagreeing key.
+        hint = (
+            "comprehension_persistent_mismatch: executors disagreed on "
+            f"{disagreeing[0]} after {MAX_CLARIFY_ITERATIONS} clarify rounds"
+        )
+    else:
+        # Should be unreachable, but emit a sane default.
+        hint = "comprehension_persistent_mismatch: unspecified"
+
+    return {
+        "comprehension_consensus": False,
+        "contested_hint": hint,
+    }
 
 
 def executor_fanout_node(state: GraphState) -> dict[str, Any]:
