@@ -76,7 +76,7 @@ The composition is a single-pass pipeline. Each phase has a defined input, outpu
 | 4. Debug (on RED) | `systematic-debugging` | §3.6 (UNVERIFIABLE is a first-class outcome — give up explicitly), §3.10 (don't mock to make red go away) | Root cause documented; fix is targeted. If root cause requires a plan change, return to phase 2. |
 | 5. Verify | `verification-before-completion`, `executing-plans` | §3.1 evidence integrity (re-hashing), §3.10 (services up before passing) | All tests green against real services; `verdict doctor` is part of the gate. |
 | 6. Review | `requesting-code-review`, `receiving-code-review` | §3.7 (no `--amend`, no `--no-verify`), §3.8 (no forbidden deps slipped in) | Severity-ranked review; merge / discard / keep decision. |
-| 7. Commit + push | `finishing-a-development-branch` → `/qc` | §3.7 Conventional Commits w/ `[W#.#.#]`, no destructive flags | Single commit, auto-pushed (per saved feedback memory for Verdict repo). |
+| 7. Commit + push | `finishing-a-development-branch` → `/qc` | §3.7 Conventional Commits w/ `[W#.#.#]`, no destructive flags | Code commit + optional docs-sync commit (same task ID), both auto-pushed. The docs-sync step (Step 5.5 of `/qc`) is the local counterpart to the `verdict-doc-drift` cron routine. |
 
 ## 4. Skill conflict resolution
 
