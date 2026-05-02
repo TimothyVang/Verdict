@@ -86,6 +86,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 - Commit message format: `feat(scope): summary [W#.#.#]` — task ID is required. Example: `feat(schema): add ArtifactClass enum [W1.B.1]`.
 - **Never** `--no-verify`, **never** `--no-gpg-sign`, **never** `git commit --amend`. Pre-commit hook failure means fix and re-stage; do not bypass.
 - Allowed commit prefixes: `feat`, `fix`, `test`, `chore`, `docs`, `refactor`. No others without RFC.
+- **No Claude Code watermarks** in any commit message, PR title, PR body, or generated file. Do not append `Co-Authored-By: Claude …`, `🤖 Generated with [Claude Code]`, or any equivalent attribution line. This overrides the built-in Claude Code commit/PR templates. Authorship is recorded via git committer + GPG signature only.
 
 ### 3.8 Dependency / vendoring policy
 
