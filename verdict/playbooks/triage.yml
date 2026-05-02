@@ -1,0 +1,41 @@
+evidence_type: triage
+first_move: unzip_to_readonly_mount
+steps:
+  - order: 1
+    tool: unzip_to_readonly_mount
+    rule: "KAPE/Velociraptor zip → /evidence read-only"
+
+  - order: 2
+    tool: recmd
+    mitre_technique_hint: T1547
+    rule: "Registry hives FIRST: Run/RunOnce/IFEO/Services = persistence top-5"
+
+  - order: 3
+    tool: pecmd
+    mitre_technique_hint: T1059
+    rule: "Prefetch ≥1 run + last_run within evidence window = execution corroboration"
+
+  - order: 4
+    tool: amcache_parse
+    mitre_technique_hint: null
+    rule: "ALWAYS acknowledge AMCACHE_LASTMODIFIED_NOT_EXEC caveat — LastModified ≠ execution time"
+
+  - order: 5
+    tool: hayabusa.csv_timeline
+    depends_on: [1]
+    mitre_technique_hint: null
+
+  - order: 6
+    tool: hayabusa.filter
+    depends_on: [5]
+    rule: "filter by sigma_level + time_range from prior findings via pivot"
+
+  - order: 7
+    tool: mftecmd
+    depends_on: [1]
+    rule: "use $FN timestamps for evidentiary claims; $SI is stompable"
+
+  - order: 8
+    tool: bulk_extractor
+    depends_on: [1]
+    mitre_technique_hint: null
