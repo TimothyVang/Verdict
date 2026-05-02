@@ -14,6 +14,7 @@ Test surface for the seed-derivation invariants demanded by v4.6 Patch F1
 from __future__ import annotations
 
 import pytest
+
 from verdict.verification.derive_seeds import derive_seeds
 
 
