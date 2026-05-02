@@ -90,7 +90,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 
 ### 3.8 Dependency / vendoring policy
 
-**Hard NOs** — these may not be added to `pyproject.toml`, `Cargo.toml`, or `package.json` under any circumstances:
+**Hard NOs** — these may not be added to `pyproject.toml` or `package.json` under any circumstances:
 
 | Forbidden | Reason |
 |-----------|--------|
@@ -155,7 +155,7 @@ Three-layer immutability defense: (1) Claude `PreToolUse` hook (best-effort, per
 
 ## 5. Tech stack (one line each)
 
-Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
+Python 3.11 (`uv` / `pytest` / `ruff`); Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
 
 → Full version pins, license notes, hard-NO list: **`docs/ARCHITECTURE.md` §7** (and §3.8 above for forbidden deps).
 
@@ -274,7 +274,7 @@ verdict health
 
 ```bash
 # Schema/playbook/knowledge gates (W1)
-uv run --directory services/agent pytest tests/schemas/    -v
+uv run pytest tests/schemas/   -v
 uv run pytest tests/playbooks/  -v
 uv run pytest tests/knowledge/  -v
 

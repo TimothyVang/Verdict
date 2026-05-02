@@ -42,11 +42,7 @@ venv/
 .coverage
 htmlcov/
 dist/
-build/
-
-# Rust
-target/
-**/*.rs.bk
+/build/
 
 # Node (deferred v2)
 node_modules/

@@ -1,9 +1,9 @@
 """Reviewer — local CI gate runner.
 
-Runs ruff / cargo clippy / pytest / pre-commit / signed-commit verify against
-a worker's branch (in its worktree), captures pass/fail, and returns a
-structured report. The actual `gh pr review` call is Phase-1+; this file
-establishes the check surface.
+Runs ruff / pytest / pre-commit / signed-commit verify against a worker's
+branch (in its worktree), captures pass/fail, and returns a structured
+report. The actual `gh pr review` call is Phase-1+; this file establishes
+the check surface.
 
 See docs/AGENT_SWARM.md §4.3.
 """
@@ -21,7 +21,6 @@ DEFAULT_CHECKS: list[tuple[str, list[str]]] = [
     ("ruff-check",   ["ruff", "check", "."]),
     ("ruff-format",  ["ruff", "format", "--check", "."]),
     ("pytest",       ["uv", "run", "pytest", "-q"]),
-    ("clippy",       ["cargo", "clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]),
     ("pre-commit",   ["uv", "run", "pre-commit", "run", "--all-files"]),
 ]
 
@@ -121,8 +120,6 @@ def review(worktree: Path, branch: str, base: str = "origin/main") -> ReviewRepo
     report = ReviewReport(branch=branch, worktree=worktree)
     for name, cmd in DEFAULT_CHECKS:
         # Skip language-specific checks if the relevant build file is absent.
-        if name == "clippy" and not (worktree / "Cargo.toml").exists():
-            continue
         if name in {"pytest", "pre-commit"} and not (worktree / "pyproject.toml").exists():
             continue
         report.checks.append(_run(cmd, worktree))

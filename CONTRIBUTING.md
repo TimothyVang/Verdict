@@ -74,7 +74,7 @@ Verdict ships three runtimes. Pin everything; no `latest`.
 ```bash
 bash scripts/bootstrap-dev.sh
 ```
-Idempotent. Installs uv + Python 3.11, Rust 1.88, Node 20 + pnpm, and Microsandbox (Linux only) at the pinned versions in the table below. Skips anything already at the right version. Re-run any time you want to re-verify the toolchain.
+Idempotent. Installs uv + Python 3.11, Node 20 + pnpm, and Microsandbox (Linux only) at the pinned versions in the table below. Skips anything already at the right version. Re-run any time you want to re-verify the toolchain.
 
 **Manual path** (use this if `bootstrap-dev.sh` fails on your platform — macOS host, exotic distro, etc., and tell PUG so the script gets a fix):
 
@@ -82,18 +82,17 @@ Idempotent. Installs uv + Python 3.11, Rust 1.88, Node 20 + pnpm, and Microsandb
 |---|---|---|
 | Python | 3.11.x | `uv python install 3.11` (https://github.com/astral-sh/uv) |
 | Python pkg mgr | `uv` (latest) | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| Rust | 1.88 | `rustup install 1.88 && rustup default 1.88` |
 | Node | 20.x LTS | `nvm install 20 && nvm use 20` |
 | Node pkg mgr | `pnpm` (corepack) | `corepack enable && corepack use pnpm` |
 | Microsandbox | v0.4.x | `curl -fsSL https://install.microsandbox.dev \| sh` (Linux/SIFT VM only) |
-| Linters | `ruff`, `cargo clippy`, `eslint` | wired via pre-commit; see Step 5 |
+| Linters | `ruff`, `eslint` | wired via pre-commit; see Step 5 |
 
 **Where to develop.** Two supported configurations:
 
 - **Inside the SIFT VM** (canonical). All forensic tools, microsandbox, SGLang resolve here. Required for any work touching the executor branches, the microsandbox layer, or evidence I/O.
 - **On the host with the SIFT VM as a runtime target** (faster edit loop). Use VS Code Remote-SSH or `Develop on a Container` into the VM. Acceptable for schema, planner, MCP gateway, and unit-test work that doesn't actually shell out to forensic tools.
 
-If your work touches `services/mcp/src/tools/`, `services/agent_mcp/`, or anything under a microsandbox path, you must run integration tests inside the VM before opening a PR.
+If your work touches `mcp/src/tools/`, `verdict/tools/`, or anything under a microsandbox path, you must run integration tests inside the VM before opening a PR.
 
 ---
 
@@ -138,14 +137,12 @@ cd verdict
 # Hooks + dev deps (will land in the repo over Week 1; if missing, skip)
 test -f pyproject.toml && uv sync --all-extras
 test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks
-test -f Cargo.toml && cargo build --workspace
 test -f pnpm-lock.yaml && pnpm install --frozen-lockfile
 ```
 
 Sanity check:
 ```bash
 uv run pytest -q             # must pass on a clean clone — if it doesn't, that's a P0
-cargo test --workspace -q
 pnpm test
 ```
 
@@ -170,7 +167,7 @@ Open a **draft PR as soon as you have a failing test pushed**. Title mirrors the
 - Schema changes? Call out the migration plan — schemas freeze 2026-05-08.
 
 ### Linters
-`ruff check . && ruff format --check .` for Python. `cargo clippy --all-targets --all-features -- -D warnings` for Rust. `eslint .` for Node. Pre-commit runs all three; CI re-runs them. No `# noqa` without an inline justification.
+`ruff check . && ruff format --check .` for Python. `eslint .` for Node. Pre-commit runs both; CI re-runs them. No `# noqa` without an inline justification.
 
 ### Secrets in commits
 The `.gitignore` already covers `.env*`, `*.vmem`, `*.E0*`, `*.dd`, `*.raw`, `*.gpg`, `cases/`. If you add a new evidence-bearing extension, update `.gitignore` in the same commit. Never paste PATs, OAuth tokens, or HMAC keys into PR descriptions or commit messages.
@@ -217,8 +214,8 @@ Copy into your notes and tick as you go.
 - [ ] GitHub 2FA on, PAT issued with read+write on `TimothyVang/Verdict`, stored in a secret manager
 - [ ] Git credential helper or `gh auth` configured; can `gh repo view TimothyVang/Verdict`
 - [ ] Commit signing verified (`git log --show-signature` shows good signature on a smoke commit)
-- [ ] Python 3.11 + uv, Rust 1.88, Node 20 + pnpm installed and on `PATH`
-- [ ] Repo cloned; `uv sync`, `cargo build`, `pnpm install` all succeed (or scaffold not yet landed — confirm with PUG)
+- [ ] Python 3.11 + uv, Node 20 + pnpm installed and on `PATH`
+- [ ] Repo cloned; `uv sync`, `pnpm install` all succeed (or scaffold not yet landed — confirm with PUG)
 - [ ] Pre-commit hooks installed; `pre-commit run --all-files` green
 - [ ] SIFT VM `clean-install` and `protocol-sift-installed` snapshots taken
 - [ ] First `investigate <case>` produces a Finding + ledger entry inside the VM
