@@ -23,9 +23,14 @@ Budget invariants (CLAUDE.md §8):
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from verdict.graph.state import GraphState
+from verdict.schemas.comprehension_mismatch import (
+    ComprehensionMismatch,
+    ExecutorEchoDiff,
+)
 
 # Budget invariants per CLAUDE.md §8 / ARCHITECTURE.md §2.
 PIVOT_MAX = 15
@@ -197,19 +202,84 @@ def comprehension_gate_node(state: GraphState) -> dict[str, Any]:
             f"{len(distinct_branches)} of {EXECUTOR_FANOUT_SIZE} executor "
             "branches echoed within budget"
         )
+        # No-quorum: the disagreement is on EVERY consensus key by
+        # definition (we cannot prove agreement we never observed).
+        disagreeing_keys_for_ledger = list(CONSENSUS_KEYS)
     elif disagreeing:
         # Surface the most-actionable disagreeing key.
         hint = (
             "comprehension_persistent_mismatch: executors disagreed on "
             f"{disagreeing[0]} after {MAX_CLARIFY_ITERATIONS} clarify rounds"
         )
+        disagreeing_keys_for_ledger = disagreeing
     else:
-        # Should be unreachable, but emit a sane default.
+        # Should be unreachable (consensus_reached would be True), but
+        # emit a sane default rather than a crash.
         hint = "comprehension_persistent_mismatch: unspecified"
+        disagreeing_keys_for_ledger = list(CONSENSUS_KEYS)
+
+    # Build the ComprehensionMismatch ledger payload for the downstream
+    # LedgerEmitter (W2.C.3). Every echo we received is preserved
+    # verbatim — chain-of-custody per CLAUDE.md §9.
+    case_id = state.get("case_id") or ""  # type: ignore[assignment]
+    per_executor: list[ExecutorEchoDiff] = []
+    for echo in echoes:
+        try:
+            per_executor.append(
+                ExecutorEchoDiff(
+                    branch_name=echo.get("branch_name") or "unknown",
+                    parsed_positive_hypothesis_ids=list(
+                        echo.get("parsed_positive_hypothesis_ids") or []
+                    ),
+                    parsed_negative_hypothesis_ids=list(
+                        echo.get("parsed_negative_hypothesis_ids") or []
+                    ),
+                    parsed_success_criteria_hash=str(
+                        echo.get("parsed_success_criteria_hash") or ""
+                    ) or "missing",
+                )
+            )
+        except Exception:
+            # An echo so malformed it cannot even be captured for the
+            # ledger is itself the disagreement — record a placeholder
+            # rather than dropping it (silent drops violate
+            # ARCHITECTURE.md §1 empty-set rule).
+            per_executor.append(
+                ExecutorEchoDiff(
+                    branch_name=str(echo.get("branch_name") or "malformed"),
+                    parsed_positive_hypothesis_ids=[],
+                    parsed_negative_hypothesis_ids=[],
+                    parsed_success_criteria_hash="malformed_echo",
+                )
+            )
+
+    if not per_executor:
+        # No echoes at all — record one synthetic entry so the schema's
+        # `min_length=1` is satisfied without dropping the event.
+        per_executor.append(
+            ExecutorEchoDiff(
+                branch_name="no_branches_echoed",
+                parsed_positive_hypothesis_ids=[],
+                parsed_negative_hypothesis_ids=[],
+                parsed_success_criteria_hash="no_echoes",
+            )
+        )
+
+    pending = ComprehensionMismatch(
+        case_id=case_id or "unknown",
+        timestamp_utc=datetime.now(tz=UTC),
+        clarify_iterations_spent=clarify_iterations,
+        disagreeing_keys=disagreeing_keys_for_ledger,
+        per_executor=per_executor,
+    )
 
     return {
         "comprehension_consensus": False,
         "contested_hint": hint,
+        # `pending_ledger_entry` carries a model_dump (mode="json") so
+        # the LedgerEmitter (W2.C.3) hashes the same bytes Pydantic
+        # would emit — preserves HMAC reproducibility.
+        "pending_ledger_entry": pending.model_dump(mode="json"),
     }
 
 
