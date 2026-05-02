@@ -1,4 +1,4 @@
-# v2-sans-hackthon — VERDICT
+# Verdict
 
 Workspace for **VERDICT**, an autonomous Windows DFIR / incident-response agent built for the SANS [FIND EVIL!](https://findevil.devpost.com/) 2026 hackathon.
 
@@ -7,7 +7,7 @@ Workspace for **VERDICT**, an autonomous Windows DFIR / incident-response agent 
 ## Layout
 
 ```
-v2-sans-hackthon/
+Verdict/
 ├── CLAUDE.md                ← operating charter (read first)
 ├── README.md                ← this file
 ├── docs/
