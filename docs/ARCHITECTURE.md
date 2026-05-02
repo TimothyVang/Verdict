@@ -72,7 +72,9 @@ START
 │                 │  parsed_positive_hypothesis_ids,
 │                 │  parsed_negative_hypothesis_ids,
 │                 │  parsed_success_criteria_hash. Mismatch
-│                 │  → clarify_node.
+│                 │  → clarify sub-state (re-prompts within
+│                 │  the same node, not a separate top-level
+│                 │  node — total node count stays 9).
 └────────┬────────┘
          ▼  (fanout — 4 parallel branches)
 ┌─────────────────┐
@@ -293,11 +295,11 @@ Every 10 super-steps, re-hash all `EvidenceItem` files against the manifest. Mis
 
 ---
 
-## 6. Tool surface (12 SIFT tools, 19 wrappers)
+## 6. Tool surface (12 SIFT tools, 23 wrappers)
 
 | Tool family | Wrappers |
 |---|---|
-| Volatility 3 | `windows.{info,pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (10 plugins) |
+| Volatility 3 | `windows.{pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (10 typed plugin wrappers; `windows.info` is invoked through the generic vol3 allow-list — see §6 *Tool-call argument validation*) |
 | Hayabusa | Split: `hayabusa_csv_timeline` (extract) + `hayabusa_filter` (analyst-driven filter by sigma_level + time_range) |
 | Plaso | Split: `plaso_extract` (log2timeline.py → .plaso) + `psort_filter` (psort.py + filter expression) |
 | Sleuth Kit | `mmls`, `fls`, `fsstat` |
@@ -342,7 +344,7 @@ sandbox = await microsandbox.spawn(
 )
 ```
 
-API key never enters the VM. Proven via tcpdump comparison: bearer header on egress to `opencti.local:8080`, NOT inside the microvm.
+Pattern 2 intentionally allows TSI-mediated egress to a single allowlisted origin; nothing else. Specifying `network_policy=TSI(...)` implicitly enables network at the libkrun layer (vsock-routed to the host TSI proxy) — this is *not* a contradiction with Pattern 1's `network=False`, it's the explicit opposite case for the narrow set of tools that need outbound HTTPS. API key never enters the VM. Proven via tcpdump comparison: bearer header on egress to `opencti.local:8080`, NOT inside the microvm.
 
 ### Tool-call argument validation
 

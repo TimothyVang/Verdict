@@ -139,7 +139,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 ## 4. Architecture at a glance
 
-9-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4) → executor_work {DenyRuleWrapper / ToolExecutor / LedgerEmitter} → pivot (≤15) → quorum → replan (≤3) | unverifiable_finalize → finalize**.
+9-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4; each branch composed of DenyRuleWrapper / ToolExecutor / LedgerEmitter) → pivot (≤15) → quorum → replan (≤3) → unverifiable_finalize → finalize**.
 
 Three operational modes, auto-detected at `case_init` and **locked**:
 

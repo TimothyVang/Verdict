@@ -126,7 +126,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
 
 ```
 RISK #1 — Microsandbox hits a blocker week 4+
-  Likelihood: MEDIUM (it's beta).  Impact: HIGH (kills TSI hero shot).
+  Likelihood: MEDIUM (pre-1.0; latest 0.1.x).  Impact: HIGH (kills TSI hero shot).
   Mitigation: Test it HARD in week 2, not week 4.
 
 RISK #2 — Case 001 doesn't disagree by end of week 4
@@ -156,3 +156,11 @@ RISK #3 — Schemas slip past May 8
 | Contributor onboarding (PAT, GPG, clone, smoke test) | `CONTRIBUTING.md` |
 | Vulnerability reporting | `SECURITY.md` |
 | What large binaries to fetch and where | `downloads/README.md` |
+
+### CLI surface (one-liner)
+
+```
+verdict {doctor, mode, init, resume, reverify, status, ls, show, export, validate, approve, gc, health}
+```
+
+`verdict reverify <case_id> --mode <cloud|airgap|dual>` re-runs verification under a new mode and writes a *parallel* verdict chain — the original ledger is never mutated. Full CLI reference in `CLAUDE.md` §10.2; flag spec in `docs/BUILD_PLAN.md` W3.C.2.

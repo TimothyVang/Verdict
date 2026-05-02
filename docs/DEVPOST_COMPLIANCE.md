@@ -86,7 +86,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - **Explicit scope decision: Windows-DFIR-depth-first.** macOS / Linux / Win11 SRUM-ETW / ESXi / FOR572 network forensics deferred to v2 with named architectural extension points (5th `net_executor` and `live_executor` fanout branches).
-- 19 tool wrappers (10 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
+- 23 tool wrappers (10 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
 - Three evidence types covered with depth: memory image, disk image, triage zip. Three playbook YAMLs encode SANS-canonical sequencing per type.
 - 50 ground-truth indicators across 3 engineered cases (lol-bins, credential theft, ransomware)
 - DKOM/T1014 detection via pslist+psscan divergence — encoded, not LLM-recalled
@@ -143,7 +143,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - `verdict doctor` pre-flight (W5.A.4) reports each component status before first use
 - `docs/BUILD.md` reproducible from a fresh SIFT VM (verified by reproducing on a second VM in W6.C.3)
 - Full CLI surface: `verdict {init, resume, reverify, status, ls, show, export, validate, mode, gc, health, doctor}`
-- 12 documentation files: README, ARCHITECTURE, BUILD, THREAT_MODEL, FAILURE_MODES, CLI, CHECKPOINTING, CASE_ISOLATION, SCOPE, SCHEMA_MIGRATION, SANS_JUDGE_CHECKLIST, ACCURACY_REPORT, EVIDENCE_DATASET, NOVEL_CONTRIBUTION, DEMO_SEQUENCE, PRODUCTION_AUDIT
+- 16 documentation files: README, ARCHITECTURE, BUILD, THREAT_MODEL, FAILURE_MODES, CLI, CHECKPOINTING, CASE_ISOLATION, SCOPE, SCHEMA_MIGRATION, SANS_JUDGE_CHECKLIST, ACCURACY_REPORT, EVIDENCE_DATASET, NOVEL_CONTRIBUTION, DEMO_SEQUENCE, PRODUCTION_AUDIT
 - Conventional Commits with task ID embedded (e.g. `feat(schema): foo [W1.B.1]`) — git log archeology trivial
 - Architecture diagram as rendered visual (`docs/ARCHITECTURE_DIAGRAM.svg`)
 - Skill format: agentskills.io standard — portable across Claude Code, Hermes, Cursor, Codex
@@ -223,7 +223,7 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 - [ ] **W6.D.0.e** — Commit if any docs reference the repo URL: `chore(release): GitHub repo public + MIT badge in About [W6.D.0]`
 
 ### W6.C.7 — `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual
-- [ ] **W6.C.7.a** — Author Mermaid or draw.io source for system diagram covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs (per-tool), Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services (Velociraptor, OpenCTI, REMnux).
+- [ ] **W6.C.7.a** — Author Mermaid or draw.io source for system diagram covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches; each branch composes DenyRuleWrapper → ToolExecutor → LedgerEmitter as the per-branch `executor_work` sub-state), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs (per-tool), Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services (Velociraptor, OpenCTI, REMnux).
 - [ ] **W6.C.7.b** — Render to SVG (preferred — scales) and PNG fallback. Place at `docs/ARCHITECTURE_DIAGRAM.svg` and `docs/ARCHITECTURE_DIAGRAM.png`.
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md.
 - [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM.svg rendered visual [W6.C.7]`
@@ -245,7 +245,7 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 
 ### W6.D.4 — Submission packet stage
-- [ ] **W6.D.4.a** — Run Part 6 checklist of this document; all 18 boxes ticked.
+- [ ] **W6.D.4.a** — Run Part 6 checklist of this document; all 19 boxes ticked.
 - [ ] **W6.D.4.b** — Stage submission packet under `submission/` directory: video URL, repo URL (post-public flip), all 4 doc artifacts, 3 execution-log JSONL files, accuracy report.
 - [ ] **W6.D.4.c** — Devpost form fields drafted (text description, all upload links, team metadata).
 - [ ] **W6.D.4.d** — Submit. Confirm receipt email. Commit: `chore(release): Devpost submission Jun 14 [W6.D.4]`
