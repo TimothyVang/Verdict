@@ -22,6 +22,7 @@ from __future__ import annotations
 import os
 
 import pytest
+from pydantic import ValidationError
 
 from verdict.sandboxes.tsi_provider import (
     IsolationViolationError,
@@ -30,7 +31,6 @@ from verdict.sandboxes.tsi_provider import (
     TSIProxy,
     inject_header_on_host,
 )
-
 
 # ---------------------------------------------------------------------------
 # TSIConfig — structural + isolation invariants
@@ -42,12 +42,12 @@ class TestTSIConfig:
 
     def test_requires_proxy_origin(self) -> None:
         """proxy_origin must be non-empty; empty string → ValidationError."""
-        with pytest.raises(Exception):  # pydantic ValidationError
+        with pytest.raises(ValidationError):
             TSIConfig(proxy_origin="", inject_header={"Authorization": "Bearer x"})
 
     def test_requires_inject_header(self) -> None:
         """inject_header must be non-empty; empty dict → ValidationError."""
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             TSIConfig(proxy_origin="opencti.local:8080", inject_header={})
 
     def test_inject_header_key_must_be_credential_header(self) -> None:
@@ -56,7 +56,7 @@ class TestTSIConfig:
         Any other key raises ValidationError — we only proxy credential
         headers, not arbitrary HTTP headers.
         """
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             TSIConfig(
                 proxy_origin="opencti.local:8080",
                 inject_header={"X-Custom-Data": "not-a-credential"},
@@ -97,7 +97,7 @@ class TestTSIConfig:
 
     def test_proxy_origin_must_not_be_loopback_ipv4(self) -> None:
         """proxy_origin 127.0.0.1 → ValidationError (loopback indicates misconfiguration)."""
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             TSIConfig(
                 proxy_origin="127.0.0.1:8080",
                 inject_header={"Authorization": "Bearer x"},
@@ -105,7 +105,7 @@ class TestTSIConfig:
 
     def test_proxy_origin_must_not_be_localhost(self) -> None:
         """proxy_origin 'localhost' → ValidationError."""
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             TSIConfig(
                 proxy_origin="localhost:8080",
                 inject_header={"Authorization": "Bearer x"},
