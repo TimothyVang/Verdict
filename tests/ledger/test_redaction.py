@@ -22,15 +22,12 @@ from __future__ import annotations
 
 import copy
 
-import pytest
-
 from verdict.ledger.redaction import (
-    REDACTION_SENTINEL,
     REDACT_KEYS,
+    REDACTION_SENTINEL,
     RedactionResult,
     redact_payload,
 )
-
 
 # ---------------------------------------------------------------------------
 # Core redaction — individual fields
@@ -223,7 +220,7 @@ class TestRedactKeysConstant:
         If a fourth key is added, this test will fail — that is intentional.
         Expanding the set is a deliberate, visible change, not an accident.
         """
-        assert REDACT_KEYS == frozenset({"authorization", "auth_user", "api_key"}), (
+        assert frozenset({"authorization", "auth_user", "api_key"}) == REDACT_KEYS, (
             "REDACT_KEYS expanded beyond the three documented credential fields.  "
             "If this is intentional, update this test."
         )
