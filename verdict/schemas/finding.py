@@ -158,62 +158,32 @@ class Finding(BaseModel):
         return self
 
     # ------------------------------------------------------------------
-    # §3.3 — Tier-1 caveat acknowledgment validators.
-    # One validator per CaveatID where the trigger is pure class-membership.
+    # §3.3 — Tier-1 caveat acknowledgment validator.
+    # Driven by _CAVEAT_TRIGGERS (single source of truth). For each
+    # (acceptable_caveats, trigger_class) entry in the table, if
+    # trigger_class appears in artifact_classes then at least one caveat
+    # from acceptable_caveats must appear in caveats_acknowledged.
     # ------------------------------------------------------------------
     @model_validator(mode="after")
-    def _amcache_caveat_required(self) -> "Finding":
-        """§3.3 — citing AMCACHE requires AMCACHE_LASTMODIFIED_NOT_EXEC."""
-        if ArtifactClass.AMCACHE in self.artifact_classes:
-            if CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC not in self.caveats_acknowledged:
-                raise ValueError(
-                    "Finding cites 'amcache' without acknowledging caveat "
-                    f"'{CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC.value}' "
-                    "(see CLAUDE.md §3.3)"
-                )
-        return self
+    def _caveat_triggers_enforced(self) -> "Finding":
+        """§3.3 — enforce all pure-membership caveat triggers from _CAVEAT_TRIGGERS.
 
-    @model_validator(mode="after")
-    def _shimcache_caveat_required(self) -> "Finding":
-        """§3.3 — citing SHIMCACHE requires SHIMCACHE_ORDER_CHANGED_WIN81."""
-        if ArtifactClass.SHIMCACHE in self.artifact_classes:
-            if CaveatID.SHIMCACHE_ORDER_CHANGED_WIN81 not in self.caveats_acknowledged:
-                raise ValueError(
-                    "Finding cites 'shimcache' without acknowledging caveat "
-                    f"'{CaveatID.SHIMCACHE_ORDER_CHANGED_WIN81.value}' "
-                    "(see CLAUDE.md §3.3)"
-                )
-        return self
-
-    @model_validator(mode="after")
-    def _prefetch_caveat_required(self) -> "Finding":
-        """§3.3 — citing PREFETCH requires PREFETCH_SSD_DISABLED."""
-        if ArtifactClass.PREFETCH in self.artifact_classes:
-            if CaveatID.PREFETCH_SSD_DISABLED not in self.caveats_acknowledged:
-                raise ValueError(
-                    "Finding cites 'prefetch' without acknowledging caveat "
-                    f"'{CaveatID.PREFETCH_SSD_DISABLED.value}' "
-                    "(see CLAUDE.md §3.3)"
-                )
-        return self
-
-    @model_validator(mode="after")
-    def _mft_caveat_required(self) -> "Finding":
-        """§3.3 — citing MFT requires MFT_SI_STOMPABLE or USNJRNL_WRAPS.
-
-        ArtifactClass.MFT covers both $MFT and $J/UsnJrnl. Either caveat
-        satisfies the trigger because they cover different evidentiary risks
-        that both apply to the MFT artifact family.
+        Iterates over the module-level _CAVEAT_TRIGGERS table so the validator
+        logic is the single source of truth. Adding a new trigger requires only
+        a new entry in the table; no new validator method is needed.
         """
-        if ArtifactClass.MFT in self.artifact_classes:
-            ack = set(self.caveats_acknowledged)
-            if not ack.intersection(
-                {CaveatID.MFT_SI_STOMPABLE, CaveatID.USNJRNL_WRAPS}
-            ):
+        cited = set(self.artifact_classes)
+        ack = set(self.caveats_acknowledged)
+        for acceptable_caveats, trigger_class in _CAVEAT_TRIGGERS:
+            if trigger_class not in cited:
+                continue
+            if ack.isdisjoint(acceptable_caveats):
+                caveat_names = " or ".join(
+                    f"'{c.value}'" for c in sorted(acceptable_caveats, key=lambda c: c.value)
+                )
                 raise ValueError(
-                    "Finding cites 'mft' without acknowledging either caveat "
-                    f"('{CaveatID.MFT_SI_STOMPABLE.value}' or "
-                    f"'{CaveatID.USNJRNL_WRAPS.value}') "
+                    f"Finding cites '{trigger_class.value}' without acknowledging "
+                    f"required caveat ({caveat_names}) "
                     "(see CLAUDE.md §3.3)"
                 )
         return self
