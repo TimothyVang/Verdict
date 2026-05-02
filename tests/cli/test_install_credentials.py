@@ -14,7 +14,6 @@ vars are the OS boundary for credential injection per §3.9).
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import pytest
