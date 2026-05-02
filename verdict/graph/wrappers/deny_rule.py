@@ -175,6 +175,11 @@ class DenyRuleWrapper:
         self._check_evidence_write_rules(tool_name=tool_name, args=args)
         return self._executor(tool_name, args)
 
+    # Make callable so DenyRuleWrapper satisfies the Callable[[str, dict], Any]
+    # executor contract required by LedgerEmitter.
+    def __call__(self, tool_name: str, args: dict) -> Any:
+        return self.run(tool_name=tool_name, args=args)
+
     # ------------------------------------------------------------------
     # Private deny-rule evaluation
     # ------------------------------------------------------------------
