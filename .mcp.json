@@ -48,6 +48,15 @@
       "args": [
         "mitre-attack-mcp"
       ]
+    },
+    "context7": {
+      "_origin": "upstash/context7-mcp (MIT)",
+      "_purpose": "Up-to-date library / API docs lookup for planning-engineer + eval-engineer (Pydantic v2, LangGraph, Inspect AI, Anthropic SDK). Stateless; no credentials.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
     }
   }
 }
