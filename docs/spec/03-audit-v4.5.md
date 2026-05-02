@@ -145,6 +145,8 @@ START
 
 **Architecture caption (v4.3):** Checkpoint granularity = super-step boundary. Mid-executor crashes resume from the planner output, not partial executor results — acceptable for forensic re-run determinism. Demo `kill -9` happens between super-steps (after planner, before fanout, or after quorum) for a clean visible resume. Three-layer immutability defense (Claude Code PreToolUse hook + LangGraph executor_work wrapper + Microsandbox read-only mount) ensures the evidence-vault guarantee holds in all three modes — Claude hooks alone don't fire in air-gap (no Claude in the loop) and microsandbox alone doesn't catch tool-arg validation, so all three layers are required.
 
+**(v4.6 P2) Layer-1 version-dependence caveat:** Layer 1 (Claude Code PreToolUse hook) is best-effort given anthropics/claude-code issues #33106 (`permissionDecision: "deny"` not enforced for MCP server tool calls) and #37210 (deny ignored for Edit tool). Since the entire SIFT toolset is wired through FastMCP + microsandbox-mcp, this is not a corner case. The architectural guarantee carries on Layer 2 (LangGraph `executor_work`/`DenyRuleWrapper` — fires regardless of model) and Layer 3 (Microsandbox read-only mount — kernel-enforced). Tim ships a CI smoke test in week 2 that verifies the installed Claude CLI version actually denies a sample MCP write; build fails on regression.
+
 The graph is checkpointed at every super-step via `SqliteSaver`. `interrupt()` is used only for CONTESTED findings that exceed `replan_max=3`.
 
 ### Typed schemas (load-bearing, define in week 1)
