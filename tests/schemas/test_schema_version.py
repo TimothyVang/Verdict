@@ -9,10 +9,8 @@ Also verifies verdict/schemas/version.py centralises the constant.
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 
 import blake3
-import pytest
 
 from verdict.schemas.version import SCHEMA_VERSION
 from verdict.schemas.investigation_plan import InvestigationPlan
@@ -31,14 +29,16 @@ def _make_investigation_plan() -> InvestigationPlan:
 
 
 def _make_finding() -> Finding:
+    # T1014 (Rootkit) — non-execution class; no two-distinct-class requirement.
+    # EVTX_4688 + SYSMON_1 — neither triggers a Tier-1 caveat.
     return Finding(
         finding_id="f-001",
-        title="Suspicious PowerShell",
-        description="Evidence consistent with PowerShell execution via LOLBin",
-        mitre_technique="T1059.001",
+        title="Process hiding via DKOM",
+        description="Evidence consistent with kernel-level process hiding",
+        mitre_technique="T1014",
         artifact_paths=["/evidence/disk.E01", "/evidence/mem.raw"],
-        artifact_classes=["PREFETCH", "MEMORY_DUMP"],
-        caveats_acknowledged=["PREFETCH_SSD_DISABLED"],
+        artifact_classes=["evtx_4688", "sysmon_1"],
+        caveats_acknowledged=[],
         status="vetted_cloud",
     )
 
