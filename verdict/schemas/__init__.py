@@ -1,0 +1,1 @@
+"""VERDICT schema layer."""
