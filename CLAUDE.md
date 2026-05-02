@@ -50,7 +50,7 @@ These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe how dev 
 | Doc | Role | When to consult |
 |-----|------|-----------------|
 | `docs/AGENT_SWARM.md` | Build-side LLM swarm spec — conductor / worker / reviewer / auditor agents that take `BUILD_PLAN.md` task IDs and open PRs. The `swarm/` source tree is its executable skeleton. | Before reading anything under `swarm/`; before reviewing a PR authored by a `swarm:*` worker. |
-| `docs/MCP_FRAMEWORK.md` | MCP server allowlist + credential-isolation discipline. Every entry in `.mcp.json` traces here. License-gated by §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp.json`. |
+| `docs/MCP_FRAMEWORK.md` | Mode-scoped MCP allowlists + credential-isolation discipline. Every entry in `.mcp*.json` traces here. License-gated by §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp*.json`. |
 | `docs/SKILLS_FRAMEWORK.md` | How vendored skills under `.claude/skills/` compose into a Plan → TDD → subagent-driven-dev → Review → Commit pipeline. `verdict-house-rules` overlays §3 on upstream skill defaults. | Before authoring a workflow; before vendoring a new skill. |
 | `docs/SKILLS_LICENSE_AUDIT.md` | Per-skill license audit log. Every artifact under `.claude/skills/` (and any future MCP, hook, vendored artifact) gets a row per §3.8. | Before vendoring anything new; when answering "is X license-clean?". |
 
