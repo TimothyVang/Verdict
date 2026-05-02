@@ -15,7 +15,7 @@ Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` �
 
 You need all four before you can push:
 
-1. **GitHub account** with 2FA enabled. Required for PAT issuance and signed commits.
+1. **GitHub account** with 2FA enabled. Required for `gh auth login` and signed commits.
 2. **Devpost account** joined to the team submission. Confirm your name shows on the submission page.
 3. **Anthropic API key** (or Claude Code OAuth) for cloud-mode and dual-mode runs. Air-gap mode does not require this. OAuth tokens are *not* redistributable per Anthropic commercial terms — each contributor uses their own.
 4. **Write access to `TimothyVang/Verdict`.** PUG (TSgt Vang) adds you. Confirm with `gh repo view TimothyVang/Verdict --json viewerPermission` after install — should report `WRITE` or higher.
@@ -279,8 +279,9 @@ If you see a PR authored by a `swarm:*` worker, read [`docs/AGENT_SWARM.md`](doc
 
 Copy into your notes and tick as you go.
 
-- [ ] GitHub 2FA on, PAT issued with read+write on `TimothyVang/Verdict`, stored in a secret manager
-- [ ] Git credential helper or `gh auth` configured; can `gh repo view TimothyVang/Verdict`
+- [ ] GitHub 2FA on
+- [ ] `gh auth login --web` complete; `gh repo view TimothyVang/Verdict --json viewerPermission` reports `WRITE` or higher
+- [ ] `/qc` skill installed (drop [.claude/skills/qc/SKILL.md](.claude/skills/qc/SKILL.md) at `~/.claude/skills/qc/SKILL.md` for global use, or rely on the project-local copy already vendored under `.claude/skills/qc/`)
 - [ ] Commit signing verified (`git log --show-signature` shows good signature on a smoke commit)
 - [ ] Python 3.11 + uv, Rust 1.88, Node 20 + pnpm installed and on `PATH`
 - [ ] Repo cloned; `uv sync`, `cargo build`, `pnpm install` all succeed (or scaffold not yet landed — confirm with PUG)
