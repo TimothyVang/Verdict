@@ -1,0 +1,59 @@
+[project]
+name = "verdict"
+version = "0.0.1"
+description = "VERDICT — autonomous Windows DFIR / incident-response agent (SANS FIND EVIL! 2026)"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "Verdict contributors" }]
+readme = "README.md"
+
+# Pinned per CLAUDE.md §3.8 (MIT or Apache-2.0 only). All deps below pass the
+# license check. New deps require the §3.8 audit.
+dependencies = [
+    # Schema + validators (W1.B / W1.C / W1.F).
+    "pydantic>=2.9,<3",
+    # blake3 keyed-hash for derive_seeds (W1.C.1) + invocation_hash (W1.E.2).
+    "blake3>=1.0,<2",
+    # Anthropic SDK — used by CloudSelfConsistency to drive n=3 sampling.
+    # Pinned to match swarm/requirements.txt so the swarm + verdict runtime
+    # share one wire client. License: MIT.
+    "anthropic>=0.97,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "pytest-asyncio>=0.24,<1",
+    "ruff>=0.7,<1",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["verdict"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+markers = [
+    "smoke: PreToolUse / installer smoke checks (W1.D.1; xfail-by-default)",
+    "chaos: kill-9-resume + power-loss tests (W3.E.3)",
+    "e2e: full Inspect AI ground-truth runs (W4 / W5)",
+]
+filterwarnings = [
+    "error",
+    "default::DeprecationWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]
