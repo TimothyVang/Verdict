@@ -10,8 +10,11 @@ authors = [
 ]
 
 dependencies = [
-    # LangGraph orchestration (MIT)
-    "langgraph>=0.2.50,<0.3",
+    # LangGraph orchestration (MIT). Pinned to the version that passes the
+    # W2.B.4 fanout-race test (Send-based parallel-edge dispatch + reducer-
+    # annotated state). Bumping requires a fresh fanout-race run; see
+    # BUILD_PLAN W2.B.5.
+    "langgraph==0.2.76",
     # Pydantic v2 schemas (MIT)
     "pydantic>=2.7,<3",
     # blake3 hashing (CC0/Apache-2.0)
