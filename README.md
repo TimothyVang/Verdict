@@ -10,6 +10,9 @@ Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS *FIND EV
 
 ## Where to read what
 
+Source code lives under `src/verdict/`. The outer `Verdict/` directory is the repository root;
+`src/verdict/` is the importable Python application package.
+
 | If you're working on… | Read in this order |
 |---|---|
 | **Anything for the first time** | this README → `CLAUDE.md` §3 (hard rules) → `docs/ARCHITECTURE.md` |
@@ -20,11 +23,10 @@ Mode-aware verifier-gateway for forensic LLM agents. Built for the SANS *FIND EV
 | **Ledger / audit trail** | `CLAUDE.md` §9 → `docs/ARCHITECTURE.md` §5 → `docs/BUILD_PLAN.md` W2.D |
 | **CLI / submission** | `CLAUDE.md` §10 → `docs/BUILD_PLAN.md` W6.* → `docs/DEVPOST_COMPLIANCE.md` |
 | **Setting up your machine** | `CONTRIBUTING.md` §0–4 → `downloads/README.md` |
-| **Why a decision was made** | `docs/spec/` (`README.md` then the relevant `0N-*.md`) |
 
-**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md` → `spec/` archive. Code wins over docs; if code is right, fix the doc.
+**Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → `CLAUDE.md`. Code wins over docs; if code is right, fix the doc.
 
-**Release docs:** setup, reproducibility, scope, CLI, demo, judge checklist, dataset, accuracy, production audit, and novelty live in [`docs/RELEASE.md`](docs/RELEASE.md). Devpost rule traceability lives in [`docs/DEVPOST_COMPLIANCE.md`](docs/DEVPOST_COMPLIANCE.md); the rendered architecture diagram is [`docs/ARCHITECTURE_DIAGRAM.svg`](docs/ARCHITECTURE_DIAGRAM.svg).
+**Release docs:** setup, reproducibility, scope, CLI, demo, judge checklist, dataset, accuracy, production audit, and novelty live in [`docs/RELEASE.md`](docs/RELEASE.md). Devpost rule traceability lives in [`docs/DEVPOST_COMPLIANCE.md`](docs/DEVPOST_COMPLIANCE.md).
 
 ---
 
@@ -167,14 +169,14 @@ This codebase is built to be navigated by an LLM coding agent. [`CLAUDE.md`](CLA
    git clone https://github.com/TimothyVang/Verdict.git && cd Verdict
    ```
 2. **Open the repo in your LLM agent.** It will auto-read [`CLAUDE.md`](CLAUDE.md) — §3 contains the hard rules, §10 documents the CLI + commands, and §2 is the authority chain when docs disagree.
-3. **Bring up real backing services** before touching code that depends on them (no mocks — see §3.10). The fastest path:
+3. **Bring up real backing services** before touching code that depends on them (no mocks — see §3.10). Install dependencies:
    ```bash
-   bash scripts/bootstrap-dev.sh
+   uv sync --all-extras
    ```
-   See [`CONTRIBUTING.md`](CONTRIBUTING.md) "Quick path — one command" for what this brings up.
+   See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full toolchain table.
 4. **Pick a task** from [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) by `W#.#.#` ID. Filter for unchecked `[ ]` boxes; respect ownership (Tim / Beaver / Haley / KP). Surface the relevant `W#.#.#` task body to your agent so it has the failing-test spec and acceptance gate.
 5. **Run the TDD loop** per `CLAUDE.md` §3.7: failing test → RED → implement → GREEN → one commit per task ID, format `feat(scope): summary [W#.#.#]`. **Never** `--no-verify`, **never** `git commit --amend`, **never** mock VERDICT-internal modules (§3.10).
-6. **Commit + push with `/qc`** — the project-vendored slash command at [`.claude/skills/qc/SKILL.md`](.claude/skills/qc/SKILL.md). It stages, drafts the Conventional Commit (with `[W#.#.#]`), commits, and pushes — without bypassing hooks, signing, or rewriting history. Drop it at `~/.claude/skills/qc/SKILL.md` for global use, or rely on the project-local copy.
+6. **Commit and push manually** with the Conventional Commit format in `CLAUDE.md` §3.7. Do not bypass hooks, signing, or history rules.
 7. **Open a PR** with the `W#.#.#` task ID in the title — `gh pr create --draft --title "<commit-title>" --body "<task-id> + summary + RED/GREEN snippets>"`.
 
 **Hard rules to surface to your agent before it edits code** (these are the load-bearing ones — full list in `CLAUDE.md` §3):
@@ -199,7 +201,6 @@ Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-key
 | Architecture details, schemas, threat model | `docs/ARCHITECTURE.md` |
 | Day-by-day TDD task plan, task IDs, ownership | `docs/BUILD_PLAN.md` |
 | Devpost rule-to-artifact mapping, judge checklist | `docs/DEVPOST_COMPLIANCE.md` |
-| Decision history ("why was X decided?") | `docs/spec/` |
 | Hard rules an agent must obey | `CLAUDE.md` §3 |
 | Contributor onboarding (`gh auth`, GPG, clone, smoke test) | `CONTRIBUTING.md` |
 | Community Q&A, ideas, hero-beat captures | [GitHub Discussions](https://github.com/TimothyVang/Verdict/discussions) |

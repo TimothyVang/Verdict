@@ -1,6 +1,6 @@
 # VERDICT - Release and Submission Guide
 
-> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
+> **Wiki:** [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
 
 **Status:** Consolidated release skeleton. Replace TODO cells only after real evidence, real services, and measured evals.
 **Authority:** Consolidates W5.E.1, W6.A.1, W6.B.1, W6.C.3, W6.C.5, W6.C.8, W6.C.9, W6.C.10, and W6.D.1 release artifacts unless a separate doc is explicitly reintroduced.
@@ -48,7 +48,7 @@ Fresh VM procedure:
 1. Import the SIFT OVA into the local hypervisor.
 2. Allocate 8 vCPU, 32 GB RAM, 200 GB disk, and nested virtualization/KVM.
 3. Confirm `uname -a`, `python3 --version`, and `test -e /dev/kvm`.
-4. Clone VERDICT and run `bash scripts/bootstrap-dev.sh`.
+4. Clone VERDICT and run `uv sync --all-extras`.
 5. Run `uv sync --all-extras` and `uv run pytest`.
 
 Forensic smoke checks: `vol3 -h`, `mmls -V`, `fls -V`, `fsstat -V`.
@@ -74,23 +74,23 @@ Second-VM verification table:
 
 ## CLI And Persistence Contracts
 
-Command surface:
+Planned v1 command surface. Commands remain documentation-only until their implementation task lands; incomplete commands must not be exposed as callable placeholders.
 
 | Command | Purpose | Status |
 |---|---|---|
-| `verdict init <evidence>` | Create case, hash evidence, detect/lock mode | Planned W1/W5 |
-| `verdict resume <case_id>` | Resume interrupted chain from checkpoint | Planned W3 |
-| `verdict reverify <case_id> --mode <mode>` | Create parallel verification chain | Planned W5 |
-| `verdict status <case_id>` | Show current graph/checkpoint status | Planned |
-| `verdict ls` | List local cases | Planned |
-| `verdict show <case_id>` | Render findings/chains | Planned |
-| `verdict export <case_id>` | Export report, JSONL, or execution logs | Partial scaffolding |
-| `verdict validate <case_id>` | Verify ledger HMAC/chain and hashes | Planned W3 |
-| `verdict mode` | Explain detected mode and prerequisites | Planned W5 |
-| `verdict gc` | Rotate local logs and old traces | Planned |
-| `verdict health` | Machine-readable health endpoint/check | Planned |
-| `verdict doctor` | Human pre-flight for dependencies/secrets/services | Planned W5 |
-| `verdict approve <finding_id>` | HMAC-sign human approval | Planned W5 |
+| `verdict init <evidence>` | Create case, hash evidence, detect/lock mode | Roadmap W1/W5 |
+| `verdict resume <case_id>` | Resume interrupted chain from checkpoint | Roadmap W3 |
+| `verdict reverify <case_id> --mode <mode>` | Create parallel verification chain | Roadmap W5 |
+| `verdict status <case_id>` | Show current graph/checkpoint status | Roadmap |
+| `verdict ls` | List local cases | Roadmap |
+| `verdict show <case_id>` | Render findings/chains | Roadmap |
+| `verdict export <case_id>` | Export report, JSONL, or execution logs | Roadmap |
+| `verdict validate <case_id>` | Verify ledger HMAC/chain and hashes | Roadmap W3 |
+| `verdict mode` | Explain detected mode and prerequisites | Roadmap W5 |
+| `verdict gc` | Rotate local logs and old traces | Roadmap |
+| `verdict health` | Machine-readable health endpoint/check | Roadmap |
+| `verdict doctor` | Human pre-flight for dependencies/secrets/services | Roadmap W5 |
+| `verdict approve <finding_id>` | HMAC-sign human approval | Roadmap W5 |
 
 Export formats:
 
@@ -102,7 +102,20 @@ Export formats:
 
 Checkpointing: each chain uses a LangGraph thread ID and per-case SQLite checkpoint store with WAL and `synchronous=FULL`. `resume` continues the same mode-locked chain; `reverify` creates a parallel chain.
 
-Schema migration: persisted schemas carry `schema_version: int = 1` in v1. Breaking changes require an explicit migration script, tests over old fixtures, and a compatibility note in this guide.
+Schema migration policy: persisted top-level schemas carry `schema_version: int = 1` in v1. Breaking changes must add `migrations/v{N}_to_v{N+1}.py`, tests over prior-version fixtures, a release-note entry in this guide, and a refusal path for unsupported newer schemas. Migrations never rewrite evidence; they only transform persisted VERDICT metadata and ledger-derived exports.
+
+## Threat Model
+
+VERDICT assumes adversaries may control evidence content, tool output bytes, local host access, or network availability. The v1 security goal is forensic discipline and chain-of-custody preservation, not perfect compromise containment.
+
+| Surface | Threat | Mitigations | Residual risk |
+|---|---|---|---|
+| Insider/operator | Operator attempts to mutate evidence, bypass mode lock, or hide contested findings | Read-only `/evidence`, evidence hash rechecks, append-only HMAC ledger, mode-locked resume, explicit `CONTESTED`/`UNVERIFIABLE` statuses | Host root can still destroy local working copies; custody relies on external evidence preservation too |
+| Prompt injection from evidence | Malicious filenames, logs, registry values, or document text instruct the agent to ignore rules | Tool wrappers sanitize output flags, prompts include examiner caveats and epistemic vocabulary, graph wrappers deny evidence writes, findings require multi-artifact corroboration | Novel prompt-injection strings may still influence planner priorities; verifier lanes and human review remain required |
+| Malicious tool output | Parser confusion, forged stdout, or adversarial artifacts mislead quorum | Raw stdout/stderr hashes, `ToolOutput` schema, parsed artifact lists, invocation hashes, quorum disagreement handling, ledger traceability | A trusted SIFT binary bug can still produce plausible wrong artifacts; cross-tool corroboration limits but does not eliminate this |
+| External attacker/service outage | Cloud API rate limits, SGLang crashes, Langfuse outages, or OpenCTI/network failures disrupt investigation | `verdict doctor`, failure-mode table, explicit `UNVERIFIABLE`, Langfuse fail-open to local ledger, air-gap and dual modes | Availability failures can prevent verification; v1 reports uncertainty instead of inventing findings |
+
+Microsandbox escape is an accepted v1 residual risk. Defense in depth comes from read-only evidence mounts, short-lived per-tool sandboxes, output hashing, and host-side ledger verification, but a kernel or hypervisor escape remains outside the v1 containment guarantee.
 
 ## Accuracy And Evidence
 
@@ -137,6 +150,12 @@ Datasets:
 Known errors stay visible in the final report. `disagreement_correlation`: TODO.
 
 ## Demo Checklist
+
+v0 demo scope is cloud-only Claude Agent SDK. SGLang, GPU-backed air-gap mode, and dual mode are postponed until the Claude path produces repeatable proof artifacts.
+
+Cloud proof artifacts live under `proof/runs/<timestamp>/`. A successful run includes
+`cloud-agent-response.raw.txt`, `investigation-plan.json`, `validation.log`, `ledger.jsonl`,
+`run-summary.md`, plus `screenshots/` and `video/` folders for visual review.
 
 Five-minute cut:
 
@@ -221,7 +240,7 @@ Required release paths:
 - `README.md`
 - `LICENSE`
 - `docs/ARCHITECTURE.md`
-- `docs/ARCHITECTURE_DIAGRAM.svg`
+- `docs/ARCHITECTURE.md`
 - `docs/DEVPOST_COMPLIANCE.md`
 - `docs/RELEASE.md`
 - `submission/execution-logs/case_001.jsonl`

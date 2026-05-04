@@ -1,0 +1,27 @@
+repos:
+  - repo: local
+    hooks:
+      - id: verdict-commit-msg
+        name: verdict commit message format
+        entry: python scripts/check_commit_msg.py
+        args:
+          - --pattern
+          - '^(feat|fix|test|chore|docs|refactor)\([a-z0-9_-]+\): .+ \[W\d+\.[A-Z]\.\d+(?:\.[a-z])?\]$'
+        language: system
+        stages: [commit-msg]
+      - id: check-no-mocks
+        name: no mocks, replay libraries, or test-mode branches
+        entry: python scripts/check_no_mocks.py --exclude-regex ^tests/policy/fixtures/ verdict tests
+        language: system
+        pass_filenames: false
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check scripts tests --select ALL
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: cargo-fmt-check
+        name: cargo fmt check
+        entry: bash -c 'test ! -f Cargo.toml || cargo fmt --check'
+        language: system
+        pass_filenames: false

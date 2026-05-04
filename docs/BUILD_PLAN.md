@@ -1,6 +1,6 @@
 # VERDICT — Master Build Plan (v1)
 
-> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
+> **Wiki:** [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
 
 **Document type:** Comprehensive 6-week TDD execution plan. Covers every task from v4.5 architecture + v4.6 schema patches + v4.4 deferred items + foundational infrastructure. This document is the single source of truth from May 2 through June 14, 2026.
 **Authority chain:** Devpost rules (always win) + `DEVPOST_COMPLIANCE.md` (rule-to-artifact mapping) + v4.5 (architecture) + v4.6 (schema amendments) + this document (execution). Where execution details disagree with v4.5, this plan wins for execution; v4.5 wins for architecture rationale.
@@ -43,7 +43,7 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 7. **Observability**: Langfuse self-hosted (MIT) with OTel via OpenLLMetry; trace tree UI cross-linked to JSONL ledger via `trace_id`; SqliteSaver checkpointer with `PRAGMA journal_mode=WAL; synchronous=FULL` for kill-9 resilience.
 8. **Eval harness**: Inspect AI with three per-mode tasks (`verdict_eval_cloud`, `verdict_eval_airgap`, `verdict_eval_dual`); five scorers (`step_efficiency`, `findings_precision`, `findings_recall`, `mitre_subtechnique_precision`, `negative_hypothesis_quality`); 50 ground-truth indicators across 3 engineered cases (lol-bins compromise, credential theft, ransomware).
 9. **5-minute demo video** recorded May 30 (rough cut) and June 14 (final), two-pane (terminal + Langfuse trace tree), all three modes against the Honeynet ransomware image, hero beats: pslist/psscan DKOM divergence, Hunt Evil masquerade catch (`scvhost.exe` parent=`cmd.exe`), Amcache-caveat acknowledgment, pivot-vs-replan distinction, TSI tcpdump proof, kill -9 + resume, planner_critique CoVe.
-10. **Submission docs**: README, ARCHITECTURE.md, DEVPOST_COMPLIANCE.md, RELEASE.md, FAILURE_MODES.md, CASE_ISOLATION.md, LICENSE (MIT), CONTRIBUTING.md.
+10. **Submission docs**: README, ARCHITECTURE.md, DEVPOST_COMPLIANCE.md, RELEASE.md, FAILURE_MODES.md, LICENSE (MIT), CONTRIBUTING.md, plus final submission-only docs restored in week 6.
 
 ---
 
@@ -51,8 +51,8 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 | Need | Read |
 |---|---|
-| Architecture rationale | `docs/spec/03-audit-v4.5.md` |
-| Schema patches + DFIR rule encoding | `docs/spec/04-spec-plan-v4.6.md` |
+| Architecture rationale | `docs/ARCHITECTURE.md` |
+| Schema patches + DFIR rule encoding | `docs/ARCHITECTURE.md` §4 |
 | Project-level conventions | `CLAUDE.md` (this repo) |
 | Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `verdict/planning/prompts/examiner_caveats.md` |
 | Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `verdict/playbooks/*.yml` |
@@ -108,8 +108,7 @@ By June 14 the repo will have this shape:
 │   ├── ARCHITECTURE.md
 │   ├── RELEASE.md                          # build, scope, CLI, demo, accuracy, dataset, novelty
 │   ├── FAILURE_MODES.md                    # Component × failure × recovery (W1.G.2)
-│   ├── CASE_ISOLATION.md                   # RadixAttention prefix-cache vs case data (W3.G.1)
-├── verdict/
+├── src/verdict/                           # Python application source package
 │   ├── __init__.py
 │   ├── runtime/
 │   │   ├── mode_detect.py                  # detect_mode() (W5.A.1)
@@ -331,7 +330,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.8.b** — Commit: `feat(eval): Inspect AI hello-world task [W1.A.8]`
 
 ### W1.A.9 — Mechanical hard-rule enforcement (Tim, ~3 hours)
-Pulls forward what `CONTRIBUTING.md` line 220 already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only — see `docs/AGENTIC_WORKFLOW_REVIEW.md` D1 + D3 + D4.
+Pulls forward what `CONTRIBUTING.md` already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only.
 
 - [ ] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
 - [ ] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `verdict/` and `tests/`.
@@ -342,7 +341,7 @@ Pulls forward what `CONTRIBUTING.md` line 220 already promises and what `CLAUDE.
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
-This is the contract every teammate will code against. **Lock by Sunday May 4.** All tasks from `docs/spec/04-spec-plan-v4.6.md` Phase 1 plus the v4.5-architecture-review schemas.
+This is the contract every teammate will code against. **Lock by Sunday May 4.** All schema work must reconcile against `docs/ARCHITECTURE.md` §4.
 
 ### W1.B.1 — `ArtifactClass` enum
 - [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_13_required_members`. Run → RED.
@@ -560,10 +559,10 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Langfuse UI loads + smoke trace renders | `curl http://localhost:3000/api/public/health` returns 200 |
 | Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
 | `vol_psscan` wrapper integration test passes | `uv run pytest tests/tools/test_vol_psscan.py -v` |
-| Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES,CASE_ISOLATION}.md` |
+| Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES}.md` |
 | `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
 | `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
-| All 6 v4.6 patches represented in current architecture | `grep -c "v4.6 P[1-6]" docs/spec/03-audit-v4.5.md` returns ≥6 and `docs/ARCHITECTURE.md` cites the current decisions |
+| Schema and DFIR rule patches represented in current architecture | `docs/ARCHITECTURE.md` cites the current decisions |
 | Conventional Commits enforced (no `--no-verify`) | `git log --oneline -50 | grep -c '^[a-f0-9]\+ \(feat\|test\|fix\|docs\|chore\)' = 50` |
 
 If any gate is RED on May 8: **descope before slipping**. Drop in this priority order: W1.G.7 → W1.G.6 → W1.A.7 (Langfuse v2; ship without it, fall back to OTel-only) → W1.G.1-3 (push docs to W6).
@@ -879,8 +878,8 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ## Phase W3.G — Cross-cutting docs (Tim, ~0.5 day)
 
-### W3.G.1 — `docs/CASE_ISOLATION.md`
-- [ ] **W3.G.1** — Author. SGLang RadixAttention prefix-cache vs case-data. Audit assertion: case_id in user message, not system prompt. Commit: `docs: CASE_ISOLATION.md [W3.G.1]`
+### W3.G.1 — Case isolation notes
+- [ ] **W3.G.1** — Document SGLang RadixAttention prefix-cache vs case-data in the retained architecture/release docs. Audit assertion: case_id in user message, not system prompt. Commit: `docs(architecture): document case isolation boundaries [W3.G.1]`
 
 ## Week 3 — acceptance gates
 
@@ -1192,11 +1191,11 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 ### W6.C.6 — Submission writeup
 - [ ] **W6.C.6** — 500-word writeup for Devpost summarizing: problem, architecture, three innovations, accuracy results, demo video. References all 6 official judging criteria explicitly per `DEVPOST_COMPLIANCE.md` Part 3. Commit: `docs: Devpost submission writeup [W6.C.6]`
 
-### W6.C.7 — `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (Devpost-required)
+### W6.C.7 — rendered architecture visual (Devpost-required)
 - [ ] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
-- [ ] **W6.C.7.b** — Render to SVG + PNG fallback at `docs/ARCHITECTURE_DIAGRAM.{svg,png}`.
+- [ ] **W6.C.7.b** — Render to SVG + PNG fallback for the final submission package.
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
-- [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM rendered visual [W6.C.7]`
+- [ ] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
 
 ### W6.C.8 — `docs/RELEASE.md` evidence dataset section (Devpost-required)
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (with finding_ids referencing accuracy report). (5) Limitations: Windows-only; no live-response; no Win11/macOS/Linux/network.
@@ -1224,7 +1223,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.D.0.e** — Commit if any docs reference the repo URL: `chore(release): GitHub repo public + MIT badge in About [W6.D.0]`
 
 ### W6.D.1 — `scripts/package-devpost.sh`
-- [ ] **W6.D.1.a** — Failing test: produces a valid Devpost zip including: source code, README, LICENSE, ARCHITECTURE.md, ARCHITECTURE_DIAGRAM.svg, BUILD.md, EVIDENCE_DATASET.md, ACCURACY_REPORT.md, NOVEL_CONTRIBUTION.md, DEMO_SEQUENCE.md, THREAT_MODEL.md, CLI.md, FAILURE_MODES.md, SCHEMA_MIGRATION.md, CASE_ISOLATION.md, SCOPE.md, SANS_JUDGE_CHECKLIST.md, PRODUCTION_AUDIT.md, submission/execution-logs/case_{001,002,003}.jsonl. Run → RED.
+- [ ] **W6.D.1.a** — Failing test: produces a valid Devpost zip including source code, README, LICENSE, retained v0 docs, final submission docs/assets, and `submission/execution-logs/case_{001,002,003}.jsonl`. Run → RED.
 - [ ] **W6.D.1.b** — Implement.
 - [ ] **W6.D.1.c** — Commit: `feat(scripts): package-devpost.sh [W6.D.1]`
 
@@ -1244,7 +1243,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 | Demo shows ≥1 self-correction sequence (Devpost-required) | Manual review of cut against air-gap hero beat ⓹ |
 | Demo is screencast + narration, NOT slides (Devpost-required) | Manual review |
 | Three green dry runs against `SANS_JUDGE_CHECKLIST.md` | Beaver's notes |
-| All Devpost-required documentation present | `ls docs/ARCHITECTURE_DIAGRAM.svg && ls docs/{ARCHITECTURE,BUILD,EVIDENCE_DATASET,ACCURACY_REPORT,NOVEL_CONTRIBUTION,THREAT_MODEL,FAILURE_MODES,CLI,CHECKPOINTING,CASE_ISOLATION,SCOPE,SCHEMA_MIGRATION,SANS_JUDGE_CHECKLIST,PRODUCTION_AUDIT,DEMO_SEQUENCE}.md` |
+| All Devpost-required documentation present | Final submission package contains retained v0 docs plus restored submission-only docs/assets |
 | README + LICENSE + CONTRIBUTING | `ls README.md LICENSE CONTRIBUTING.md` |
 | Repo public + MIT badge in GitHub About section (Devpost-required) | Manual browser check, logged-out |
 | Agent execution logs exported per case (Devpost-required) | `ls submission/execution-logs/case_{001,002,003}.jsonl` |
@@ -1277,7 +1276,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - W3.B.1, W3.B.2, W3.B.3 (TSI + redaction)
 - W3.E.5 (trace_id ↔ ledger cross-link)
 - W3.F.1, W3.F.2 (/health endpoint + healthcheck loop)
-- W3.G.1 (CASE_ISOLATION.md)
+- W3.G.1 (case isolation notes)
 
 **Week 4 (~3 days):**
 - W4.D.4 (CI gates per mode)
@@ -1290,7 +1289,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 
 **Week 6 (~3.5 days):**
 - W6.C.1–W6.C.6 (submission docs)
-- W6.C.7 (ARCHITECTURE_DIAGRAM.svg rendered visual — Devpost-required)
+- W6.C.7 (rendered architecture visual — Devpost-required)
 - W6.C.8 (EVIDENCE_DATASET.md — Devpost-required, KP collaborates)
 - W6.C.9 (Agent execution logs export — Devpost-required)
 - W6.C.10 (NOVEL_CONTRIBUTION.md — Devpost-required)

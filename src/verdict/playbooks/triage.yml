@@ -1,0 +1,28 @@
+evidence_type: triage
+first_move: unzip_to_readonly_mount
+steps:
+  - order: 1
+    tool: unzip_to_readonly_mount
+    rule: "KAPE/Velociraptor zip -> /evidence read-only"
+  - order: 2
+    tool: recmd
+    mitre_technique_hint: T1547
+  - order: 3
+    tool: pecmd
+    mitre_technique_hint: T1059
+  - order: 4
+    tool: amcache_parse
+    mitre_technique_hint: null
+    rule: "ALWAYS acknowledge AMCACHE_LASTMODIFIED_NOT_EXEC caveat"
+  - order: 5
+    tool: hayabusa.csv_timeline
+    depends_on: [1]
+  - order: 6
+    tool: hayabusa.filter
+    depends_on: [5]
+  - order: 7
+    tool: mftecmd
+    depends_on: [1]
+  - order: 8
+    tool: bulk_extractor
+    depends_on: [1]

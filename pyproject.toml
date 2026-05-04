@@ -9,16 +9,30 @@ requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0",
     "blake3>=0.3",
+    "pyyaml>=6.0",
+    "claude-agent-sdk>=0.1.72",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "smoke: integration smoke tests that may require external binaries or services",
+]
 
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D", "INP001", "PLR2004", "S101", "SIM108"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts", "src/verdict"]
+
 [dependency-groups]
 dev = [
+    "commitizen>=4.10.0",
+    "pre-commit>=4.5.0",
     "pytest>=9.0.3",
     "ruff>=0.15.12",
 ]

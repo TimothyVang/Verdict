@@ -1,0 +1,15 @@
+from __future__ import annotations
+
+from enum import Enum
+
+
+class CaveatID(str, Enum):
+    """Tier-1 forensic caveat identifiers enforced by schema validators."""
+
+    AMCACHE_LASTMODIFIED_NOT_EXEC = "AMCACHE_LASTMODIFIED_NOT_EXEC"
+    SHIMCACHE_ORDER_CHANGED_WIN81 = "SHIMCACHE_ORDER_CHANGED_WIN81"
+    PREFETCH_SSD_DISABLED = "PREFETCH_SSD_DISABLED"
+    MFT_SI_STOMPABLE = "MFT_SI_STOMPABLE"
+    USNJRNL_WRAPS = "USNJRNL_WRAPS"
+    LOGON_TYPE_3_VS_10 = "LOGON_TYPE_3_VS_10"
+    SYSMON_PROCESSGUID_OVER_PID = "SYSMON_PROCESSGUID_OVER_PID"
