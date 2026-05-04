@@ -1,8 +1,11 @@
 # VERDICT — Architecture (current authoritative)
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Status:** Current. This document supersedes all VERDICT_AUDIT_v4.x docs in `spec/`. Read `spec/03-audit-v4.5.md` only for historical decision rationale; this doc is the single architecture authority going forward.
 **Date:** May 2, 2026.
 **For Devpost compliance:** see `DEVPOST_COMPLIANCE.md`. For week-by-week build sequencing: `BUILD_PLAN.md`. For hard rules an agent must obey: see `../CLAUDE.md` §3.
+**Rendered diagram:** [`ARCHITECTURE_DIAGRAM.svg`](ARCHITECTURE_DIAGRAM.svg) with Mermaid source in [`ARCHITECTURE_DIAGRAM.mmd`](ARCHITECTURE_DIAGRAM.mmd).
 
 ### How to edit this doc
 - This is the **single architectural authority.** Never duplicate decisions into other docs; cross-link instead.
@@ -13,7 +16,7 @@
 
 ## 1. Operational modes
 
-VERDICT detects available infrastructure at startup and selects one of three modes. Operators override via `--mode={cloud,airgap,dual}`. Mode is **locked at case_init** and immutable thereafter — `verdict resume <case_id>` always uses the original mode; mode upgrades happen via `verdict reverify <case_id> --mode <new>` which produces a parallel verdict chain rather than mutating the original audit trail.
+VERDICT detects available infrastructure at startup and selects one of three modes. Operators override via `--mode={cloud,airgap,dual}`. Mode is **locked at case_init** and immutable thereafter — `verdict resume <case_id>` always uses the original mode; mode upgrades happen via `verdict reverify <case_id> --mode <new>` which produces a parallel verdict chain rather than mutating the original audit trail. The Devpost submission remains a Claude Code / Protocol SIFT extension: Claude Code is the primary operator and cloud/dual execution surface; air-gap mode is the local-inference lane for offline environments, preserving the same graph, tool, ledger, and verification contracts.
 
 | Mode | Trigger | Engines | Verifier strategy | Use case |
 |---|---|---|---|---|
@@ -115,7 +118,7 @@ START
 │                 │  execution claims (FOR500 corroboration).
 └────────┬────────┘
          │
-    VERIFIED        CONTESTED                  UNVERIFIABLE
+    VETTED_*        CONTESTED                  UNVERIFIABLE
          │              │                           │
          ▼              ▼                           ▼
    finalize_node   replan_node                unverifiable_
@@ -140,6 +143,10 @@ Real DFIR pivots 8–15 times per investigation; v4.4 research showed that bound
 ### Pivot state-merge contract
 
 When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
+
+### Interrupt idempotency contract
+
+LangGraph restarts a node from the beginning after `interrupt()` resumes. Therefore any node that performs side effects before calling `interrupt()` must be idempotent. `unverifiable_finalize_node` writes its `exhausted_replan` ledger entry with a deterministic idempotency key: `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`. On resume, it first checks the ledger for that key; if present, it skips the write and only re-emits the interrupt payload. Non-idempotent ledger writes before `interrupt()` are forbidden.
 
 ### Checkpointing
 
@@ -206,7 +213,7 @@ class Finding(BaseModel):
         return self
 ```
 
-### CaveatID — Tier-1 examiner caveats from `agent-config/MEMORY.md`
+### CaveatID — Tier-1 examiner caveats from `CLAUDE.md` §3.3
 
 ```python
 class CaveatID(str, Enum):
@@ -242,7 +249,7 @@ class ArtifactClass(str, Enum):
 
 ### Playbooks — SANS canonical tool sequencing
 
-Three YAMLs in `verdict/playbooks/` (memory.yml / disk.yml / triage.yml) ported from project `agent-config/PLAYBOOK.md`. Loaded into planner system prompt at case_init based on detected evidence type.
+Three YAMLs in `verdict/playbooks/` (memory.yml / disk.yml / triage.yml) encode the SANS-canonical sequencing summarized in `CLAUDE.md` §7 and this document's forensic doctrine. Loaded into planner system prompt at case_init based on detected evidence type.
 
 `memory.yml` example rule (DKOM detection):
 ```yaml
@@ -359,6 +366,8 @@ async def vol3_pslist(memory_image: Path, output_dir: Path) -> ToolOutput:
     )
 ```
 
+Microsandbox is Apache-2.0 and is the primary v1 sandbox, but it is beta software. VERDICT treats it as a tested isolation layer, not an infallible production boundary: every release run must verify read-only `/evidence` mounts, `network=False` defaults, rootfs SHA pinning, and the fallback path to bubblewrap/nsjail for hosts where libkrun/KVM is unavailable.
+
 ### Pattern 2 — TSI for credential injection
 
 ```python
@@ -384,6 +393,21 @@ On validation failure: raise `ModelRetry`, bounded by `tool_arg_retry_max=2`, th
 
 When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIABLE, artifact_paths=[], caveats_acknowledged=[], failure_reason="tool_args_failed_validation_after_2_retries")`. This would normally fail the `Finding._artifact_paths_min_length=2` and execution-class corroboration validators; the schema exempts UNVERIFIABLE findings via the `_unverifiable_relaxes_corroboration` validator branch — when `Finding.status == UNVERIFIABLE` AND `Finding.failure_reason` is set, `artifact_paths` and `caveats_acknowledged` may be empty. The same exemption covers `failure_reason ∈ {sandbox_spawn_failed, tsi_proxy_unreachable, branch_timeout}` (see `FAILURE_MODES.md`).
 
+### No-evil case conclusion
+
+Benign or red-herring cases do not produce a `Finding` with empty artifacts. They produce a separate `CaseConclusion` object:
+
+```python
+class CaseConclusion(BaseModel):
+    case_id: str
+    status: Literal["NO_EVIL_FOUND", "EVIL_FOUND", "UNVERIFIABLE"]
+    playbook_steps_executed: list[str] = Field(min_length=1)
+    evidence_hashes: dict[Path, str]
+    rationale: str
+```
+
+`NO_EVIL_FOUND` must cite completed playbook steps and evidence hashes, not absent artifacts. This keeps `Finding.artifact_paths min_length=2` intact for positive claims while giving benign evals a first-class, auditable terminal state. `NO_EVIL_FOUND` is a case-level conclusion, not a `VerdictStatus` enum value.
+
 ### Sanitization for prompt injection
 
 `verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
@@ -402,7 +426,7 @@ When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIA
 | Orchestration | LangGraph | MIT |
 | Schema layer | Pydantic v2 + Pydantic-AI | MIT |
 | MCP gateway | FastMCP 3.x | Apache-2.0 |
-| Sandbox primary | Microsandbox (libkrun microVM) | Apache-2.0 (beta) |
+| Sandbox primary | Microsandbox (libkrun microVM; beta, verified per release) | Apache-2.0 |
 | Sandbox secondary | bubblewrap | LGPL-2.0 (linking-clean) |
 | Sandbox tertiary | nsjail | Apache-2.0 |
 | Eval harness | Inspect AI | MIT |
@@ -435,13 +459,13 @@ When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIA
 - Live-endpoint mode (Velociraptor, GRR core flow) — needs **5th `live_executor` fanout branch**; live-evidence chain-of-custody differs from offline (NIST SP 800-86 §5.1.4 different requirements)
 - Examiner-workflow integrations (Axiom XML, EnCase EWF, FTK CSV) — architecture supports export interface; format adapters in v2
 
-The 4-fixed-branch fanout topology in v1 is an explicit architectural constraint. v2 expansion to 5+ branches is supported by the LangGraph reducer pattern. See `BUILD_PLAN.md` Phase W5.D.1 for `docs/SCOPE.md` deliverable.
+The 4-fixed-branch fanout topology in v1 is an explicit architectural constraint. v2 expansion to 5+ branches is supported by the LangGraph reducer pattern. See `RELEASE.md` for the current v1 scope and v2 deferrals.
 
 ---
 
 ## 9. Threat model (4 surfaces)
 
-Documented in `docs/THREAT_MODEL.md` per `BUILD_PLAN.md` Phase W1.G.1.
+Documented in `RELEASE.md` per `BUILD_PLAN.md` Phase W1.G.1.
 
 | Surface | Mitigation | Residual risk |
 |---|---|---|
@@ -456,7 +480,7 @@ Documented in `docs/THREAT_MODEL.md` per `BUILD_PLAN.md` Phase W1.G.1.
 
 ## 10. Demo sequence (5 min, two-pane recording)
 
-Detailed in `BUILD_PLAN.md` W6.A.1 + `archive/03-audit-v4.5.md` lines 855–865.
+Detailed in `BUILD_PLAN.md` W6.A.1 + `docs/spec/03-audit-v4.5.md` lines 855–865.
 
 ```
 0:00–0:30  Cold open + architecture flash
@@ -466,7 +490,7 @@ Detailed in `BUILD_PLAN.md` W6.A.1 + `archive/03-audit-v4.5.md` lines 855–865.
            ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
            ⓷ Amcache caveat acknowledged in rationale
            ⓸ Pivot in action (1 pivot, 0 replans)
-           ⓹ Disagreement → CONTESTED → replan → VERIFIED ★
+           ⓹ Disagreement → CONTESTED → replan → VETTED_AIRGAP ★
               (Devpost-required "self-correction sequence")
            ⓺ TSI tcpdump proof
            ⓻ Kill -9 between super-steps + verdict resume
@@ -482,7 +506,7 @@ Every hero beat must land cleanly; record beats as separate clips during weeks 4
 
 These were raised during the v4.4 research and v4.5 system-design review. They're not blockers; they're worth thinking through during build.
 
-1. **Cross-family verification's epistemic foundation has a known weakness:** correlated false negatives. If both Qwen3 and GLM miss a rare LOLBin pattern (post-pretraining-cutoff persistence technique) because their training corpora share the same gap, both agree "no evil found" and quorum fires green on a wrong-negative. Empirical disagreement-correlation measurement in W4.G.1 will show this; no architectural fix in v1, just honest disclosure in `docs/ACCURACY_REPORT.md`.
+1. **Cross-family verification's epistemic foundation has a known weakness:** correlated false negatives. If both Qwen3 and GLM miss a rare LOLBin pattern (post-pretraining-cutoff persistence technique) because their training corpora share the same gap, both agree "no evil found" and quorum fires green on a wrong-negative. Empirical disagreement-correlation measurement in W4.G.1 will show this; no architectural fix in v1, just honest disclosure in `RELEASE.md`.
 
 2. **Schema strictness vs recall tradeoff.** `Finding` validators reject sloppy findings — good for credibility, but each invariant is a place a *legitimate* finding gets rejected for the wrong reason. Mitigation: have `executor_work` *infer* `artifact_classes` deterministically from `artifact_paths` (e.g. paths matching `\Prefetch\*.pf` → `PREFETCH`) so the LLM never has to know the enum exists. Validator-as-projection rather than validator-as-gate.
 
@@ -490,7 +514,7 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 
 4. **Plan-then-Execute is fundamentally batch; DFIR is fundamentally adaptive.** `pivot_max=15` recreates ReAct in a more constrained form. If demo runs show 90% sequential pivots, the topology pays overhead for a parallelism that doesn't materialize. Lean the demo narrative on the *audit-trail review story* (sequential is fine; structure is what reviewability needs) rather than runtime parallelism.
 
-5. **The 4-fixed-fanout cap is real but documented.** `docs/SCOPE.md` names the v2 extension points (5th `net_executor`, 5th `live_executor`).
+5. **The 4-fixed-fanout cap is real but documented.** `RELEASE.md` names the v2 extension points (5th `net_executor`, 5th `live_executor`).
 
 ---
 
@@ -500,9 +524,11 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 |---|---|
 | Day-by-day TDD task list | `BUILD_PLAN.md` |
 | Devpost rule mapping | `DEVPOST_COMPLIANCE.md` |
-| "Why we picked X over Y" decision rationale | `archive/03-audit-v4.5.md` |
-| v4.4 agentic + DFIR research findings (raw) | `archive/02-audit-v4.4.md` |
-| v4.6 schema patches (raw spec) | `archive/04-spec-plan-v4.6.md` |
+| Failure-mode semantics | `FAILURE_MODES.md` |
+| Case / reverify chain isolation | `CASE_ISOLATION.md` |
+| "Why we picked X over Y" decision rationale | `docs/spec/03-audit-v4.5.md` |
+| v4.4 agentic + DFIR research findings (raw) | `docs/spec/02-audit-v4.4.md` |
+| v4.6 schema patches (raw spec) | `docs/spec/04-spec-plan-v4.6.md` |
 | Project-wide build conventions | `../CLAUDE.md` |
-| Tier-1 examiner caveat source | `../agent-config/MEMORY.md` |
-| Tool sequencing playbook source | `../agent-config/PLAYBOOK.md` |
+| Tier-1 examiner caveat source | `../CLAUDE.md` §3.3 and planned `../verdict/planning/prompts/examiner_caveats.md` |
+| Tool sequencing playbook source | `../verdict/playbooks/*.yml` and `docs/ARCHITECTURE.md` §4 |

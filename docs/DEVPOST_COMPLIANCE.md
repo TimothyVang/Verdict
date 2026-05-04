@@ -1,5 +1,7 @@
 # Devpost Compliance Checklist — SANS Find Evil! 2026
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · [Hackathon Rules](hackathon/RULES.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Authority:** Official Devpost rules at findevil.devpost.com (retrieved May 2, 2026).
 **Hard deadline:** **Submission Period closes Jun 15, 2026 at 11:45 PM EDT** (= Jun 15 23:45 EDT = Jun 16 03:45 UTC). Team-internal target: Jun 14 EOD = ~28-hour buffer.
 **Judging Period:** Jun 19, 2026 12:00 AM EDT – Jul 3, 2026 12:00 AM EDT.
@@ -12,10 +14,11 @@ This is the single source of truth for "are we satisfying the rules?" Run agains
 
 ## Part 1 — Project Requirements (mandatory demonstrations)
 
-The rules require the Project to demonstrate **all three** of the following. Failure to demonstrate any one = Stage One pass/fail elimination.
+The rules require the Project to use Claude Code or OpenClaw as the primary execution engine and demonstrate **all three** autonomy qualities below. Failure to demonstrate any one = Stage One pass/fail elimination.
 
 | Required demonstration | What rules say | How VERDICT satisfies | Where shown | Status |
 |---|---|---|---|---|
+| **Primary execution engine** | "Uses Claude Code or OpenClaw as primary execution engine" | VERDICT is submitted as a Claude Code / Protocol SIFT extension. Claude Code drives the operator workflow, gateway invocation, ledger review, and cloud/dual planner lane. Air-gap mode is a local-inference lane for classified/offline operation, not a separate non-Claude product; it preserves the same VERDICT graph, tool contracts, ledger, and submission artifacts. | Architecture §1 mode table; TLDR mode diagram; demo shows cloud and dual Claude Code lanes plus air-gap local lane under the same CLI/runtime. | GATED on W1.A.5 + W2.B |
 | **Self-correction** | "the agent detects and resolves errors or inconsistencies in its own output without human intervention" | Cross-engine quorum CONTESTED → replan_node loops back to planner with conflict surfaced as hint; both engines re-converge on corrected finding. Also: planner_critique_node (CoVe) catches wrong plans before execution. | Demo air-gap segment hero beat ⓹ (Qwen3 hallucinates path → GLM disagrees → CONTESTED → replan → VETTED_AIRGAP). Architecture: v4.5 §LangGraph topology + v4.6 planner_critique. | GATED on W2.D.1 + W3.A.1 |
 | **Accuracy validation** | "all findings are traceable to specific artifacts, files, offsets, or log entries" | `Finding.artifact_paths: list[Path]` (min 2), `Finding.evidence_hashes: dict[Path, str]` (SHA-256 per artifact), `Finding.artifact_classes: list[ArtifactClass]` (FOR500 corroboration). Every finding cites both the file path AND the cryptographic hash AND the artifact class. | Schema: v4.6 §Phase 1. Demo: every Finding rendered shows `[file:path][sha256:abc...][class:PREFETCH]` chips. | GATED on W1.B.6–W1.B.10 |
 | **Analytical reasoning** | "output is presented as a structured investigative narrative, not a raw execution log" | `Finding.rationale` is natural-language narrative ("Amcache lists evil.exe at 2024-03-14T15:32Z; per FOR500, Amcache LastModified reflects catalog registration not execution. Execution corroborated by Prefetch run-count=1 + EVTX 4688 at 2024-03-14T15:34Z."). Plus planner CoT capture (gzipped in ledger; first 8KB on Langfuse span). | `verdict export <case_id> --format html` produces narrative report. v4.5 architecture + W2.D.3. | GATED on W2.D.3 |
@@ -35,19 +38,19 @@ Every item must be present or the submission is incomplete.
 | **MIT or Apache 2.0 license** | "by including an MIT or Apache 2.0 open source license file" | `LICENSE` file at repo root with MIT text | Tim (W6.C.4) | GATED |
 | **License visible at top of repo (About section)** | "This license should be detectable and visible at the top of the repository page (in the About section)" | GitHub repo About metadata: License = "MIT" badge displayed | Tim (NEW: W6.D.0) | **MISSING — added below** |
 | **README with setup** | "The repository must contain a README with setup instructions" | `README.md` at repo root | Tim (W6.C.1) | GATED |
-| **Live deployment URL OR step-by-step local instructions** | "Include either a live deployment URL or step-by-step instructions that let judges run your agent locally against provided evidence. If local setup requires specific tools or dependencies, document them clearly in the README." | No live deployment (air-gap intent makes hosted demo wrong). Step-by-step in `docs/BUILD.md` + README quickstart. | Tim (W6.C.3) | GATED |
+| **Live deployment URL OR step-by-step local instructions** | "Include either a live deployment URL or step-by-step instructions that let judges run your agent locally against provided evidence. If local setup requires specific tools or dependencies, document them clearly in the README." | No live deployment (air-gap intent makes hosted demo wrong). Step-by-step in `docs/RELEASE.md` + README quickstart. | Tim (W6.C.3) | GATED |
 | **Text description** | "explain the features and functionality of your Project" | Devpost submission form text + repo README | Tim (W6.C.6) | GATED |
-| **Demo video < 5 min** | "should be less than five (5) minutes" | `docs/DEMO_SEQUENCE.md` 5-min cut | Beaver (W6.A.2) | GATED |
+| **Demo video < 5 min** | "should be less than five (5) minutes" | `docs/RELEASE.md` five-minute cut | Beaver (W6.A.2) | GATED |
 | **Demo screencast of live terminal + audio narration** | "should include a screencast of live terminal execution with audio narration. Not slides. Not marketing videos." | Two-pane recording: left = terminal, right = Langfuse trace tree. Audio narration throughout. NO marketing slides. | Beaver (W6.A.2) | GATED |
 | **Demo shows real evidence** | "Show the agent working against real evidence" | Honeynet ransomware image (Case 003) + 2 engineered cases (lol-bins, credtheft) | KP (W4.C) + Beaver (W6.A.2) | GATED |
 | **Demo shows ≥1 self-correction sequence** | "including at least one self-correction sequence" | Air-gap mode hero beat ⓹ — Qwen3-vs-GLM disagreement → CONTESTED → replan → VETTED_AIRGAP. Narrator calls it out: "this is self-correction." | Beaver (W6.A.2) | **MUST verify on every cut** |
 | **Demo on YouTube/Vimeo/Youku, public** | "must be uploaded to and made publicly visible on YouTube, Vimeo, or Youku" | YouTube unlisted-then-public on Jun 14 | Tim (W6.D.3) | GATED |
 | **Demo no third-party trademarks/copyrighted music** | "must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission" | Use royalty-free / CC0 audio. No corporate logos beyond fair-use citation of Volatility/Hayabusa logos for tool identification. | Beaver (W6.A.2) | GATED |
 | **Architecture Diagram (visual file)** | "Include an Architecture Diagram — A clear visual showing how components connect — the agent, SIFT tools, MCP servers, evidence sources, output pipeline" | `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (NOT just ASCII). Shows: Examiner CLI → Gateway → Mode selector → Planner/Verifier → Microsandbox VMs → 12 SIFT tools → Evidence Vault + Ledger + Langfuse. | Tim (NEW: W6.C.7) | **MISSING — added below** |
-| **Evidence Dataset Documentation** | "Evidence Dataset Documentation — What the agent was tested against, source of the data, and what the agent found" | `docs/EVIDENCE_DATASET.md` covering: NIST CFReDS Hacking Case, Honeynet ransomware image, 3 engineered cases (Case 001 lol-bins, Case 002 credtheft, Case 003 ransomware), 50 indicators total, source attribution per artifact, summary of what VERDICT found per case. | KP (NEW: W6.C.8) | **MISSING — added below** |
-| **Accuracy Report** | "Self-assessment of findings accuracy. False positives, missed artifacts, hallucinated claims identified during testing. Honesty valued over perfection." | `docs/ACCURACY_REPORT.md` per W5.E.1: per-mode hallucination rate, false-positives, missed-artifacts, MITRE sub-technique precision, Qwen3-vs-GLM disagreement correlation. **Honest framing** — names the things VERDICT got wrong during testing. | KP (W5.E.1) | GATED |
+| **Evidence Dataset Documentation** | "Evidence Dataset Documentation — What the agent was tested against, source of the data, and what the agent found" | `docs/RELEASE.md` dataset section covering NIST CFReDS Hacking Case, Honeynet ransomware image, 3 engineered cases, source attribution, and summary findings. | KP (NEW: W6.C.8) | GATED |
+| **Accuracy Report** | "Self-assessment of findings accuracy. False positives, missed artifacts, hallucinated claims identified during testing. Honesty valued over perfection." | `docs/RELEASE.md` accuracy section with per-mode hallucination rate, false positives, missed artifacts, MITRE sub-technique precision, and Qwen3-vs-GLM disagreement correlation. | KP (W5.E.1) | GATED |
 | **Agent Execution Logs** | "Structured logs showing the full agent communication and tool execution sequence... Multi-agent: agent-to-agent message logs with timestamps. Single-agent: tool execution logs with timestamps and token usage. Persistent loop: iteration-over-iteration traces showing how the agent's approach changed. Judges must be able to trace any finding back to the specific tool execution that produced it." | VERDICT is **multi-agent** (Qwen3 + GLM + Claude in dual mode). Required: agent-to-agent logs with timestamps. Plus tool execution logs with timestamps + token usage. Plus replan iteration traces. **Package as `submission/execution-logs/<case_id>.jsonl`** — distilled view of HMAC ledger + Langfuse traces + planner CoT, formatted for judge consumption. NOT just a tar of the raw ledger. | Tim (NEW: W6.C.9) | **MISSING — added below** |
-| **Novel contribution clearly documented** | "Projects must be substantially new work created during the hackathon period... The novel contribution must be clearly documented." | `docs/NOVEL_CONTRIBUTION.md` distinguishing: (a) what we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot/replan distinction, schema-enforced caveat acknowledgment); (b) what was pre-existing open source (SIFT, Volatility, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, LangGraph, Langfuse, Inspect AI, Pydantic, FastMCP, NeMo Guardrails, Claude Agent SDK). | Tim (NEW: W6.C.10) | **MISSING — added below** |
+| **Novel contribution clearly documented** | "Projects must be substantially new work created during the hackathon period... The novel contribution must be clearly documented." | `docs/RELEASE.md` novelty section distinguishing what VERDICT built from pre-existing open source. | Tim (NEW: W6.C.10) | GATED |
 
 ---
 
@@ -94,7 +97,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - Hunt Evil baseline catalog covering 8 canonical Windows processes
 - LOLBin cmdline catalog covering 6 binaries with MITRE sub-technique mapping
 
-**Defending the scope:** the Devpost rubric explicitly states "depth on fewer types beats shallow coverage." `docs/SCOPE.md` quotes this verbatim and frames Windows-DFIR-depth as architectural intent (constrained scope sharpens cross-engine verifier signal), not as a budget excuse. v2 expansion path is documented (per-platform CaveatID enums, parallel playbooks).
+**Defending the scope:** the Devpost rubric explicitly states "depth on fewer types beats shallow coverage." `docs/RELEASE.md` frames Windows-DFIR-depth as architectural intent (constrained scope sharpens cross-engine verifier signal), not as a budget excuse. v2 expansion path is documented (per-platform CaveatID enums, parallel playbooks).
 
 **Demo segment:** all hero beats hit Windows DFIR depth. Architecture recap names the v2 extension points.
 
@@ -140,18 +143,18 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 > "Can another practitioner deploy and build on this?"
 
 **How VERDICT scores:**
-- `scripts/install.sh` with three credential paths (CLAUDE_CODE_OAUTH_TOKEN, interactive, ANTHROPIC_API_KEY); auto-detects and configures
+- `scripts/install.sh` with cloud credential detection (`CLAUDE_CODE_OAUTH_TOKEN`, interactive Claude Code OAuth, `ANTHROPIC_API_KEY`, optional host-side `OPENROUTER_API_KEY`); auto-detects and configures without passing secrets into microVMs
 - `verdict doctor` pre-flight (W5.A.4) reports each component status before first use
-- `docs/BUILD.md` reproducible from a fresh SIFT VM (verified by reproducing on a second VM in W6.C.3)
+- `docs/RELEASE.md` reproducible-build section verified from a fresh SIFT VM and second VM in W6.C.3
 - Full CLI surface: `verdict {init, resume, reverify, status, ls, show, export, validate, mode, gc, health, doctor}`
-- 16 documentation files: README, ARCHITECTURE, BUILD, THREAT_MODEL, FAILURE_MODES, CLI, CHECKPOINTING, CASE_ISOLATION, SCOPE, SCHEMA_MIGRATION, SANS_JUDGE_CHECKLIST, ACCURACY_REPORT, EVIDENCE_DATASET, NOVEL_CONTRIBUTION, DEMO_SEQUENCE, PRODUCTION_AUDIT
+- Consolidated documentation set: README, ARCHITECTURE, DEVPOST_COMPLIANCE, RELEASE, FAILURE_MODES, CASE_ISOLATION, and the docs wiki index
 - Conventional Commits with task ID embedded (e.g. `feat(schema): foo [W1.B.1]`) — git log archeology trivial
 - Architecture diagram as rendered visual (`docs/ARCHITECTURE_DIAGRAM.svg`)
 - Skill format: agentskills.io standard — portable across Claude Code, Hermes, Cursor, Codex
 - Pinned dependency versions; lockfiles committed
 - Three-mode operator override: `--mode={cloud,airgap,dual}`
 
-**Demo segment:** architecture recap shows file tree + `verdict --help` + 30s of `docs/BUILD.md` walkthrough at the end.
+**Demo segment:** architecture recap shows file tree + `verdict --help` + 30s of `docs/RELEASE.md` walkthrough at the end.
 
 ---
 
@@ -192,19 +195,19 @@ Three hours before pushing the v-submit tag, verify ALL of the following are TRU
 - [ ] LICENSE file at repo root with MIT text
 - [ ] Repo About section shows MIT badge
 - [ ] README.md at repo root with quickstart
-- [ ] `docs/BUILD.md` reproducible from fresh SIFT VM (verified on a second VM)
+- [ ] `docs/RELEASE.md` reproducible-build section verified from fresh SIFT VM and second VM
 - [ ] `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual present
-- [ ] `docs/EVIDENCE_DATASET.md` documents what we tested against + sources + findings
-- [ ] `docs/ACCURACY_REPORT.md` with honest false-positive / missed-artifact / hallucination tally per mode
+- [ ] `docs/RELEASE.md` documents what we tested against + sources + findings
+- [ ] `docs/RELEASE.md` includes honest false-positive / missed-artifact / hallucination tally per mode
 - [ ] `submission/execution-logs/case_001.jsonl`, `case_002.jsonl`, `case_003.jsonl` distilled execution-log artifacts
-- [ ] `docs/NOVEL_CONTRIBUTION.md` documents what's substantially new vs. pre-existing
+- [ ] `docs/RELEASE.md` documents what's substantially new vs. pre-existing
 - [ ] Demo video on YouTube, public, < 5:00 runtime
 - [ ] Demo video shows live terminal screencast with audio narration (NO slides, NO marketing)
 - [ ] Demo video shows ≥ 1 self-correction sequence (Qwen3-vs-GLM CONTESTED → replan beat)
 - [ ] Demo video has no third-party trademarks beyond fair-use tool identification, no copyrighted music
-- [ ] All 8 submission artifacts uploaded to Devpost form
+- [ ] All 8 Devpost submission components uploaded or linked in the Devpost form
 - [ ] Submission writeup text references all 6 judging criteria
-- [ ] No CLAUDE_CODE_OAUTH_TOKEN, no ANTHROPIC_API_KEY, no HMAC private key, no `.env` committed to repo
+- [ ] No CLAUDE_CODE_OAUTH_TOKEN, no ANTHROPIC_API_KEY, no OPENROUTER_API_KEY, no HMAC private key, no `.env` committed to repo
 - [ ] `git tag v-submit && git push origin v-submit` triggered
 - [ ] Devpost submission form Submitted, receipt email confirmed
 
@@ -212,9 +215,9 @@ If ANY checkbox is unchecked at Jun 14 21:00 EDT, abort the v-submit tag push an
 
 ---
 
-## Tasks added to master build plan (Week 6 amendments)
+## Tasks mirrored from master build plan (Week 6 amendments)
 
-These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them here as the source of truth; the master plan should be patched.
+These amendments have been patched into `BUILD_PLAN.md`; they remain here so every Devpost-specific artifact has a nearby compliance trace.
 
 ### W6.D.0 — GitHub repo metadata
 - [ ] **W6.D.0.a** — Set repo Public visibility.
@@ -229,10 +232,10 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md.
 - [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM.svg rendered visual [W6.C.7]`
 
-### W6.C.8 — `docs/EVIDENCE_DATASET.md`
+### W6.C.8 — `docs/RELEASE.md` dataset section
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware image, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (summary of findings, with finding_ids referencing the accuracy report). (5) Limitations: Windows-only; no live-response; no Win11-specific; no macOS/Linux.
-- [ ] **W6.C.8.b** — Cross-reference from README and ACCURACY_REPORT.md.
-- [ ] **W6.C.8.c** — Commit: `docs: EVIDENCE_DATASET.md [W6.C.8]`
+- [ ] **W6.C.8.b** — Cross-reference from README and accuracy section.
+- [ ] **W6.C.8.c** — Commit: `docs(release): add dataset documentation [W6.C.8]`
 
 ### W6.C.9 — `submission/execution-logs/<case_id>.jsonl` artifact export
 - [ ] **W6.C.9.a** — Failing test `tests/cli/test_export_execution_logs.py::test_includes_agent_to_agent_messages_with_timestamps`. Plus `test_includes_token_usage`. Plus `test_traces_finding_to_tool_call_id`. Run → RED.
@@ -240,10 +243,10 @@ These are NEW tasks not in the prior version of `BUILD_PLAN.md`. Adding them her
 - [ ] **W6.C.9.c** — Run against all three demo cases; produce `submission/execution-logs/case_001.jsonl`, `case_002.jsonl`, `case_003.jsonl` and commit.
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
-### W6.C.10 — `docs/NOVEL_CONTRIBUTION.md`
+### W6.C.10 — `docs/RELEASE.md` novelty section
 - [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher with T1218 sub-techniques, agentskills.io skill bundle, custom Inspect AI scorers including step_efficiency + mitre_subtechnique_precision + negative_hypothesis_quality + Qwen3-vs-GLM disagreement-correlation analysis). (3) What was pre-existing open source (with license + source URL each: SIFT Workstation, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic + Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README.
-- [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
+- [ ] **W6.C.10.c** — Commit: `docs(release): document novel contribution [W6.C.10]`
 
 ### W6.D.4 — Submission packet stage
 - [ ] **W6.D.4.a** — Run Part 6 checklist of this document; all 19 boxes ticked.
@@ -260,7 +263,7 @@ When in doubt about a Devpost requirement, this is the resolution order:
 1. Devpost rules at `findevil.devpost.com` (always wins)
 2. `DEVPOST_COMPLIANCE.md` (this doc — interprets rules into our artifacts)
 3. `BUILD_PLAN.md` (sequences artifacts into TDD tasks)
-4. `archive/03-audit-v4.5.md` + `archive/04-spec-plan-v4.6.md` (architecture rationale)
+4. `docs/spec/03-audit-v4.5.md` + `docs/spec/04-spec-plan-v4.6.md` (architecture rationale)
 5. Project `CLAUDE.md` (build conventions)
 
 If Devpost amends rules between now and Jun 15, this doc updates first; everything downstream follows.

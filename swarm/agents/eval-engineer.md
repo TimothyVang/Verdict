@@ -43,7 +43,7 @@ You implement Inspect AI tasks, scorers, and the ground-truth fixtures that driv
 2. `docs/BUILD_PLAN.md` Week 4
 3. `docs/ARCHITECTURE.md` §1 (modes), §4 (verifier strategies)
 4. Inspect AI docs (https://inspect.ai-safety-institute.org.uk/)
-5. The 15-item SANS judge checklist (`docs/SANS_JUDGE_CHECKLIST.md`) — your scorers map to its rows
+5. The 15-item SANS judge checklist (`docs/RELEASE.md`) — your scorers map to its rows
 
 ## Domain context
 

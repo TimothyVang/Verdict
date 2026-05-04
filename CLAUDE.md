@@ -18,16 +18,58 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 
 ## 2. Authority chain (read in this order)
 
+`docs/README.md` is the **wiki front door** — every doc under `docs/` is indexed there with role + when-to-read. Every doc under `docs/` (except the frozen `spec/` archive) also carries a one-line `> **Wiki:** [Index](README.md) · …` nav strip directly under its H1, so any page is one hop from the index and from its closest siblings. The table below is the load-bearing subset that governs runtime behavior and submission compliance.
+
+### Entry points
+
 | Doc | Role | When to consult |
 |-----|------|-----------------|
-| `README.md` | **Entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
+| `README.md` | **Project entry point.** What VERDICT does, three modes, agent loop, three-layer immutability — at a glance. ASCII diagrams. | First read for any contributor. |
+| `docs/README.md` | **Doc wiki index.** Every file under `docs/` with role, audience, when-to-read. | Before opening any other doc; as the navigational map. |
+| `docs/TLDR.md` | ~5-min visual primer. Living, teammate-shareable. | Hand to a new human teammate. |
+
+### Current authority (single sources of truth)
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
 | `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/spec/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
 | `docs/BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day TDD plan with task IDs (W1.A.3.a, W1.B.7, …), ownership, hours, acceptance gates. | Pick your next task; use task IDs in commits; use weekly gates as the definition of done. |
 | `docs/DEVPOST_COMPLIANCE.md` | **Submission rule-to-artifact mapping.** Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging. |
-| `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit. | When docs appear to contradict each other. |
-| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches + original TL;DR. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
+
+### Audits (cross-doc consistency)
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/DOCS_ACCURACY_REPORT.md` | Cross-doc consistency audit (counts, labels, MITRE IDs, version pins, terminology). | When docs appear to contradict each other; before a major doc edit. |
+| `docs/AGENTIC_WORKFLOW_REVIEW.md` | Sister audit: runtime LangGraph loop *and* dev TDD loop. Filtered to not overlap with the accuracy report. | When evaluating coherence between §3 hard rules and the runtime topology. |
+
+### Engineering frameworks (scaffolding — *not* runtime authority)
+
+These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe how dev tooling is wired; they do not extend the runtime topology and never override §3.
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/AGENT_SWARM.md` | Build-side LLM swarm spec — conductor / worker / reviewer / auditor agents that take `BUILD_PLAN.md` task IDs and open PRs. The `swarm/` source tree is its executable skeleton. | Before reading anything under `swarm/`; before reviewing a PR authored by a `swarm:*` worker. |
+| `docs/MCP_FRAMEWORK.md` | Mode-scoped MCP allowlists + credential-isolation discipline. Every entry in `.mcp*.json` traces here. License-gated by §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp*.json`. |
+| `docs/SKILLS_FRAMEWORK.md` | How vendored skills under `.claude/skills/` compose into a Plan → TDD → subagent-driven-dev → Review → Commit pipeline. `verdict-house-rules` overlays §3 on upstream skill defaults. | Before authoring a workflow; before vendoring a new skill. |
+| `docs/SKILLS_LICENSE_AUDIT.md` | Per-skill license audit log. Every artifact under `.claude/skills/` (and any future MCP, hook, vendored artifact) gets a row per §3.8. | Before vendoring anything new; when answering "is X license-clean?". |
+
+### Hackathon context
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/hackathon/RULES.md` | Official SANS *FIND EVIL!* 2026 rules, scraped from Devpost on 2026-05-02. Upstream of `DEVPOST_COMPLIANCE.md`. | Before any submission decision. |
+| `docs/hackathon/OVERVIEW.md` | Hackathon overview + resource links (judge bios, prize structure, timeline). | Context-setting; not load-bearing. |
+
+### Frozen archive
+
+| Doc | Role | When to consult |
+|-----|------|-----------------|
+| `docs/spec/` (audit history) | Archive — v4.3 → v4.4 → v4.5 audits + v4.6 spec patches. **Reference only**, not authority. See `docs/spec/README.md` for what each captured. | Reading "why did we decide X" — never to override `ARCHITECTURE.md`. |
 
 **Authority order when docs disagree:** Devpost rules → `docs/DEVPOST_COMPLIANCE.md` → `docs/ARCHITECTURE.md` → `docs/BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/` archive. Code and lockfiles win over docs; if code is right and a doc is wrong, fix the doc, don't roll back the code.
+
+**`protocol-sift/` is a git submodule** pinned to upstream `teamdfir/protocol-sift`, tracked on the local `verdict-overrides` branch (not `main`). The submodule's two `CLAUDE.md` files have been renamed to `global/CLAUDE.protocol-sift.md` and `case-templates/CLAUDE.protocol-sift.md` so they are unambiguously upstream-only and **not** picked up as Verdict authority if anyone `cd`s into those directories. The rename lives on the `verdict-overrides` branch in the submodule; do not push it upstream to `teamdfir/protocol-sift`. Verdict-side overrides go in this `CLAUDE.md` or in `.claude/skills/verdict-house-rules/SKILL.md`.
 
 ## 3. Hard rules — MUST / MUST NOT
 
@@ -64,7 +106,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 - `LedgerEntry.mode_at_case_init` is set once and immutable.
 - `verdict resume <case_id>` reads the original mode and refuses to advance if the current `detect_mode()` differs. On mismatch it raises `ModeLockedError`, exits 2, and prints to stderr: `Case {case_id} was initialized in mode={original_mode}; current environment is mode={detected_mode}. To re-run under the new mode, use: verdict reverify {case_id} --mode {detected_mode}`.
 - Mode change is via `verdict reverify --mode <m>` only — that creates a **parallel verdict chain**, never mutating the original.
-- Cloud-only mode requires `ANTHROPIC_API` reachable; air-gap requires `SGLANG_BASE_URL` reachable; dual requires both. `verdict doctor` is the pre-flight.
+- Cloud-only mode requires a reachable cloud credential (`ANTHROPIC_API_KEY`, Claude Code OAuth, or optional host-side `OPENROUTER_API_KEY` fallback for build-side AI agents); air-gap requires `SGLANG_BASE_URL` reachable; dual requires cloud + local. `verdict doctor` is the pre-flight.
 
 ### 3.5 MITRE sub-technique precision
 
@@ -105,11 +147,11 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 | Microsoft Agent Framework | premature, license terms |
 | AGPL clean-room rewrites | strategic risk |
 
-Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in `docs/PRODUCTION_AUDIT.md`.
+Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in `docs/RELEASE.md`.
 
 ### 3.9 Credential isolation
 
-- API keys, OAuth tokens, and bearer tokens **never enter a microVM**. They are injected via TSI on host egress only; tcpdump-verifiable.
+- API keys, OAuth tokens, and bearer tokens **never enter a microVM**. This includes `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, GitHub tokens, Langfuse keys, and any bearer token used by host-side AI agents. They are injected via TSI on host egress only; tcpdump-verifiable.
 - HMAC ledger key is TPM-backed (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` with passphrase prompted at gateway init.
 - Ledger redaction strips `authorization`, `auth_user`, `api_key` **before** the entry is hashed and HMAC-signed (`verdict/ledger/redaction.py`).
 - Anthropic OAuth tokens (Claude Code interactive auth) are not redistributable per Anthropic's commercial terms — do not commit, do not bake into images.
@@ -145,7 +187,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 Three operational modes, auto-detected at `case_init` and **locked**:
 
-- `CLOUD` — Claude Code planner + local Qwen3 executor + `CloudSelfConsistency` (n=3, blake3-keyed seeds, temp=0.7).
+- `CLOUD` — Claude Code / Agent SDK planner-executor lane + `CloudSelfConsistency` (n=3, blake3-keyed seeds, temp=0.7). No local Qwen3 executor is required or assumed in cloud-only mode.
 - `AIRGAP` — Qwen3 planner+executor + `AirGapCrossEngine` (Qwen3 vs GLM-4.5-Air, Jaccard ≥ 0.80).
 - `DUAL` — parallel cloud+airgap lanes + `DualLaneCrossEngine` (cloud + ≥1 local; locals agree).
 
@@ -242,10 +284,10 @@ bash scripts/install.sh
 uv sync
 
 # SGLang serving (air-gap planner/executor)
-sglang_server_v1 --model-path /path/to/qwen3 --tool-call-parser qwen3_xml --port 30000
+sglang_server_v1 --model-path /path/to/qwen3 --tool-call-parser qwen --port 30000
 
 # SGLang serving (verifier-only)
-sglang_server_v1 --model-path /path/to/glm45  --tool-call-parser glm45  --port 30001
+sglang_server_v1 --model-path /path/to/glm-4.5-air --tool-call-parser glm --port 30001
 
 # Langfuse v2 self-host
 docker-compose up -d
@@ -314,7 +356,7 @@ git tag v-submit && git push origin v-submit    # fires .github/workflows/devpos
 
 ### 11.1 The 15-item SANS judge checklist
 
-Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in the demo recording:
+Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo recording:
 
 1. Image hash verified before opening evidence.
 2. SANS-canonical first move (`windows.info` for memory; `mmls` + `fsstat` for disk).
@@ -332,7 +374,7 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 14. Agent gives up explicitly (`UNVERIFIABLE` + `interrupt()`) when it cannot resolve.
 15. `planner_critique_node` fires visibly in the Langfuse trace.
 
-### 11.2 Demo video (5-min cut, `docs/DEMO_SEQUENCE.md`)
+### 11.2 Demo video (5-min cut, `docs/RELEASE.md`)
 
 - **0:00 – 0:30** cold open + architecture diagram flash.
 - **0:30 – 1:30** cloud-only mode: n=3 with three distinct seeds, Langfuse sibling spans visible.
@@ -344,24 +386,32 @@ Encoded in `docs/SANS_JUDGE_CHECKLIST.md`. Every item must demonstrably pass in 
 
 1. `README.md` — problem statement, architecture, demo link, install, mode reference, license, contributing.
 2. `docs/ARCHITECTURE.md`
-3. `docs/BUILD.md` — exact build steps from a fresh SIFT VM, verified on a second VM.
+3. `docs/RELEASE.md` — exact build steps from a fresh SIFT VM, verified on a second VM, plus scope, CLI, demo, judge checklist, dataset, accuracy, production-audit, and novelty sections.
 4. `CONTRIBUTING.md` + `LICENSE` (MIT)
-5. `docs/PRODUCTION_AUDIT.md` — v4 triage: what landed v1 vs v2.
-6. `docs/SANS_JUDGE_CHECKLIST.md`
-7. `docs/ACCURACY_REPORT.md` — per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings.
-8. `docs/DEMO_SEQUENCE.md` — 5-min sequence with timing per beat.
+5. `docs/DEVPOST_COMPLIANCE.md` — rule-to-artifact mapping and submission checklist.
+6. `docs/RELEASE.md` — v4 triage, judge checklist, per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings, and 5-min sequence with timing per beat.
 
 ## 12. Pointers (read directly, do not summarise from memory)
 
+`docs/README.md` is the wiki index — every doc under `docs/` is listed there. The pointers below are the most-asked questions.
+
 | When you need… | Read |
 |----------------|------|
+| The doc map (what lives where, who reads what) | `docs/README.md` |
+| 5-min visual primer for a new teammate | `docs/TLDR.md` |
 | Architecture, schemas, ledger, threat model, tool surface | `docs/ARCHITECTURE.md` |
 | Sequencing, ownership, weekly acceptance gates, task IDs | `docs/BUILD_PLAN.md` |
 | Submission rule-to-artifact mapping, judge-facing checklist | `docs/DEVPOST_COMPLIANCE.md` |
 | Cross-doc consistency audit + critical-fix log | `docs/DOCS_ACCURACY_REPORT.md` |
-| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..05` + `README.md`) |
-| Hackathon rules + resource links | https://findevil.devpost.com/ + `downloads/README.md` |
-| Upstream Claude Code config framework being extended | `protocol-sift/` |
+| Agentic-workflow audit (runtime + dev TDD loop) | `docs/AGENTIC_WORKFLOW_REVIEW.md` |
+| Build-side LLM swarm spec (consumer of `BUILD_PLAN.md` task IDs) | `docs/AGENT_SWARM.md` (executable in `swarm/`) |
+| MCP server allowlist + credential isolation | `docs/MCP_FRAMEWORK.md` (allowlist in `.mcp.json`) |
+| Vendored skill stack composition + house-rules overlay | `docs/SKILLS_FRAMEWORK.md` (stack in `.claude/skills/`) |
+| License audit for vendored skills/hooks/MCPs | `docs/SKILLS_LICENSE_AUDIT.md` |
+| Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..04` + `README.md`) |
+| Official hackathon rules (scraped) | `docs/hackathon/RULES.md` |
+| Hackathon overview + resource links | `docs/hackathon/OVERVIEW.md` + https://findevil.devpost.com/ + `downloads/README.md` |
+| Upstream Claude Code config framework (read-only submodule) | `protocol-sift/` |
 
 **Authority order when docs disagree:** Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this `CLAUDE.md` → `docs/spec/`. Code wins over docs; if code is right, fix the doc.
 

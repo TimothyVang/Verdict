@@ -1,5 +1,7 @@
 # VERDICT — Docs Accuracy Audit
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [Devpost](DEVPOST_COMPLIANCE.md) · [Workflow Review](AGENTIC_WORKFLOW_REVIEW.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Audited:** 2026-05-02
 **Resolved:** 2026-05-02 (all 11 punchlist items closed; see *Resolution log* at bottom).
 **Scope:** README.md, ARCHITECTURE.md, BUILD_PLAN.md, DEVPOST_COMPLIANCE.md (project root). Archive treated as historical reference, not authority — but cross-checked when it disagrees with the current docs.
@@ -22,9 +24,9 @@
 
 **Where:** `README.md` line 284, `ARCHITECTURE.md` lines 211, 214, 422, `DEVPOST_COMPLIANCE.md` lines 82, 92.
 **Claim:** The DKOM auto-detection emits `Hypothesis(T1014.001, …)` and the demo's hero beat ⓵ shows "DKOM divergence (pslist+psscan) → T1014.001 auto."
-**Reality:** MITRE ATT&CK `T1014` (Rootkit) has **zero sub-techniques**. There is no `T1014.001`. Confirmed against `attack.mitre.org/techniques/T1014/` and noted in your own archive: `archive/02-audit-v4.4.md` line 562 emits `Hypothesis(mitre_technique="T1014", confidence=high)` — no sub-technique — and your `BUILD_PLAN.md` line 38 also says "DKOM/T1014" without `.001`.
+**Reality:** MITRE ATT&CK `T1014` (Rootkit) has **zero sub-techniques**. There is no `T1014.001`. Confirmed against `attack.mitre.org/techniques/T1014/` and noted in your own archive: `docs/spec/02-audit-v4.4.md` line 562 emits `Hypothesis(mitre_technique="T1014", confidence=high)` — no sub-technique — and your `BUILD_PLAN.md` line 38 also says "DKOM/T1014" without `.001`.
 **Impact:** The schema validator that requires MITRE IDs to match `^T\d{4}(\.\d{3})?$` will accept `T1014.001` as syntactically valid but it is semantically fabricated; a SANS judge familiar with MITRE will catch this in seconds. Your IR Accuracy criterion (rubric #2) is the worst place to hand them a wrong MITRE ID.
-**Fix:** Replace every `T1014.001` with `T1014` in `README.md`, `ARCHITECTURE.md`, and `DEVPOST_COMPLIANCE.md`. (Optional: add a `mitre_technique_subtype: "DKOM"` free-text field if you want sub-technique-style granularity.) `archive/04-spec-plan-v4.6.md` mixes both forms — clean it up at the same time.
+**Fix:** Replace every `T1014.001` with `T1014` in `README.md`, `ARCHITECTURE.md`, and `DEVPOST_COMPLIANCE.md`. (Optional: add a `mitre_technique_subtype: "DKOM"` free-text field if you want sub-technique-style granularity.) `docs/spec/04-spec-plan-v4.6.md` mixes both forms; leave that archive untouched and cite the current architecture instead.
 
 ### C2. "RFC-2119 standard MIT" mislabels the MIT license
 
@@ -34,7 +36,7 @@
 
 ### C3. Vol3 example version `2.10.0` is far behind current
 
-**Where:** `ARCHITECTURE.md` line 313 (`tool_version="vol3 2.10.0"`), `archive/02-audit-v4.4.md` line 342 (`vol3-2.10.0`).
+**Where:** `ARCHITECTURE.md` line 313 (`tool_version="vol3 2.10.0"`), `docs/spec/02-audit-v4.4.md` line 342 (`vol3-2.10.0`).
 **Reality:** Volatility 3 is at **2.28.0** in the official docs (`volatility3.readthedocs.io/en/latest/`). 2.10.0 dates from early 2024. Pinning a microsandbox image at 2.10.0 means losing ~18 minor releases of plugin fixes — including improvements to `windows.netscan` and `windows.svcscan` that you rely on for hero beats.
 **Fix:** Either change the example to a current version (`2.28.0`) or label the literal as "<<pin-at-build-time>>" so it doesn't read as a recommendation. Also pin the actual microsandbox image to a current vol3 build before W2.A.
 
@@ -90,11 +92,11 @@ Plus the four executor branches inside fanout if you count those separately. So 
 **Reality:** That list has **16 names**, not 12. (`README.md` line 341 also claims "16 doc files" — README is right, this doc is wrong.)
 **Fix:** "16 documentation files: …"
 
-### H5. "all 18 boxes ticked" — Part 6 has 19
+### H5. Part 6 checklist count drift
 
 **Where:** `DEVPOST_COMPLIANCE.md` line 248 (W6.D.4.a).
-**Reality:** Part 6 (lines ~190–208) lists 19 distinct checkboxes, not 18. Counting in order: repo public, LICENSE file, About badge, README, BUILD reproducible, ARCHITECTURE_DIAGRAM, EVIDENCE_DATASET, ACCURACY_REPORT, three execution-log JSONLs, NOVEL_CONTRIBUTION, demo on YouTube, demo terminal+narration, demo self-correction, demo no trademarks, all 8 artifacts uploaded, writeup references criteria, no secrets committed, git tag pushed, Devpost form submitted = 19.
-**Fix:** Either compress two checkboxes into one or change "18" to "19". Sub-bullet "all 8 submission artifacts uploaded" is also vague — the rules require ≥9 distinct artifacts (repo URL, license, README, BUILD steps, demo video, architecture diagram, evidence dataset, accuracy report, execution logs, novel contribution = 10). Reconcile this number too.
+**Reality:** Part 6 (lines ~190–208) lists 19 internal release checks, not 18. These are finer-grained than Devpost's eight required components: repo/license/README state, build reproducibility, required docs, execution-log files, video constraints, secrets check, tag push, and form receipt.
+**Fix:** Replace the old numeric fraction language with "every checklist item" or "all 19 internal checks", and keep a separate sentence that Devpost itself requires eight submission components.
 
 ### H6. README roadmap header "9 vol3 wrappers" disagrees with BUILD_PLAN's 10
 
@@ -108,7 +110,7 @@ Plus the four executor branches inside fanout if you count those separately. So 
 
 ### M1. `blake3` Python API misuse in `derive_seeds`
 
-**Where:** `ARCHITECTURE.md` lines 23–30, `archive/04-spec-plan-v4.6.md` line 145, `archive/02-audit-v4.4.md` line 43.
+**Where:** `ARCHITECTURE.md` lines 23–30, `docs/spec/04-spec-plan-v4.6.md` line 145, `docs/spec/02-audit-v4.4.md` line 43.
 **Code as written:**
 ```python
 h = blake3(case_id.encode())
@@ -179,7 +181,7 @@ These were checked and hold up.
 4. **H1+H2**: Decide whether `windows.info` gets a wrapper, then update vol3 plugin count (10 vs 11) and total wrapper count (19 → 23 or 24) consistently across `README.md`, `ARCHITECTURE.md`, `DEVPOST_COMPLIANCE.md`, `BUILD_PLAN.md`.
 5. **H3**: Pick a single canonical node count (9 or 10) and align `BUILD_PLAN.md` line 565, `DEVPOST_COMPLIANCE.md` line 63, and `ARCHITECTURE.md` §2.
 6. **H4**: `DEVPOST_COMPLIANCE.md` line 146 — "12" → "16".
-7. **H5**: `DEVPOST_COMPLIANCE.md` line 248 — "18" → "19" (or recompose Part 6 to actually have 18 boxes).
+7. **H5**: `DEVPOST_COMPLIANCE.md` line 248 — replace "18" with "every checklist item" or "19 internal checks" while preserving the Devpost eight-component requirement.
 8. **C3**: Bump `vol3 2.10.0` example to a current version (or template it).
 9. **H6**: README W2 roadmap "9 vol3 wrappers" → align with BUILD_PLAN's 10.
 10. **M3**: One-line clarification on Pattern 2 TSI vs Pattern 1 `network=False`.
@@ -202,7 +204,7 @@ All 11 punchlist items closed in two passes:
 | H2 | "19 wrappers" → "23 wrappers" (10 vol3 + 2 hayabusa + 2 plaso + 9 other) | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 89 |
 | H3 | 9-node count: aligned by removing "executor_work" as a separate node in CLAUDE.md and BUILD_PLAN.md (it's the in-fanout composition); clarified `clarify_node` is a sub-state of `comprehension_gate` in ARCHITECTURE.md §2 | ✅ closed | `CLAUDE.md` §4, `docs/BUILD_PLAN.md` Week 2 critical-path, `docs/ARCHITECTURE.md` §2 |
 | H4 | "12 documentation files" → "16 documentation files" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` line 146 |
-| H5 | "all 18 boxes ticked" → "all 19 boxes ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a |
+| H5 | Old checklist-count wording → "every checklist item ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a + `docs/BUILD_PLAN.md` W6.D.3 |
 | H6 | README W2 roadmap "9 vol3 wrappers" reference removed during 2026-05-02 doc refactor | ✅ closed | `README.md` (no current occurrence) |
 | M1 | `blake3` API: `blake3(enc, derive_key_context=...)` constructor pattern (not `instance.derive_key`) | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet |
 | M3 | Pattern 2 TSI vs Pattern 1 `network=False`: explicit one-paragraph clarification added | ✅ closed | `docs/ARCHITECTURE.md` Pattern 2 |

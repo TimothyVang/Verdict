@@ -1,7 +1,7 @@
 ---
 name: auditor
 description: Pattern-scans PR diffs + commit subjects for CLAUDE.md §3 violations; posts blocking or advisory findings.
-model: claude-sonnet-4-6
+model: claude-haiku-4-5
 allowed_tools:
   - Read
   - Bash

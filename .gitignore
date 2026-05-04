@@ -71,6 +71,9 @@ clickhouse-data/
 # Inspect AI logs
 inspect_logs/
 
+# Proof run artifacts: keep README/checklists, ignore per-run logs and captures
+proof/runs/
+
 # Plan / scratch
 *.scratch.md
 .plans/
@@ -79,3 +82,4 @@ inspect_logs/
 worktrees/
 swarm/swarm.db
 swarm/swarm.db-*
+swarm/memory/lessons.jsonl

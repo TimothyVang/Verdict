@@ -1,0 +1,19 @@
+flowchart LR
+  CLI[Examiner CLI] --> Gateway[FastMCP Gateway]
+  Gateway --> Mode[Mode detect: cloud / airgap / dual]
+  Mode --> Planner[Planner Protocol]
+  Planner --> Critique[planner_critique]
+  Critique --> Gate[comprehension_gate]
+  Gate --> Fanout[executor_fanout]
+  Fanout --> Deny[DenyRuleWrapper]
+  Deny --> Tool[ToolExecutor in Microsandbox]
+  Evidence[(Evidence vault: read-only + hashes)] --> Tool
+  Tool --> Ledger[LedgerEmitter: HMAC JSONL]
+  Ledger --> Quorum[quorum_node]
+  Quorum --> Pivot[pivot_node]
+  Quorum --> Replan[replan_node]
+  Replan --> Planner
+  Quorum --> Findings[Findings and exports]
+  Ledger --> Langfuse[Langfuse trace tree]
+  Quorum --> Checkpoint[SqliteSaver checkpoints]
+

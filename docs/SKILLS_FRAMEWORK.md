@@ -1,5 +1,7 @@
 # SKILLS_FRAMEWORK — using the vendored skill stack in tandem
 
+> **Wiki:** [Index](README.md) · [TL;DR](TLDR.md) · [Architecture](ARCHITECTURE.md) · [Build Plan](BUILD_PLAN.md) · [MCP Framework](MCP_FRAMEWORK.md) · [Skills License Audit](SKILLS_LICENSE_AUDIT.md) · root [CLAUDE.md](../CLAUDE.md)
+
 **Status:** Phase 0 (vendored, documented; per-task wiring lands as W2+ tasks are taken). This doc is **engineering scaffolding**, not part of Verdict's runtime authority chain. The Verdict runtime topology lives in `ARCHITECTURE.md`.
 
 **Authority:** below `BUILD_PLAN.md` and `CLAUDE.md`. The skill stack obeys every rule in `CLAUDE.md` §3 — `verdict-house-rules` is the overlay that enforces this. Nothing in this doc supersedes either.
@@ -66,7 +68,7 @@ The composition is a single-pass pipeline. Each phase has a defined input, outpu
 | Phase | Skill(s) | CLAUDE.md hard rule(s) enforced | Output (gate to next phase) |
 |---|---|---|---|
 | 0. Always-on overlay | `verdict-house-rules` | All §3 rules | Loaded at session start. Wins on conflict with vendored skills. |
-| 1. Understand | `brainstorming`, `grill-me`, `grill-with-docs` | §3.6 epistemic vocabulary, §3.3 caveat awareness | A bullet list of resolved decisions. `grill-with-docs` writes ADR-style notes back into `docs/ARCHITECTURE.md` or `docs/BUILD_PLAN.md` if architecture moves. |
+| 1. Understand | `brainstorming`, `grill-me`, `grill-with-docs` | §3.6 epistemic vocabulary, §3.3 caveat awareness | A bullet list of resolved decisions. If architecture or build sequencing must move, `grill-with-docs` drafts the proposed doc change for human-reviewed PR; it does not silently mutate authority docs. |
 | 2. Plan | `writing-plans` | §3.7 task-ID discipline, §3.10 real-services-first | A plan: `<task_id>`, files to touch, **tests written first**, acceptance gate. |
 | 3. Implement (TDD) | `test-driven-development` + `verdict-house-rules` | §3.7 RED→GREEN→commit, §3.10 no mocks, §3.2 multi-artifact corroboration in schemas | Failing test, then passing test, with diff staged. **One commit per task ID**. |
 | 3a. Parallel fan-out (optional) | `dispatching-parallel-agents`, `using-git-worktrees` | §3.7 (one task per worktree) | Independent worktrees per branch; merge order documented. |
@@ -74,7 +76,7 @@ The composition is a single-pass pipeline. Each phase has a defined input, outpu
 | 4. Debug (on RED) | `systematic-debugging` | §3.6 (UNVERIFIABLE is a first-class outcome — give up explicitly), §3.10 (don't mock to make red go away) | Root cause documented; fix is targeted. If root cause requires a plan change, return to phase 2. |
 | 5. Verify | `verification-before-completion`, `executing-plans` | §3.1 evidence integrity (re-hashing), §3.10 (services up before passing) | All tests green against real services; `verdict doctor` is part of the gate. |
 | 6. Review | `requesting-code-review`, `receiving-code-review` | §3.7 (no `--amend`, no `--no-verify`), §3.8 (no forbidden deps slipped in) | Severity-ranked review; merge / discard / keep decision. |
-| 7. Commit + push | `finishing-a-development-branch` → `/qc` | §3.7 Conventional Commits w/ `[W#.#.#]`, no destructive flags | Single commit, auto-pushed (per saved feedback memory for Verdict repo). |
+| 7. Commit + push | `finishing-a-development-branch` → `/qc` | §3.7 Conventional Commits w/ `[W#.#.#]`, no destructive flags | Code commit + optional docs-sync commit (same task ID), both auto-pushed. The docs-sync step (Step 5.5 of `/qc`) is the local counterpart to the `verdict-doc-drift` cron routine. |
 
 ## 4. Skill conflict resolution
 
@@ -84,7 +86,7 @@ When a vendored skill conflicts with a Verdict hard rule, **`verdict-house-rules
 |---|---|---|
 | Pre-commit hook fails on a TDD commit | A generic `executing-plans` instruction might suggest `git commit --no-verify` to unblock | **§3.7 forbids `--no-verify`.** Fix the underlying lint/test issue, re-stage, create a NEW commit. |
 | Test is hard to write because a service isn't running | A generic `test-driven-development` instruction might suggest mocking the service | **§3.10 forbids it.** Bring the service up; re-run. If unable to in the current environment, surface the conflict to the human; do not paper over. |
-| New dependency speeds development | A generic `writing-plans` instruction might add it casually | **§3.8 audit gate.** License must be MIT or Apache-2.0; if not, refuse. Update `docs/SKILLS_LICENSE_AUDIT.md` or `docs/PRODUCTION_AUDIT.md`. |
+| New dependency speeds development | A generic `writing-plans` instruction might add it casually | **§3.8 audit gate.** License must be MIT or Apache-2.0; if not, refuse. Update `docs/SKILLS_LICENSE_AUDIT.md` or `docs/RELEASE.md`. |
 | Commit message doesn't carry a task ID | A generic `finishing-a-development-branch` instruction might omit it | **§3.7 task-ID required.** Look up `BUILD_PLAN.md`; fall back to `[W1.A.0]` only for repo-wide foundational work. |
 
 ## 5. Skill triggers (hooks)
@@ -103,7 +105,7 @@ Auto-trigger discipline matters because Superpowers' skills can fire at any prom
 The framework is intentionally Phase 0 — skills are vendored and documented, but **automatic triggering** lands later as we wire `.claude/settings.json` hooks. Tracked follow-ups:
 
 - **`tdd-guard` integration.** MIT-licensed Node tool that hard-blocks code edits without a failing test (CLAUDE.md §3.7 in code form). Install pin via `scripts/bootstrap-dev.sh`; wire `PreToolUse` hook in `.claude/settings.json`. Tracked under `[W1.A.0]` follow-on.
-- **MCP allowlist enforcement.** Pair this skill stack with `.mcp.json` — see `docs/MCP_FRAMEWORK.md`.
+- **MCP allowlist enforcement.** Pair this skill stack with the mode-scoped `.mcp*.json` configs — see `docs/MCP_FRAMEWORK.md`.
 - **Skill-trigger telemetry.** Langfuse traces should record which skill fired for which decision so we can audit drift between framework intent and observed behavior.
 - **Per-skill hard-rule citation.** Audit each vendored SKILL.md for places where a Verdict hard rule applies but isn't restated; add a citation in `verdict-house-rules` rather than editing upstream.
 

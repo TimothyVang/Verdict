@@ -1,0 +1,62 @@
+{
+  "_comment": "Cloud-mode developer MCP allowlist. Includes network-capable and write-capable developer tools; do not use for air-gap cases. Credentials are env-var refs only. See docs/MCP_FRAMEWORK.md.",
+  "mcpServers": {
+    "filesystem": {
+      "_origin": "modelcontextprotocol/servers (MIT)",
+      "_purpose": "Developer workspace access for ledger, evidence manifest, and case metadata. Upstream server can write, so this config is for connected development only.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${PWD}"
+      ]
+    },
+    "fetch": {
+      "_origin": "modelcontextprotocol/servers (MIT)",
+      "_purpose": "Connected research: threat-intel enrichment, MITRE ATT&CK live lookup, and SANS docs retrieval.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ]
+    },
+    "sequential-thinking": {
+      "_origin": "modelcontextprotocol/servers (MIT)",
+      "_purpose": "Structured multi-step reasoning for planner_critique_node CoVe pass.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "github": {
+      "_origin": "github/github-mcp-server (Apache-2.0)",
+      "_purpose": "PR review, commit chain audit, and BUILD_PLAN task ID correlation. Token injected via env only.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "mitre-attack": {
+      "_origin": "stoyky/mitre-attack-mcp (MIT)",
+      "_purpose": "Technique lookup and sub-technique validation for connected research sessions.",
+      "command": "uvx",
+      "args": [
+        "mitre-attack-mcp"
+      ]
+    },
+    "context7": {
+      "_origin": "upstash/context7-mcp (MIT)",
+      "_purpose": "Up-to-date library/API docs lookup for connected development sessions. Stateless; no credentials.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    }
+  }
+}

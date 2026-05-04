@@ -45,6 +45,17 @@ class TaskBrief:
         return f"{prefix}/{self.task_id}-{slug[:60]}"
 
 
+@dataclass(frozen=True)
+class AgentDef:
+    name: str
+    description: str
+    model: str
+    allowed_tools: tuple[str, ...]
+    skills: tuple[str, ...]
+    mcp_servers: tuple[str, ...]
+    system_prompt: str
+
+
 def load_prompt(specialization: str) -> str:
     """Compose system prompt = shared prefix + role override."""
     prefix = (PROMPT_DIR / "_prefix.md").read_text(encoding="utf-8")
@@ -53,6 +64,47 @@ def load_prompt(specialization: str) -> str:
         raise ValueError(f"unknown specialization: {specialization}")
     role = (PROMPT_DIR / role_filename).read_text(encoding="utf-8")
     return f"{prefix}\n\n---\n\n{role}"
+
+
+ROLE_ALIASES: dict[str, str] = {
+    "schema": "schema-engineer",
+    "planning": "planning-engineer",
+    "sandbox": "sandbox-engineer",
+    "tool-wrapper": "tool-wrapper-engineer",
+    "eval": "eval-engineer",
+}
+
+
+def _agent_path(role: str) -> Path:
+    canonical = ROLE_ALIASES.get(role, role)
+    path = PROMPT_DIR / f"{canonical}.md"
+    if not path.exists():
+        raise KeyError(f"unknown role: {role}")
+    return path
+
+
+def _split_frontmatter(path: Path) -> tuple[dict[str, object], str]:
+    import frontmatter
+
+    post = frontmatter.load(path)
+    return dict(post.metadata), post.content
+
+
+def load_agent_definition(role: str) -> AgentDef:
+    """Load a typed swarm agent definition from frontmatter + prompt body."""
+    path = _agent_path(role)
+    metadata, role_prompt = _split_frontmatter(path)
+    prefix = (PROMPT_DIR / "_prefix.md").read_text(encoding="utf-8")
+    name = str(metadata["name"])
+    return AgentDef(
+        name=name,
+        description=str(metadata["description"]),
+        model=str(metadata["model"]),
+        allowed_tools=tuple(metadata["allowed_tools"]),  # type: ignore[arg-type]
+        skills=tuple(metadata["skills"]),  # type: ignore[arg-type]
+        mcp_servers=tuple(metadata["mcp_servers"]),  # type: ignore[arg-type]
+        system_prompt=f"{prefix}\n\n---\n\n{role_prompt}",
+    )
 
 
 def extract_plan_excerpt(plan_path: Path, task_id: str) -> str:

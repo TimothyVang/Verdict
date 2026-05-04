@@ -1,0 +1,14 @@
+{
+  "_comment": "Explicit air-gap MCP config. No write-capable filesystem server, no network fetch, no credentialed GitHub MCP. See docs/MCP_FRAMEWORK.md.",
+  "mcpServers": {
+    "sequential-thinking": {
+      "_origin": "modelcontextprotocol/servers (MIT)",
+      "_purpose": "Structured multi-step reasoning for planner_critique_node CoVe pass. No credentials; no project filesystem access.",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
+  }
+}

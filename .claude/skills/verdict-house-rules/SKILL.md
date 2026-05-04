@@ -45,7 +45,7 @@ Verdict statuses are exactly: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `C
 
 Every new dependency, every vendored skill, every MCP server, must be **MIT or Apache-2.0**. The hard-NO list (Daytona AGPL, REMnux MCP GPL-3.0, Llama 4 / Gemma 3 community, Modal / LangSmith / Braintrust / Phoenix / AutoGen / MS Agent Framework) is final. CC-BY-SA, GPL, and AGPL are share-alike incompatible with this repo's MIT distribution.
 
-When in doubt, audit the LICENSE file directly before adding the artifact. Record the audit in `docs/SKILLS_LICENSE_AUDIT.md` (skills) or `docs/PRODUCTION_AUDIT.md` (runtime deps).
+When in doubt, audit the LICENSE file directly before adding the artifact. Record the audit in `docs/SKILLS_LICENSE_AUDIT.md` (skills) or `docs/RELEASE.md` (runtime deps).
 
 ## How this skill composes with the vendored stack
 

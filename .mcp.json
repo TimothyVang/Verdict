@@ -1,61 +1,13 @@
 {
-  "_comment": "Project-scoped MCP allowlist. Every server here passes the CLAUDE.md §3.8 license check (MIT or Apache-2.0). Credentials are injected via env vars at MCP startup only — never written into this file, never passed into microsandboxes (§3.9). See docs/MCP_FRAMEWORK.md for rationale, install pattern, and credential isolation.",
+  "_comment": "Safe default MCP config. Air-gap compatible: no write-capable filesystem server, no network fetch, no credentialed GitHub MCP. Use .mcp.cloud.json or .mcp.dual.json explicitly for connected research sessions. See docs/MCP_FRAMEWORK.md.",
   "mcpServers": {
-    "filesystem": {
-      "_origin": "modelcontextprotocol/servers (MIT)",
-      "_purpose": "Local read access for ledger, evidence manifest, case metadata. No write outside the working tree.",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "${PWD}"
-      ]
-    },
-    "fetch": {
-      "_origin": "modelcontextprotocol/servers (MIT)",
-      "_purpose": "Threat-intel enrichment, MITRE ATT&CK live lookup, SANS docs retrieval. Cloud/dual mode only — egress audited via TSI.",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-fetch"
-      ]
-    },
     "sequential-thinking": {
       "_origin": "modelcontextprotocol/servers (MIT)",
-      "_purpose": "Structured multi-step reasoning for the planner_critique_node CoVe pass. Reduces tool-call rounds without dropping rigor.",
+      "_purpose": "Structured multi-step reasoning for planner_critique_node CoVe pass. No credentials; no project filesystem access.",
       "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
-      ]
-    },
-    "github": {
-      "_origin": "github/github-mcp-server (Apache-2.0)",
-      "_purpose": "PR review, commit chain audit, BUILD_PLAN task ID correlation across the W#.#.# task surface. Token injected via env only.",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      }
-    },
-    "mitre-attack": {
-      "_origin": "stoyky/mitre-attack-mcp (MIT)",
-      "_purpose": "Technique lookup + sub-technique validation (CLAUDE.md §3.5 regex). Hypothesis MITRE mapping; negative-hypothesis deny-list checking.",
-      "command": "uvx",
-      "args": [
-        "mitre-attack-mcp"
-      ]
-    },
-    "context7": {
-      "_origin": "upstash/context7-mcp (MIT)",
-      "_purpose": "Up-to-date library / API docs lookup for planning-engineer + eval-engineer (Pydantic v2, LangGraph, Inspect AI, Anthropic SDK). Stateless; no credentials.",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
       ]
     }
   }

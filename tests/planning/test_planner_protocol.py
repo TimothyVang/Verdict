@@ -1,53 +1,55 @@
-"""RED test for W1.G.5 — Planner Protocol + CloudPlanner + LocalPlanner.
+from __future__ import annotations
 
-Test contracts:
-  1. test_protocol_returns_investigation_plan — Planner protocol has a
-     single method plan() returning an InvestigationPlan.
-  2. test_planner_bound_at_gateway_init — mode detection happens in
-     runtime/mode_detect.py via detect_mode(), NOT in planner_node.
-     The planner is instantiated with the detected mode at gateway_init.
-"""
-
-import pytest
+from verdict.planning.planner import CloudPlanner, LocalPlanner, Planner, PlannerInput
+from verdict.runtime.mode_detect import Mode, bind_planner_at_gateway_init
+from verdict.schemas.plan import Hypothesis, InvestigationPlan
 
 
-class TestPlannerProtocol:
-    """W1.G.5.a — RED test for Planner Protocol contract."""
+class ConcretePlanner:
+    def plan(self, request: PlannerInput) -> InvestigationPlan:
+        return InvestigationPlan(
+            plan_id="plan-001",
+            case_id=request.case_id,
+            positive_hypotheses=[
+                Hypothesis(
+                    id="h_positive_001",
+                    polarity="positive",
+                    mitre_technique="T1059",
+                    artifact_families=["evtx"],
+                    success_criteria="Evidence consistent with command execution.",
+                ),
+            ],
+            negative_hypotheses=[
+                Hypothesis(
+                    id="h_negative_001",
+                    polarity="negative",
+                    mitre_technique="T1014",
+                    artifact_families=["process_memory"],
+                    success_criteria="No DKOM divergence between process listings.",
+                ),
+            ],
+            tool_budget=4,
+            success_criteria="Resolve planner protocol contract.",
+            planner_cot_gzip_hash="c" * 64,
+        )
 
-    def test_protocol_returns_investigation_plan(self):
-        """Planner.plan() method returns InvestigationPlan.
 
-        RED assertion: Planner must be a Protocol with a single method
-        plan(evidence_manifest: EvidenceManifest) -> InvestigationPlan.
-        """
-        from verdict.planning.planner import Planner
+def test_protocol_returns_investigation_plan() -> None:
+    planner: Planner = ConcretePlanner()
+    plan = planner.plan(
+        PlannerInput(
+            case_id="case-001",
+            evidence_summary="memory image with process anomalies",
+            playbook_prompt="First move: windows.info",
+        ),
+    )
 
-        # Assert Planner is importable
-        assert Planner is not None
+    assert isinstance(plan, InvestigationPlan)
+    assert plan.case_id == "case-001"
+    assert plan.negative_hypotheses
 
-        # Assert it has the plan method (Protocol contract)
-        assert hasattr(Planner, "plan") or hasattr(Planner, "__protocol_attrs__")
 
-        # The concrete implementations (CloudPlanner, LocalPlanner) must exist
-        from verdict.planning.planner import CloudPlanner, LocalPlanner
-
-        assert CloudPlanner is not None
-        assert LocalPlanner is not None
-
-    def test_planner_bound_at_gateway_init(self):
-        """Mode detection lives in runtime/mode_detect.py, not planner_node.
-
-        RED assertion: There must be a detect_mode() function in
-        verdict/runtime/mode_detect.py that returns the operational mode
-        (CLOUD, AIRGAP, DUAL). The planner is instantiated with the
-        detected mode at gateway initialization time, NOT dynamically
-        switched inside planner_node.
-        """
-        from verdict.runtime.mode_detect import detect_mode
-
-        # Assert detect_mode exists and is callable
-        assert callable(detect_mode)
-
-        # Assert it returns a valid mode string
-        mode = detect_mode()
-        assert mode in ("cloud", "airgap", "dual")
+def test_planner_bound_at_gateway_init() -> None:
+    assert isinstance(bind_planner_at_gateway_init(Mode.CLOUD), CloudPlanner)
+    assert isinstance(bind_planner_at_gateway_init(Mode.AIRGAP), LocalPlanner)
+    assert isinstance(bind_planner_at_gateway_init(Mode.DUAL), CloudPlanner)

@@ -1,0 +1,33 @@
+process_baselines:
+  - process_name: svchost.exe
+    expected_parent_names: [services.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32", "C:\\Windows\\SysWOW64"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM", "LOCAL SERVICE", "NETWORK SERVICE"]
+  - process_name: lsass.exe
+    expected_parent_names: [wininit.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]
+  - process_name: csrss.exe
+    expected_parent_names: [smss.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]
+  - process_name: winlogon.exe
+    expected_parent_names: [smss.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]
+  - process_name: services.exe
+    expected_parent_names: [wininit.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]
+  - process_name: wininit.exe
+    expected_parent_names: [smss.exe]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]
+  - process_name: explorer.exe
+    expected_parent_names: [userinit.exe]
+    expected_path_prefixes: ["C:\\Windows"]
+    expected_user_names: ["INTERACTIVE"]
+  - process_name: smss.exe
+    expected_parent_names: [System]
+    expected_path_prefixes: ["C:\\Windows\\System32"]
+    expected_user_names: ["NT AUTHORITY\\SYSTEM"]

@@ -1,0 +1,64 @@
+name: Claude PR Review
+
+# Auto-reviews every PR (including draft PRs the swarm opens) against
+# CLAUDE.md §3 hard rules. Complements the local TaskCompleted hook
+# (.claude/hooks/task-completed.sh) by running on Anthropic's runner —
+# catches what local Sonnet reviewer + Haiku auditor miss.
+#
+# Setup (one-time):
+#   1. Repo admin: from a Claude Code session, run `/install-github-app`.
+#      Accepts the Anthropic GitHub app + creates the ANTHROPIC_API_KEY
+#      secret. (Or follow manual setup at
+#      https://github.com/anthropics/claude-code-action.)
+#   2. Confirm `Settings → Secrets and variables → Actions` shows
+#      ANTHROPIC_API_KEY.
+#   3. Merge this workflow file. First PR opened after that triggers it.
+#
+# Authority: docs/AGENT_SWARM.md §8 (hard-rule enforcement matrix),
+# CLAUDE.md §3.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # Skip if the PR was opened from a fork — runner secrets aren't
+    # exposed to forked PRs anyway, and the swarm-internal workflow
+    # only needs to gate first-party PRs.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history so the auditor can scan commit subjects
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review this pull request against VERDICT's CLAUDE.md §3 hard rules.
+
+            BLOCKING (request changes if violated):
+              - §3.1 Evidence integrity: any write to /evidence/, missing per-invocation hash, missing per-output-file SHA-256.
+              - §3.2 Multi-artifact corroboration: Finding.artifact_paths / artifact_classes < 2; execution-class MITRE techniques (T1059, T1106, T1204, T1218, T1543, T1547) without ≥2 distinct ArtifactClass values.
+              - §3.7 TDD + commits: missing [W#.#.#] task ID in commit subject; --no-verify, --no-gpg-sign, or --amend in reflog; Claude watermarks (Co-Authored-By: Claude, 🤖 footer, "Generated with Claude Code"); unsigned commits.
+              - §3.8 Forbidden deps: Daytona, REMnux MCP linked, Llama 4, Gemma 3, Modal, LangSmith, Braintrust, Arize Phoenix, AutoGen v0.4, Microsoft Agent Framework, AGPL clean-room rewrites. Any new dep that is not MIT or Apache-2.0.
+              - §3.10 Mocks of VERDICT internals: Mock*/Fake*/Stub*/Dummy* against verdict.*; unittest.mock.patch / MagicMock against verdict.*; httpx_mock / responses / vcr standing in for Anthropic / SGLang / Langfuse. Patching a third-party library at the system boundary in a single targeted test is OK.
+              - §3.9 Credentials: API keys, OAuth tokens, or bearer tokens in committed files; ${VAR} substitution missing.
+
+            ADVISORY (note as comment, do not block):
+              - §3.5 MITRE precision: bare T1055 instead of T1055.012 when sub-technique is determinable. Bare T1014, T1106, T1497 are OK if no sub-technique exists upstream.
+              - §3.6 Epistemic vocabulary: "X did this" attribution instead of "evidence consistent with X"; missing or weak negative hypothesis.
+
+            Post your findings as PR review comments with file:line references and the rule ID. Use approve / request_changes / comment per the action permissions. Do NOT push commits or modify the PR — review only.
+          claude_args: |
+            --max-turns 8
+            --model claude-haiku-4-5
+            --append-system-prompt "You are a forensic-discipline reviewer for VERDICT. Be terse, cite rule IDs, file:line. No filler."
