@@ -34,6 +34,17 @@ def test_append_only_latest_version(tmp_path):
     assert latest.version == 2
 
 
+def test_latest_entry_ignores_unapproved_versions(tmp_path):
+    store = MemoryStore(tmp_path / "memory.db")
+    store.put_entry(_entry(version=1))
+    store.put_entry(_entry(version=2).model_copy(update={"approval_state": ApprovalState.PROPOSED}))
+
+    latest = store.get_latest_entry("pat-01")
+    assert latest is not None
+    assert latest.version == 1
+    assert latest.approval_state == ApprovalState.APPROVED
+
+
 def test_store_update_proposal(tmp_path):
     store = MemoryStore(tmp_path / "memory.db")
     proposal = MemoryUpdateProposal(
