@@ -68,16 +68,17 @@ class MemoryStore:
             )
 
     def get_latest_entry(self, memory_id: str) -> MemoryEntry | None:
-        """Return latest version for a memory_id."""
+        """Return latest approved version for a memory_id."""
         with self._connect() as conn:
             row = conn.execute(
                 """
                 SELECT payload_json FROM memory_versions
                 WHERE memory_id = ?
+                  AND approval_state = ?
                 ORDER BY version DESC
                 LIMIT 1
                 """,
-                (memory_id,),
+                (memory_id, ApprovalState.APPROVED.value),
             ).fetchone()
         if row is None:
             return None
