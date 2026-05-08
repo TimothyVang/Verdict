@@ -119,6 +119,13 @@ Microsandbox escape is an accepted v1 residual risk. Defense in depth comes from
 
 ## Accuracy And Evidence
 
+Current eval gate status: `inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py` exists only as
+fail-closed scaffolding. Each task refuses to construct an eval unless real evidence exists under
+`inspect_ai/ground_truth/` and then refuses to proceed until the task is wired to real VERDICT
+execution. `.github/workflows/eval-hallucination-gate.yml` fails with `scorer_not_implemented`
+until `inspect_ai/scorers/hallucination_rate.py` lands; CI must not publish a fake passing
+hallucination score.
+
 Per-mode metrics:
 
 | Mode | Cases | Hallucination rate | Findings precision | Findings recall | MITRE sub-technique precision | Contested resolution rate |

@@ -81,7 +81,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - Tier-1 examiner caveats encoded in schema validators (Amcache LastModified ≠ execution; ShimCache order changed Win 8.1; etc.)
 - Artifact-pair corroboration: Finding requires ≥2 artifact_classes for execution claims (FOR500)
 - MITRE sub-technique granularity required (T1055.012 not just T1055)
-- Inspect AI per-mode scorers: hallucination_rate, findings_precision, findings_recall, mitre_subtechnique_precision, negative_hypothesis_quality
+- Inspect AI per-mode scorers: hallucination_rate, findings_precision, findings_recall, mitre_subtechnique_precision, negative_hypothesis_quality. Current scaffold fails closed until real evidence and scorer implementations land; no CI job may publish a placeholder hallucination score.
 
 **Demo segment:** air-gap hero beats ⓵ (DKOM divergence → automatic T1014), ⓶ (Hunt Evil masquerade → T1036.005), ⓷ (Amcache caveat acknowledgment in rationale).
 

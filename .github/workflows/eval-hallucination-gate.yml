@@ -25,12 +25,14 @@ jobs:
 
       - name: Fail closed until hallucination scorer lands
         run: |
-          if [ ! -f inspect_ai/tasks/verdict_eval_cloud.py ]; then
-            echo "::error::scorer_not_implemented: verdict_eval_cloud.py is missing"
-            exit 1
-          fi
-          if ! grep -R "hallucination_rate" inspect_ai -n >/dev/null 2>&1; then
-            echo "::error::scorer_not_implemented: hallucination_rate scorer is missing"
+          for task in inspect_ai/tasks/verdict_eval_cloud.py inspect_ai/tasks/verdict_eval_airgap.py inspect_ai/tasks/verdict_eval_dual.py; do
+            if [ ! -f "$task" ]; then
+              echo "::error::scorer_not_implemented: $task is missing"
+              exit 1
+            fi
+          done
+          if [ ! -f inspect_ai/scorers/hallucination_rate.py ]; then
+            echo "::error::scorer_not_implemented: inspect_ai/scorers/hallucination_rate.py is missing"
             exit 1
           fi
 
@@ -39,3 +41,15 @@ jobs:
 
       - name: Run hallucination scorer
         run: uv run inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate
+
+      - name: Verify air-gap evaluator prerequisites
+        run: uv run verdict doctor --mode airgap
+
+      - name: Run air-gap hallucination scorer
+        run: uv run inspect eval inspect_ai/tasks/verdict_eval_airgap.py --score hallucination_rate
+
+      - name: Verify dual evaluator prerequisites
+        run: uv run verdict doctor --mode dual
+
+      - name: Run dual hallucination scorer
+        run: uv run inspect eval inspect_ai/tasks/verdict_eval_dual.py --score hallucination_rate
