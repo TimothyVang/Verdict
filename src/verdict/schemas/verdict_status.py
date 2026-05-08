@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class VerdictStatus(str, Enum):
+class VerdictStatus(StrEnum):
     """Canonical forensic verdict status values."""
 
     VETTED_CLOUD = "VETTED_CLOUD"

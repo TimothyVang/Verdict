@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from verdict.schemas.memory import ApprovalState, MemoryEntry, MemoryUpdateProposal
@@ -16,10 +18,18 @@ class MemoryStore:
         self.db_path = str(db_path)
         self._init_db()
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
     def _init_db(self) -> None:
         with self._connect() as conn:
@@ -55,7 +65,9 @@ class MemoryStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO memory_versions (memory_id, version, approval_state, payload_json, created_at)
+                INSERT INTO memory_versions (
+                    memory_id, version, approval_state, payload_json, created_at
+                )
                 VALUES (?, ?, ?, ?, ?)
                 """,
                 (
@@ -114,7 +126,10 @@ class MemoryStore:
         with self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO memory_update_proposals (proposal_id, memory_id, operation, approval_state, payload_json, approver, approved_at)
+                INSERT INTO memory_update_proposals (
+                    proposal_id, memory_id, operation, approval_state,
+                    payload_json, approver, approved_at
+                )
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (

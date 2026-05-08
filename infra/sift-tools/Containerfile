@@ -1,0 +1,31 @@
+FROM python:3.11-slim-bookworm
+
+ARG VOLATILITY3_VERSION=2.28.0
+
+ENV PIP_NO_CACHE_DIR=1 \
+    HOME=/tmp \
+    XDG_CACHE_HOME=/tmp/.cache \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        sleuthkit \
+        tini; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    python -m pip install --upgrade pip; \
+    python -m pip install "volatility3==${VOLATILITY3_VERSION}"; \
+    ln -sf "$(command -v vol)" /usr/local/bin/vol3
+
+RUN set -eux; \
+    vol3 -h >/tmp/vol3-help.txt; \
+    mmls -V; \
+    fsstat -V; \
+    fls -V
+
+USER nobody:nogroup
+CMD ["vol3", "-h"]

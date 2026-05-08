@@ -10,7 +10,8 @@ class ModeLockedError(RuntimeError):
     def __init__(self, *, case_id: str, original_mode: Mode, detected_mode: Mode) -> None:
         super().__init__(
             f"Case {case_id} was initialized in mode={original_mode.value}; "
-            f"current environment is mode={detected_mode.value}. To re-run under the new mode, use: "
+            f"current environment is mode={detected_mode.value}. "
+            "To re-run under the new mode, use: "
             f"verdict reverify {case_id} --mode {detected_mode.value}",
         )
         self.exit_code = 2

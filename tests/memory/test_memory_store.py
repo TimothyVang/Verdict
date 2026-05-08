@@ -1,13 +1,19 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from verdict.memory.store import MemoryStore
-from verdict.schemas.memory import ApprovalState, MemoryEntry, MemoryOperation, MemoryType, MemoryUpdateProposal
+from verdict.schemas.memory import (
+    ApprovalState,
+    MemoryEntry,
+    MemoryOperation,
+    MemoryType,
+    MemoryUpdateProposal,
+)
 
 
 def _entry(memory_id: str = "pat-01", version: int = 1, confidence: float = 0.7, scope: str = "windows") -> MemoryEntry:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     return MemoryEntry(
         memory_id=memory_id,
         type=MemoryType.PATTERN,

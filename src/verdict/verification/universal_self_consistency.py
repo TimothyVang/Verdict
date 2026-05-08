@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections import Counter, defaultdict
 import re
+from collections import Counter, defaultdict
 
 from pydantic import BaseModel
 
@@ -56,7 +56,9 @@ class UniversalSelfConsistency:
         )
 
     def verify(self, candidates: list[VerificationCandidate]) -> VerificationResult:
-        grouped: dict[tuple[tuple[str, ...], str | None], list[VerificationCandidate]] = defaultdict(list)
+        grouped: dict[
+            tuple[tuple[str, ...], str | None], list[VerificationCandidate]
+        ] = defaultdict(list)
         for candidate in candidates:
             grouped[(candidate.artifact_paths, candidate.mitre_technique)].append(candidate)
 

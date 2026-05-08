@@ -8,12 +8,12 @@ updates advance version while preserving lineage and auditability.
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class MemoryType(str, Enum):
+class MemoryType(StrEnum):
     """Allowed memory layers for DFIR workflows."""
 
     CASE = "case"
@@ -22,7 +22,7 @@ class MemoryType(str, Enum):
     META = "meta"
 
 
-class ApprovalState(str, Enum):
+class ApprovalState(StrEnum):
     """Promotion state for memory entries."""
 
     PROPOSED = "proposed"
@@ -30,7 +30,7 @@ class ApprovalState(str, Enum):
     REJECTED = "rejected"
 
 
-class MemoryOperation(str, Enum):
+class MemoryOperation(StrEnum):
     """Permitted mutation operations for controlled self-evolution."""
 
     STRENGTHEN = "strengthen"
@@ -61,11 +61,11 @@ class MemoryEntry(BaseModel):
     lineage: str | None = None
 
     @model_validator(mode="after")
-    def validate_memory_constraints(self) -> "MemoryEntry":
+    def validate_memory_constraints(self) -> MemoryEntry:
         """Enforce DFIR constraints by memory layer."""
-        if self.type in (MemoryType.TECHNIQUE, MemoryType.PATTERN, MemoryType.META):
-            if not self.evidence_refs:
-                raise ValueError("persistent memory requires at least one evidence reference")
+        persistent_type = self.type in (MemoryType.TECHNIQUE, MemoryType.PATTERN, MemoryType.META)
+        if persistent_type and not self.evidence_refs:
+            raise ValueError("persistent memory requires at least one evidence reference")
 
         if self.expiry is not None and self.expiry <= self.created_at:
             raise ValueError("expiry must be after created_at")

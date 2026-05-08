@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field, model_validator
@@ -20,7 +20,7 @@ AVAILABLE_CAVEAT_TRIGGERS = {
 }
 
 
-class ReviewState(str, Enum):
+class ReviewState(StrEnum):
     """Human review state, separate from forensic verdict status."""
 
     DRAFT = "DRAFT"
@@ -48,9 +48,11 @@ class Finding(BaseModel):
 
     @model_validator(mode="after")
     def _forensic_corroboration(self) -> Finding:
-        if self.mitre_technique and self.mitre_technique.startswith(EXECUTION_TECHNIQUE_PREFIXES):
-            if len(set(self.artifact_classes)) < 2:
-                raise ValueError("execution claims require two distinct artifact classes")
+        is_execution = self.mitre_technique and self.mitre_technique.startswith(
+            EXECUTION_TECHNIQUE_PREFIXES
+        )
+        if is_execution and len(set(self.artifact_classes)) < 2:
+            raise ValueError("execution claims require two distinct artifact classes")
 
         acknowledged = set(self.caveats_acknowledged)
         for artifact_class, required_caveat in AVAILABLE_CAVEAT_TRIGGERS.items():

@@ -1,6 +1,6 @@
 """Tests for DFIR self-evolving memory schemas."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
@@ -9,7 +9,7 @@ from verdict.schemas.memory import ApprovalState, MemoryEntry, MemoryType
 
 
 def _base_memory_entry(**overrides):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "memory_id": "pat-2026-0001",
         "type": MemoryType.PATTERN,
@@ -43,6 +43,6 @@ def test_case_memory_can_be_ephemeral_without_evidence_refs():
 
 
 def test_expiry_must_be_after_created_at():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     with pytest.raises(ValidationError):
         MemoryEntry(**_base_memory_entry(created_at=now, expiry=now))

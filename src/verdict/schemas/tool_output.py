@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from hashlib import sha256
 from pathlib import Path
 from typing import Self
 
 from blake3 import blake3
 from pydantic import BaseModel
-from hashlib import sha256
 
 from verdict.schemas.version import SCHEMA_VERSION
 

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import hmac
 import json
+from hashlib import sha256
 from typing import TYPE_CHECKING
 
 import pytest
 
 from verdict.graph.wrappers.ledger_emitter import LedgerEmitter
-from verdict.ledger.writer import InvalidLedgerChainError, LedgerWriter
+from verdict.ledger.writer import InvalidLedgerChainError, LedgerWriter, verify_ledger_chain
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,3 +36,28 @@ def test_ledger_emitter_writes_and_verifies(tmp_path: Path) -> None:
 
     assert entry["event_type"] == "tool_call"
     assert entry["prev_entry_hash"] is None
+
+
+def test_verify_ledger_chain_rejects_valid_row_with_wrong_previous_hash(tmp_path: Path) -> None:
+    key = b"k" * 32
+    ledger_path = tmp_path / "ledger.jsonl"
+    writer = LedgerWriter(ledger_path, hmac_key=key)
+    writer.write({"event_type": "case_init", "case_id": "case-001", "payload": {}})
+    writer.write({"event_type": "tool_call", "case_id": "case-001", "payload": {}})
+
+    first, second = (json.loads(line) for line in ledger_path.read_text().splitlines())
+    second["prev_entry_hash"] = "0" * 64
+    _resign_entry(second, key)
+    ledger_path.write_text("\n".join(json.dumps(entry, sort_keys=True) for entry in [first, second]))
+
+    with pytest.raises(InvalidLedgerChainError, match="prev_entry_hash"):
+        verify_ledger_chain(ledger_path, hmac_key=key)
+
+
+def _resign_entry(entry: dict, key: bytes) -> None:
+    unsigned = {
+        field: value for field, value in entry.items() if field not in {"entry_hash", "hmac_sig"}
+    }
+    entry_hash = sha256(json.dumps(unsigned, sort_keys=True).encode()).hexdigest()
+    entry["entry_hash"] = entry_hash
+    entry["hmac_sig"] = hmac.new(key, entry_hash.encode(), sha256).hexdigest()

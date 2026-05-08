@@ -4,7 +4,6 @@ from pathlib import Path
 
 from yaml import safe_load
 
-
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 
 

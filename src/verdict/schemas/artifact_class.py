@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class ArtifactClass(str, Enum):
+class ArtifactClass(StrEnum):
     """Evidence artifact classes used for corroborating findings."""
 
     PREFETCH = "prefetch"

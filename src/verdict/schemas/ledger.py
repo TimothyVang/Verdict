@@ -21,6 +21,7 @@ LedgerEventType = Literal[
     "evidence_hash_recheck",
     "sandbox_failure",
     "planner_cot",
+    "case_conclusion",
 ]
 
 

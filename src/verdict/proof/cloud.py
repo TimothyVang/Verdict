@@ -8,8 +8,6 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 from verdict.ledger.writer import LedgerWriter
 from verdict.planning.planner import CloudPlanner, PlannerInput, parse_investigation_plan
 
@@ -46,7 +44,7 @@ def run_cloud_proof(
     evidence_summary_file: Path | None,
     case_id: str,
 ) -> int:
-    load_dotenv()
+    _load_dotenv_if_present()
     run = create_proof_run(proof_root)
     _write_environment(run)
 
@@ -159,12 +157,24 @@ def _write_if_missing(path: Path, text: str) -> None:
         path.write_text(text, encoding="utf-8")
 
 
+def _load_dotenv_if_present(path: Path = Path(".env")) -> None:
+    if not path.is_file():
+        return
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 def _proof_readme() -> str:
     return """# VERDICT Proof Runs
 
 This folder contains visual and textual proof artifacts for v0 demo runs.
 
-v0 scope is cloud-only Claude Agent SDK. SGLang, GPU, air-gap, and dual-mode proof are postponed until the Claude path works.
+v0 scope is cloud-only Claude Agent SDK. SGLang, GPU, air-gap, and dual-mode proof are
+postponed until the Claude path works.
 """
 
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class CaveatID(str, Enum):
+class CaveatID(StrEnum):
     """Tier-1 forensic caveat identifiers enforced by schema validators."""
 
     AMCACHE_LASTMODIFIED_NOT_EXEC = "AMCACHE_LASTMODIFIED_NOT_EXEC"

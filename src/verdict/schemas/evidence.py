@@ -36,6 +36,6 @@ class EvidenceManifest(BaseModel):
 
 
 def _manifest_hash(items: list[EvidenceItem]) -> str:
-    pairs = sorted((str(item.path), item.sha256_at_init) for item in items)
+    pairs = sorted((item.path.as_posix(), item.sha256_at_init) for item in items)
     payload = b"\n".join(path.encode() + b"\x00" + sha256.encode() for path, sha256 in pairs)
     return blake3(payload).hexdigest()

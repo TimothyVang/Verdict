@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from shutil import which
 
 import pytest
 
@@ -10,6 +11,8 @@ from verdict.ledger.hmac_key import load_or_create_hmac_key
 def test_gpg_path_when_dev_tpmrm0_absent(tmp_path: Path) -> None:
     if Path("/dev/tpmrm0").exists():
         pytest.fail("Host has /dev/tpmrm0; run TPM-path coverage instead of fallback coverage")
+    if which("gpg") is None:
+        pytest.skip("gpg binary is required to exercise encrypted HMAC-key fallback")
 
     key_path = tmp_path / "key.gpg"
     gnupg_home = tmp_path / "gnupg"

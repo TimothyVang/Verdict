@@ -4,13 +4,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from verdict.graph.nodes import (
-    comprehension_gate_node,
     GraphState,
+    comprehension_gate_node,
     executor_fanout_node,
     finalize_node,
+    pivot_node,
     planner_critique_node,
     planner_node,
-    pivot_node,
     quorum_node,
     replan_node,
 )

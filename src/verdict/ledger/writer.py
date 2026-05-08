@@ -47,12 +47,25 @@ class LedgerWriter:
         return signed
 
     def last_entry(self) -> dict[str, Any]:
-        lines = self.ledger_path.read_text().splitlines()
-        if not lines:
-            raise InvalidLedgerChainError("ledger is empty")
-        entry = json.loads(lines[-1])
-        _verify_entry(entry, self.hmac_key)
-        return entry
+        entries = verify_ledger_chain(self.ledger_path, hmac_key=self.hmac_key)
+        return entries[-1]
+
+
+def verify_ledger_chain(ledger_path: Path, *, hmac_key: bytes) -> list[dict[str, Any]]:
+    lines = ledger_path.read_text().splitlines()
+    if not lines:
+        raise InvalidLedgerChainError("ledger is empty")
+
+    entries: list[dict[str, Any]] = []
+    previous_hash: str | None = None
+    for line in lines:
+        entry = json.loads(line)
+        _verify_entry(entry, hmac_key)
+        if entry.get("prev_entry_hash") != previous_hash:
+            raise InvalidLedgerChainError("ledger prev_entry_hash chain mismatch")
+        entries.append(entry)
+        previous_hash = entry["entry_hash"]
+    return entries
 
 
 def _hash_payload(entry: dict[str, Any]) -> str:
