@@ -88,6 +88,22 @@ def test_caveats_acknowledged_default_empty() -> None:
     assert finding.caveats_acknowledged == []
 
 
+def test_finding_rejects_malformed_mitre_technique() -> None:
+    with pytest.raises(ValidationError, match="mitre_technique"):
+        Finding(
+            finding_id="finding-001",
+            case_id="case-001",
+            plan_id="plan-001",
+            hypothesis_ids=["h_bad_mitre_001"],
+            artifact_paths=[Path("/case/artifacts/a.json"), Path("/case/artifacts/b.json")],
+            artifact_classes=[ArtifactClass.PROCESS_MEMORY, ArtifactClass.YARA_HIT],
+            mitre_technique="1055.012",
+            evidence_hashes={Path("/case/artifacts/a.json"): "a" * 64},
+            rationale="Malformed MITRE technique identifiers must not validate on findings.",
+            status="VETTED_AIRGAP",
+        )
+
+
 @pytest.mark.parametrize("mitre_technique", ["T1059", "T1106", "T1204", "T1218", "T1543", "T1547"])
 def test_execution_claim_requires_two_classes(mitre_technique: str) -> None:
     with pytest.raises(ValidationError):
@@ -112,6 +128,7 @@ def test_execution_claim_requires_two_classes(mitre_technique: str) -> None:
         (ArtifactClass.SHIMCACHE, CaveatID.SHIMCACHE_ORDER_CHANGED_WIN81),
         (ArtifactClass.PREFETCH, CaveatID.PREFETCH_SSD_DISABLED),
         (ArtifactClass.MFT, CaveatID.MFT_SI_STOMPABLE),
+        (ArtifactClass.USNJRNL, CaveatID.USNJRNL_WRAPS),
         (ArtifactClass.SYSMON_1, CaveatID.SYSMON_PROCESSGUID_OVER_PID),
     ],
 )
@@ -131,5 +148,60 @@ def test_available_caveat_required_when_artifact_class_cited(
             mitre_technique="T1014",
             evidence_hashes={Path("/case/artifacts/a.json"): "a" * 64},
             rationale="Cited caveat-triggering artifacts require explicit caveat acknowledgement.",
+            status="VETTED_AIRGAP",
+        )
+
+
+@pytest.mark.parametrize("logon_type", [3, 10])
+def test_evtx_4624_type_3_or_10_requires_logon_caveat(logon_type: int) -> None:
+    with pytest.raises(ValidationError, match=CaveatID.LOGON_TYPE_3_VS_10.value):
+        Finding(
+            finding_id="finding-001",
+            case_id="case-001",
+            plan_id="plan-001",
+            hypothesis_ids=["h_logon_001"],
+            artifact_paths=[Path("/case/artifacts/security.json"), Path("/case/artifacts/net.json")],
+            artifact_classes=[ArtifactClass.EVTX_4624, ArtifactClass.NETWORK],
+            caveats_acknowledged=[],
+            mitre_technique="T1021.001",
+            evtx_4624_logon_types=[logon_type],
+            evidence_hashes={Path("/case/artifacts/security.json"): "a" * 64},
+            rationale="Logon type 3 and 10 claims require explicit caveat acknowledgement.",
+            status="VETTED_AIRGAP",
+        )
+
+
+def test_evtx_4624_other_logon_type_does_not_require_type_3_vs_10_caveat() -> None:
+    finding = Finding(
+        finding_id="finding-001",
+        case_id="case-001",
+        plan_id="plan-001",
+        hypothesis_ids=["h_logon_001"],
+        artifact_paths=[Path("/case/artifacts/security.json"), Path("/case/artifacts/net.json")],
+        artifact_classes=[ArtifactClass.EVTX_4624, ArtifactClass.NETWORK],
+        caveats_acknowledged=[],
+        mitre_technique="T1021.001",
+        evtx_4624_logon_types=[2],
+        evidence_hashes={Path("/case/artifacts/security.json"): "a" * 64},
+        rationale="Non-network and non-RDP 4624 logon types do not trigger the type 3 vs 10 caveat.",
+        status="VETTED_AIRGAP",
+    )
+
+    assert finding.evtx_4624_logon_types == [2]
+
+
+def test_evtx_4624_omitted_logon_type_requires_conservative_caveat() -> None:
+    with pytest.raises(ValidationError, match=CaveatID.LOGON_TYPE_3_VS_10.value):
+        Finding(
+            finding_id="finding-001",
+            case_id="case-001",
+            plan_id="plan-001",
+            hypothesis_ids=["h_logon_001"],
+            artifact_paths=[Path("/case/artifacts/security.json"), Path("/case/artifacts/net.json")],
+            artifact_classes=[ArtifactClass.EVTX_4624, ArtifactClass.NETWORK],
+            caveats_acknowledged=[],
+            mitre_technique="T1021.001",
+            evidence_hashes={Path("/case/artifacts/security.json"): "a" * 64},
+            rationale="Omitted 4624 logon type data must not bypass caveat enforcement.",
             status="VETTED_AIRGAP",
         )
