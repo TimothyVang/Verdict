@@ -27,6 +27,15 @@ class MicrosandboxRunResult:
     rootfs_sha256: str
 
 
+@dataclass(frozen=True)
+class MicrosandboxImageReady:
+    ready: bool
+    image: str
+    reason: str
+    microsandbox_version: str | None = None
+    rootfs_sha256: str | None = None
+
+
 def microsandbox_status() -> MicrosandboxStatus:
     binary = which("msb") or which("microsandbox")
     if binary is not None:
@@ -79,8 +88,9 @@ def run_microsandbox_command(
     image: str,
     command: list[str],
     timeout_seconds: int = 120,
+    status: MicrosandboxStatus | None = None,
 ) -> MicrosandboxRunResult:
-    status = microsandbox_status()
+    status = microsandbox_status() if status is None else status
     if status.binary is None:
         raise RuntimeError("microsandbox binary is required for forensic tool execution")
     result = _run_msb(
@@ -104,6 +114,64 @@ def run_microsandbox_command(
         exit_code=result.returncode,
         microsandbox_version=_microsandbox_version(status),
         rootfs_sha256=_image_sha256(image),
+    )
+
+
+def check_microsandbox_image_ready(
+    image: str,
+    *,
+    status: MicrosandboxStatus | None = None,
+    timeout_seconds: int = 120,
+) -> MicrosandboxImageReady:
+    try:
+        rootfs_sha256 = _image_sha256(image)
+    except ValueError as exc:
+        return MicrosandboxImageReady(ready=False, image=image, reason=str(exc))
+
+    status = microsandbox_status() if status is None else status
+    if status.binary is None:
+        return MicrosandboxImageReady(
+            ready=False,
+            image=image,
+            reason="microsandbox binary is required for image readiness checks",
+            rootfs_sha256=rootfs_sha256,
+        )
+
+    try:
+        result = run_microsandbox_command(
+            image=image,
+            command=[
+                "sh",
+                "-lc",
+                "test -r /etc/os-release && command -v sh >/dev/null && printf READY",
+            ],
+            timeout_seconds=timeout_seconds,
+            status=status,
+        )
+    except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
+        return MicrosandboxImageReady(
+            ready=False,
+            image=image,
+            reason=str(exc),
+            rootfs_sha256=rootfs_sha256,
+        )
+
+    if result.exit_code != 0:
+        reason = (result.stderr or result.stdout).decode(errors="replace").strip()
+        return MicrosandboxImageReady(
+            ready=False,
+            image=image,
+            reason=reason or f"readiness command exited {result.exit_code}",
+            microsandbox_version=result.microsandbox_version,
+            rootfs_sha256=rootfs_sha256,
+        )
+
+    return MicrosandboxImageReady(
+        ready=True,
+        image=image,
+        reason="ready",
+        microsandbox_version=result.microsandbox_version,
+        rootfs_sha256=rootfs_sha256,
     )
 
 
@@ -174,6 +242,7 @@ def _windows_path_to_wsl(path: Path) -> str:
         ["wsl.exe", "wslpath", "-a", str(path)],
         capture_output=True,
         check=False,
+        env=_scrubbed_msb_env(os.environ),
         text=True,
         timeout=30,
     )
@@ -201,6 +270,7 @@ def _wsl_microsandbox_binary() -> str | None:
             ],
             capture_output=True,
             check=False,
+            env=_scrubbed_msb_env(os.environ),
             text=True,
             timeout=30,
         )

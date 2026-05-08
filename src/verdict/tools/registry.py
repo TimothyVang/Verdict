@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from shutil import which
-
 from verdict.tools.external import ExternalToolSpec
 
 TOOL_SPECS: dict[str, ExternalToolSpec] = {
@@ -48,10 +46,7 @@ TOOL_SPECS: dict[str, ExternalToolSpec] = {
 
 
 def available_tools() -> dict[str, bool]:
-    return {
-        name: any(which(candidate) for candidate in spec.executable_candidates)
-        for name, spec in TOOL_SPECS.items()
-    }
+    return {name: False for name in TOOL_SPECS}
 
 
 def microsandbox_command(
