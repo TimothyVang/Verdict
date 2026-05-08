@@ -169,11 +169,13 @@ This codebase is built to be navigated by an LLM coding agent. [`CLAUDE.md`](CLA
    git clone https://github.com/TimothyVang/Verdict.git && cd Verdict
    ```
 2. **Open the repo in your LLM agent.** It will auto-read [`CLAUDE.md`](CLAUDE.md) — §3 contains the hard rules, §10 documents the CLI + commands, and §2 is the authority chain when docs disagree.
-3. **Bring up real backing services** before touching code that depends on them (no mocks — see §3.10). Install dependencies:
-   ```bash
-   uv sync --all-extras
-   ```
-   See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full toolchain table.
+3. **Bring up real backing services** before touching code that depends on them (no mocks — see §3.10). Install dependencies and hooks:
+    ```bash
+    bash scripts/install.sh
+    ```
+    Copy `.env.example` to `.env` and fill in the mode credential, HMAC, SGLang,
+    Langfuse, and `VERDICT_MICROSANDBOX_IMAGE` values that `verdict doctor` reports
+    as blockers. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full toolchain table.
 4. **Pick a task** from [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md) by `W#.#.#` ID. Filter for unchecked `[ ]` boxes; respect ownership (Tim / Beaver / Haley / KP). Surface the relevant `W#.#.#` task body to your agent so it has the failing-test spec and acceptance gate.
 5. **Run the TDD loop** per `CLAUDE.md` §3.7: failing test → RED → implement → GREEN → one commit per task ID, format `feat(scope): summary [W#.#.#]`. **Never** `--no-verify`, **never** `git commit --amend`, **never** mock VERDICT-internal modules (§3.10).
 6. **Commit and push manually** with the Conventional Commit format in `CLAUDE.md` §3.7. Do not bypass hooks, signing, or history rules.

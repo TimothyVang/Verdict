@@ -55,3 +55,11 @@ def test_pyproject_installs_pre_commit_tooling() -> None:
 
     dev_deps = pyproject["dependency-groups"]["dev"]
     assert any(dep.startswith("pre-commit") for dep in dev_deps)
+
+
+def test_pyproject_declares_gateway_and_eval_dependencies() -> None:
+    pyproject = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    deps = pyproject["project"]["dependencies"]
+    assert any(dep.startswith("fastmcp") for dep in deps)
+    assert any(dep.startswith("inspect-ai") for dep in deps)
