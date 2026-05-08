@@ -58,6 +58,149 @@ def test_runtime_gate_nonzero_can_be_classified_as_blocked() -> None:
     assert result.exit_code == 1
 
 
+def test_runtime_gate_nonzero_json_stdout_surfaces_blocker_codes() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(
+            sys.executable,
+            "-c",
+            (
+                "import json; "
+                "print(json.dumps({'blockers': "
+                "['mode_unconfigured', 'hmac_key_unconfigured']})); "
+                "raise SystemExit(1)"
+            ),
+        ),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+    summary = build_check.format_summary([result])
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "blocked: mode_unconfigured, hmac_key_unconfigured"
+    assert "blocked: mode_unconfigured, hmac_key_unconfigured" in summary
+
+
+def test_runtime_gate_nonzero_json_stderr_surfaces_blocker_codes() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(
+            sys.executable,
+            "-c",
+            (
+                "import json, sys; "
+                "print(json.dumps({'blockers': ['local_inference_unreachable']}), "
+                "file=sys.stderr); "
+                "raise SystemExit(1)"
+            ),
+        ),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "blocked: local_inference_unreachable"
+
+
+def test_runtime_gate_nonzero_invalid_json_keeps_exit_code_fallback() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(sys.executable, "-c", "print('not json'); raise SystemExit(7)"),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "command exited 7"
+
+
+def test_runtime_gate_scans_past_json_without_blockers() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(
+            sys.executable,
+            "-c",
+            (
+                "import json; "
+                "print(json.dumps({'ready': False})); "
+                "print(json.dumps({'blockers': ['mode_unconfigured']})); "
+                "raise SystemExit(1)"
+            ),
+        ),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "blocked: mode_unconfigured"
+
+
+def test_runtime_gate_prefers_json_with_blockers_over_later_json_without_blockers() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(
+            sys.executable,
+            "-c",
+            (
+                "import json; "
+                "print(json.dumps({'blockers': ['hmac_key_unconfigured']})); "
+                "print(json.dumps({'ready': False})); "
+                "raise SystemExit(1)"
+            ),
+        ),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "blocked: hmac_key_unconfigured"
+
+
+def test_runtime_gate_ignores_empty_blocker_lists() -> None:
+    gate = build_check.Gate(
+        name="runtime-prereq",
+        tier="runtime",
+        task_id="W1.A.5",
+        command=(
+            sys.executable,
+            "-c",
+            (
+                "import json, sys; "
+                "print(json.dumps({'blockers': []})); "
+                "print(json.dumps({'blockers': ['microsandbox_unavailable']}), file=sys.stderr); "
+                "raise SystemExit(1)"
+            ),
+        ),
+        timeout_seconds=5,
+        nonzero_status=build_check.Status.BLOCKED,
+    )
+
+    result = build_check.run_gate(gate)
+
+    assert result.status is build_check.Status.BLOCKED
+    assert result.detail == "blocked: microsandbox_unavailable"
+
+
 def test_policy_config_covers_src_verdict() -> None:
     result = build_check.check_policy_config(Path(".pre-commit-config.yaml"))
 

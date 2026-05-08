@@ -109,8 +109,11 @@ def run_gate(gate: Gate) -> CheckResult:
         )
 
     status = Status.PASS if completed.returncode == 0 else gate.nonzero_status
-    detail = (
-        "command exited 0" if status is Status.PASS else f"command exited {completed.returncode}"
+    detail = _command_detail(
+        status=status,
+        exit_code=completed.returncode,
+        stdout=completed.stdout,
+        stderr=completed.stderr,
     )
     return CheckResult(
         name=gate.name,
@@ -372,6 +375,45 @@ def _exit_code(results: list[CheckResult]) -> int:
     if any(result.status is Status.BLOCKED for result in results):
         return 2
     return 0
+
+
+def _command_detail(*, status: Status, exit_code: int, stdout: str, stderr: str) -> str:
+    if status is Status.PASS:
+        return "command exited 0"
+    if status is Status.BLOCKED:
+        blocker_codes = _blocker_codes_from_json_output(stdout, stderr)
+        if blocker_codes:
+            return "blocked: " + ", ".join(blocker_codes)
+    return f"command exited {exit_code}"
+
+
+def _blocker_codes_from_json_output(*outputs: str) -> list[str]:
+    for output in outputs:
+        for payload in _json_payloads_from_output(output):
+            blockers = payload.get("blockers")
+            if (
+                isinstance(blockers, list)
+                and bool(blockers)
+                and all(isinstance(code, str) for code in blockers)
+            ):
+                return blockers
+    return []
+
+
+def _json_payloads_from_output(output: str) -> list[dict[str, object]]:
+    stripped = output.strip()
+    if not stripped:
+        return []
+    candidates = [stripped, *reversed(stripped.splitlines())]
+    payloads: list[dict[str, object]] = []
+    for candidate in candidates:
+        try:
+            payload = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            payloads.append(payload)
+    return payloads
 
 
 def _decode_timeout_output(value: bytes | str | None) -> str:
