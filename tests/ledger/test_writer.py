@@ -9,6 +9,7 @@ import pytest
 
 from verdict.graph.wrappers.ledger_emitter import LedgerEmitter
 from verdict.ledger.writer import InvalidLedgerChainError, LedgerWriter, verify_ledger_chain
+from verdict.schemas.ledger import LedgerEntry
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -36,6 +37,7 @@ def test_ledger_emitter_writes_and_verifies(tmp_path: Path) -> None:
 
     assert entry["event_type"] == "tool_call"
     assert entry["prev_entry_hash"] is None
+    assert LedgerEntry.model_validate(entry).event_type == "tool_call"
 
 
 def test_verify_ledger_chain_rejects_valid_row_with_wrong_previous_hash(tmp_path: Path) -> None:

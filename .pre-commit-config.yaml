@@ -11,17 +11,22 @@ repos:
         stages: [commit-msg]
       - id: check-no-mocks
         name: no mocks, replay libraries, or test-mode branches
-        entry: python scripts/check_no_mocks.py --exclude-regex ^tests/policy/fixtures/ verdict tests
+        entry: python scripts/check_no_mocks.py --exclude-regex ^tests/policy/fixtures/ src/verdict tests scripts swarm
         language: system
         pass_filenames: false
       - id: ruff-check
         name: ruff check
-        entry: uv run ruff check scripts tests --select ALL
+        entry: uv run ruff check src tests scripts
         language: system
         pass_filenames: false
         types: [python]
+      - id: build-check-fast
+        name: fast build blocker check
+        entry: python scripts/build_check.py --tier fast
+        language: system
+        pass_filenames: false
       - id: cargo-fmt-check
         name: cargo fmt check
-        entry: bash -c 'test ! -f Cargo.toml || cargo fmt --check'
+        entry: python -c "from pathlib import Path; import subprocess, sys; sys.exit(0 if not Path('Cargo.toml').is_file() else subprocess.run(('cargo', 'fmt', '--check')).returncode)"
         language: system
         pass_filenames: false

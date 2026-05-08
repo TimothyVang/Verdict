@@ -49,5 +49,5 @@ class LedgerEntry(BaseModel):
     output_files_sha256: dict[str, str] = {}
     payload: dict
     payload_redactions: list[str] = []
-    prev_entry_hash: str
+    prev_entry_hash: str | None
     hmac_sig: str

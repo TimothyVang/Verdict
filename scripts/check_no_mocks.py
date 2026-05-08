@@ -42,6 +42,11 @@ MOCK_BRANCH_RE = re.compile(r"^\s*if\b.*\b(MOCK|TEST_MODE)\b.*:\s*(?:#.*)?$")
 VERDICT_TEST_RE = re.compile(r"os\.environ\.get\(['\"]VERDICT_TEST['\"]")
 
 
+def default_paths() -> list[Path]:
+    """Return first-class Python surfaces covered by the no-mocks policy."""
+    return [Path("src/verdict"), Path("tests"), Path("scripts"), Path("swarm")]
+
+
 def scan(paths: list[Path]) -> ScanResult:
     """Scan Python files below the supplied paths for forbidden patterns."""
     violations: list[Violation] = []
@@ -114,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the no-mocks scanner as a command-line policy hook."""
     parser = argparse.ArgumentParser(description="Reject mocks and test-only code paths.")
     parser.add_argument("--exclude-regex", default="")
-    parser.add_argument("paths", nargs="*", type=Path, default=[Path("verdict"), Path("tests")])
+    parser.add_argument("paths", nargs="*", type=Path, default=default_paths())
     args = parser.parse_args(argv)
 
     result = scan(args.paths)

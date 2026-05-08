@@ -1,0 +1,41 @@
+name: Eval Hallucination Gate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hallucination-rate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Fail closed until hallucination scorer lands
+        run: |
+          if [ ! -f inspect_ai/tasks/verdict_eval_cloud.py ]; then
+            echo "::error::scorer_not_implemented: verdict_eval_cloud.py is missing"
+            exit 1
+          fi
+          if ! grep -R "hallucination_rate" inspect_ai -n >/dev/null 2>&1; then
+            echo "::error::scorer_not_implemented: hallucination_rate scorer is missing"
+            exit 1
+          fi
+
+      - name: Verify cloud evaluator prerequisites
+        run: uv run verdict doctor --mode cloud
+
+      - name: Run hallucination scorer
+        run: uv run inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate

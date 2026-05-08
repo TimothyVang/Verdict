@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from shutil import which
 from typing import Literal
+
+SAFE_MSB_ENV_KEYS = {"COMSPEC", "PATH", "PATHEXT", "SYSTEMROOT", "TEMP", "TMP", "WINDIR"}
 
 
 @dataclass(frozen=True)
@@ -53,7 +56,7 @@ def run_in_microsandbox(
             "--pull",
             "never",
             "-v",
-            f"{_volume_source(status, host_evidence_path.parent)}:/evidence",
+            f"{_volume_source(status, host_evidence_path.parent)}:/evidence:ro,noexec",
             "--timeout",
             f"{timeout_seconds}s",
             image,
@@ -125,27 +128,39 @@ def _run_msb(
 ) -> subprocess.CompletedProcess:
     if status.binary is None:
         raise RuntimeError("microsandbox binary is required for forensic tool execution")
-    command = [status.binary, *args]
-    if status.runner == "wsl":
-        binary_path = Path(status.binary)
-        bin_dir = str(binary_path.parent)
-        lib_dir = str(binary_path.parent.parent / "lib")
-        command = [
-            "wsl.exe",
-            "--exec",
-            "/usr/bin/env",
-            f"PATH={bin_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-            f"LD_LIBRARY_PATH={lib_dir}",
-            status.binary,
-            *args,
-        ]
+    command = _build_msb_command(status=status, args=args)
     return subprocess.run(
         command,
         capture_output=True,
         check=False,
         text=text,
         timeout=timeout_seconds,
+        env=_scrubbed_msb_env(os.environ),
     )
+
+
+def _build_msb_command(*, status: MicrosandboxStatus, args: list[str]) -> list[str]:
+    if status.binary is None:
+        raise RuntimeError("microsandbox binary is required for forensic tool execution")
+    if status.runner != "wsl":
+        return [status.binary, *args]
+
+    binary_path = Path(status.binary)
+    bin_dir = str(binary_path.parent)
+    lib_dir = str(binary_path.parent.parent / "lib")
+    return [
+        "wsl.exe",
+        "--exec",
+        "/usr/bin/env",
+        f"PATH={bin_dir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        f"LD_LIBRARY_PATH={lib_dir}",
+        status.binary,
+        *args,
+    ]
+
+
+def _scrubbed_msb_env(source_env: os._Environ[str] | dict[str, str]) -> dict[str, str]:
+    return {key: value for key, value in source_env.items() if key.upper() in SAFE_MSB_ENV_KEYS}
 
 
 def _volume_source(status: MicrosandboxStatus, host_path: Path) -> str:
@@ -170,24 +185,27 @@ def _windows_path_to_wsl(path: Path) -> str:
 def _wsl_microsandbox_binary() -> str | None:
     if which("wsl.exe") is None:
         return None
-    result = subprocess.run(
-        [
-            "wsl.exe",
-            "--exec",
-            "/bin/sh",
-            "-lc",
-            (
-                "if [ -x \"$HOME/.microsandbox/bin/msb\" ]; then "
-                "printf '%s\\n' \"$HOME/.microsandbox/bin/msb\"; "
-                "elif command -v msb >/dev/null 2>&1; then command -v msb; "
-                "else command -v microsandbox; fi"
-            ),
-        ],
-        capture_output=True,
-        check=False,
-        text=True,
-        timeout=30,
-    )
+    try:
+        result = subprocess.run(
+            [
+                "wsl.exe",
+                "--exec",
+                "/bin/sh",
+                "-lc",
+                (
+                    "if [ -x \"$HOME/.microsandbox/bin/msb\" ]; then "
+                    "printf '%s\\n' \"$HOME/.microsandbox/bin/msb\"; "
+                    "elif command -v msb >/dev/null 2>&1; then command -v msb; "
+                    "else command -v microsandbox; fi"
+                ),
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
     if result.returncode != 0:
         return None
     binary = result.stdout.strip().splitlines()[0] if result.stdout.strip() else None

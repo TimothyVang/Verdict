@@ -8,8 +8,6 @@ import os
 import platform
 import re
 import sys
-import urllib.error
-import urllib.request
 import zipfile
 from collections.abc import Iterable
 from datetime import UTC, datetime
@@ -23,6 +21,7 @@ from verdict.runtime.mode_detect import (
     Mode,
     ModeDetectionError,
     detect_mode,
+    has_local_inference_endpoint,
     mode_is_available,
     parse_mode,
 )
@@ -162,6 +161,7 @@ def _build_parser() -> argparse.ArgumentParser:
     mode_parser.set_defaults(func=_cmd_mode)
 
     doctor_parser = subparsers.add_parser("doctor", help="Check local CLI prerequisites")
+    doctor_parser.add_argument("--mode", choices=["cloud", "airgap", "dual"])
     doctor_parser.set_defaults(func=_cmd_doctor)
 
     health_parser = subparsers.add_parser("health", help="Print machine-readable health status")
@@ -174,6 +174,7 @@ def _cmd_init(args: argparse.Namespace) -> int:
     _ensure_mode_available(mode)
     items = _evidence_items(args.evidence_path)
     case_id = args.case_id or _default_case_id(items)
+    _validate_case_id(case_id)
     case_dir = args.cases_dir / case_id
     if case_dir.exists():
         raise CliError(f"case already exists: {case_id}")
@@ -854,22 +855,33 @@ def _cmd_mode(_args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_doctor(_args: argparse.Namespace) -> int:
-    try:
-        mode = detect_mode().value
-    except ModeDetectionError:
-        mode = "UNCONFIGURED"
+def _cmd_doctor(args: argparse.Namespace) -> int:
+    if args.mode:
+        requested_mode = parse_mode(args.mode)
+        mode = requested_mode.value if mode_is_available(requested_mode) else "UNCONFIGURED"
+    else:
+        try:
+            mode = detect_mode().value
+        except ModeDetectionError:
+            mode = "UNCONFIGURED"
     sandbox = microsandbox_status()
     tools = _forensic_tool_availability(sandbox)
     sglang_reachable = _sglang_reachable()
     if mode in {Mode.AIRGAP.value, Mode.DUAL.value} and not sglang_reachable:
         mode = "UNCONFIGURED"
     image = _configured_pinned_microsandbox_image()
-    ready = mode != "UNCONFIGURED" and _has_any_hmac_key_config()
-    ready = ready and sandbox.available and image is not None and all(tools.values())
+    blockers = _doctor_blockers(
+        mode=mode,
+        sandbox=sandbox,
+        image_pinned=image is not None,
+        hmac_configured=_has_any_hmac_key_config(),
+        tools=tools,
+    )
+    ready = not blockers
     checks = {
         "mode": mode,
         "ready": ready,
+        "blockers": blockers,
         "tools": tools,
         "microsandbox_available": sandbox.available,
         "microsandbox_binary": sandbox.binary,
@@ -890,7 +902,12 @@ def _cmd_health(_args: argparse.Namespace) -> int:
     try:
         mode = detect_mode().value
     except ModeDetectionError:
-        print(json.dumps({"status": "degraded", "mode": "UNCONFIGURED"}, sort_keys=True))
+        print(
+            json.dumps(
+                {"status": "degraded", "mode": "UNCONFIGURED", "blockers": ["mode_unconfigured"]},
+                sort_keys=True,
+            )
+        )
         return 1
     sandbox = microsandbox_status()
     tools = _forensic_tool_availability(sandbox)
@@ -898,11 +915,17 @@ def _cmd_health(_args: argparse.Namespace) -> int:
     sglang_reachable = _sglang_reachable()
     local_mode_ready = mode == Mode.CLOUD.value or sglang_reachable
     ready = all(tools.values()) and sandbox_available and local_mode_ready
+    blockers = _health_blockers(
+        tools=tools,
+        sandbox_available=sandbox_available,
+        local_mode_ready=local_mode_ready,
+    )
     print(
         json.dumps(
             {
                 "status": "ok" if ready else "degraded",
                 "mode": mode,
+                "blockers": blockers,
                 "tools": tools,
                 "microsandbox": sandbox_available,
                 "microsandbox_runner": sandbox.runner,
@@ -913,6 +936,44 @@ def _cmd_health(_args: argparse.Namespace) -> int:
         )
     )
     return 0 if ready else 1
+
+
+def _doctor_blockers(
+    *,
+    mode: str,
+    sandbox: MicrosandboxStatus,
+    image_pinned: bool,
+    hmac_configured: bool,
+    tools: dict[str, bool],
+) -> list[str]:
+    blockers: list[str] = []
+    if mode == "UNCONFIGURED":
+        blockers.append("mode_unconfigured")
+    if not hmac_configured:
+        blockers.append("hmac_key_unconfigured")
+    if not sandbox.available:
+        blockers.append("microsandbox_unavailable")
+    if not image_pinned:
+        blockers.append("microsandbox_image_unpinned")
+    missing_tools = sorted(name for name, available in tools.items() if not available)
+    blockers.extend(f"tool_unavailable:{tool}" for tool in missing_tools)
+    return blockers
+
+
+def _health_blockers(
+    *,
+    tools: dict[str, bool],
+    sandbox_available: bool,
+    local_mode_ready: bool,
+) -> list[str]:
+    blockers: list[str] = []
+    if not sandbox_available:
+        blockers.append("microsandbox_unavailable")
+    if not local_mode_ready:
+        blockers.append("local_inference_unreachable")
+    missing_tools = sorted(name for name, available in tools.items() if not available)
+    blockers.extend(f"tool_unavailable:{tool}" for tool in missing_tools)
+    return blockers
 
 
 def _evidence_items(path: Path) -> list[EvidenceItem]:
@@ -961,6 +1022,13 @@ def _default_case_id(items: list[EvidenceItem]) -> str:
     manifest_hash = EvidenceManifest.from_items(case_id="pending", items=items).manifest_hash
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return f"case-{timestamp}-{manifest_hash[:8]}"
+
+
+def _validate_case_id(case_id: str) -> None:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", case_id):
+        raise CliError("case_id must be 1-128 chars of letters, digits, dot, underscore, or hyphen")
+    if case_id in {".", ".."}:
+        raise CliError("case_id cannot be a path traversal segment")
 
 
 def _execution_log_entry(entry: dict[str, Any]) -> dict[str, Any]:
@@ -1112,15 +1180,7 @@ def _sandbox_image_tools_available(image: str) -> dict[str, bool]:
 
 
 def _sglang_reachable() -> bool:
-    base_url = os.environ.get("SGLANG_BASE_URL")
-    if not base_url:
-        return False
-    url = base_url.rstrip("/") + "/v1/models"
-    try:
-        with urllib.request.urlopen(url, timeout=2) as response:
-            return 200 <= response.status < 500
-    except (OSError, urllib.error.URLError):
-        return False
+    return has_local_inference_endpoint(timeout_seconds=2)
 
 
 def _utc_now() -> str:

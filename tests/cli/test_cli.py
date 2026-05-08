@@ -155,6 +155,29 @@ def test_init_rejects_unavailable_cloud_mode(tmp_path: Path, monkeypatch) -> Non
     assert not (tmp_path / "cases" / "case-no-cloud").exists()
 
 
+def test_init_rejects_case_id_path_traversal(tmp_path: Path, monkeypatch) -> None:
+    evidence = tmp_path / "evidence.mem"
+    evidence.write_bytes(b"memory bytes")
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "mode-detection-token")
+    monkeypatch.setenv("VERDICT_HMAC_KEY_HEX", "ef" * 32)
+
+    exit_code = main(
+        [
+            "init",
+            str(evidence),
+            "--case-id",
+            "../escape",
+            "--cases-dir",
+            str(tmp_path / "cases"),
+            "--mode",
+            "cloud",
+        ]
+    )
+
+    assert exit_code == 2
+    assert not (tmp_path / "escape").exists()
+
+
 def test_resume_reverify_approve_and_gc_lifecycle(tmp_path: Path, monkeypatch, capsys) -> None:
     evidence = tmp_path / "evidence.mem"
     evidence.write_bytes(b"memory bytes")
@@ -289,3 +312,33 @@ def test_run_case_memory_fails_closed_without_microsandbox_prerequisites(
     ledger_lines = (cases_dir / "case-memory" / "ledger.jsonl").read_text().splitlines()
 
     assert len(ledger_lines) == 1
+
+
+def test_doctor_reports_actionable_blockers(monkeypatch, capsys) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.delenv("SGLANG_BASE_URL", raising=False)
+    monkeypatch.delenv("VERDICT_HMAC_KEY_HEX", raising=False)
+    monkeypatch.delenv("VERDICT_HMAC_PASSPHRASE", raising=False)
+    monkeypatch.delenv("VERDICT_MICROSANDBOX_IMAGE", raising=False)
+
+    assert main(["doctor"]) == 1
+
+    result = json.loads(capsys.readouterr().out)
+    assert "mode_unconfigured" in result["blockers"]
+    assert "hmac_key_unconfigured" in result["blockers"]
+    assert "microsandbox_image_unpinned" in result["blockers"]
+
+
+def test_doctor_accepts_explicit_cloud_mode(monkeypatch, capsys) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "mode-detection-token")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.delenv("SGLANG_BASE_URL", raising=False)
+
+    assert main(["doctor", "--mode", "cloud"]) == 1
+
+    result = json.loads(capsys.readouterr().out)
+    assert result["mode"] == "CLOUD"
+    assert "mode_unconfigured" not in result["blockers"]

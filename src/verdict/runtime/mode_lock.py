@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import platform
+from datetime import UTC, datetime
 
 from verdict.ledger.writer import LedgerWriter
 from verdict.runtime.mode_detect import Mode
@@ -23,11 +25,27 @@ def initialize_mode_lock(*, writer: LedgerWriter, case_id: str, mode: Mode) -> d
         raise ModeLockedError(case_id=case_id, original_mode=original_mode, detected_mode=mode)
     if original_mode is mode:
         return writer.last_entry()
+    timestamp = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     return writer.write(
         {
+            "entry_id": f"{case_id}:mode_lock:{timestamp}",
             "event_type": "mode_lock",
             "case_id": case_id,
+            "finding_id": None,
+            "timestamp_utc": timestamp,
             "mode_at_case_init": mode.value,
+            "verifier_strategy_used": "not_run_mode_lock",
+            "langfuse_session_id": case_id,
+            "langfuse_trace_id": "local-runtime",
+            "langfuse_root_span_id": "local-runtime-root",
+            "langfuse_leaf_span_ids": [],
+            "langgraph_thread_id": case_id,
+            "langgraph_checkpoint_id": "mode_lock",
+            "microsandbox_version": "not_invoked",
+            "rootfs_sha256": "not_invoked",
+            "tool_version": "verdict-runtime",
+            "kernel_version": platform.platform(),
+            "output_files_sha256": {},
             "payload": {"mode_at_case_init": mode.value},
         },
     )

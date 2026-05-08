@@ -39,3 +39,10 @@ def test_allows_third_party_boundary_patch() -> None:
 
 def test_cli_excludes_policy_fixtures() -> None:
     assert check_no_mocks.main(["--exclude-regex", r"tests/policy/fixtures/", str(FIXTURES)]) == 0
+
+
+def test_default_scan_paths_cover_src_layout() -> None:
+    paths = check_no_mocks.default_paths()
+
+    assert Path("src/verdict") in paths
+    assert Path("verdict") not in paths

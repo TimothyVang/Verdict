@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 from shutil import which
 
-from verdict.tools.external import ExternalToolSpec, ExternalToolWrapper
+from verdict.tools.external import ExternalToolSpec
 
 TOOL_SPECS: dict[str, ExternalToolSpec] = {
     "vol3.info": ExternalToolSpec(
@@ -53,24 +52,6 @@ def available_tools() -> dict[str, bool]:
         name: any(which(candidate) for candidate in spec.executable_candidates)
         for name, spec in TOOL_SPECS.items()
     }
-
-
-def build_tool_wrapper(tool_key: str, *, evidence_path: Path) -> ExternalToolWrapper:
-    if tool_key not in TOOL_SPECS:
-        raise ValueError(f"unknown tool: {tool_key}")
-    spec = TOOL_SPECS[tool_key]
-    return ExternalToolWrapper(
-        ExternalToolSpec(
-            tool_name=spec.tool_name,
-            executable_candidates=spec.executable_candidates,
-            base_args=tuple(
-                str(evidence_path) if arg == "{evidence}" else arg for arg in spec.base_args
-            ),
-            artifact_type=spec.artifact_type,
-            version_args=spec.version_args,
-        ),
-        evidence_path=evidence_path,
-    )
 
 
 def microsandbox_command(

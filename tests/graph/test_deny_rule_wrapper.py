@@ -18,3 +18,9 @@ def test_allows_case_output_writes() -> None:
     wrapper = DenyRuleWrapper(mode=Mode.AIRGAP)
 
     wrapper.validate(tool_name="mftecmd", args=["--out", "/cases/case-001/mft.csv"])
+
+
+def test_allows_evidence_read_arguments() -> None:
+    wrapper = DenyRuleWrapper(mode=Mode.AIRGAP)
+
+    wrapper.validate(tool_name="vol3", args=["-f", "/evidence/memory.raw", "windows.psscan"])
