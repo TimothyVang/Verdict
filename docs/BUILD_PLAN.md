@@ -54,10 +54,9 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 | Architecture rationale | `docs/ARCHITECTURE.md` |
 | Schema patches + DFIR rule encoding | `docs/ARCHITECTURE.md` §4 |
 | Project-level conventions | `CLAUDE.md` (this repo) |
-| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `verdict/planning/prompts/examiner_caveats.md` |
-| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `verdict/playbooks/*.yml` |
-| Tool surface (Rust MCP) | `services/mcp/src/tools/` |
-| Tool surface (Python MCP) | `services/agent_mcp/` |
+| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and `src/verdict/planning/prompts/examiner_caveats.md` |
+| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and `src/verdict/playbooks/*.yml` |
+| Tool surface (Python) | `src/verdict/tools/` |
 | Decision history | `CHANGELOG.md` + `git log --oneline` |
 | Why we picked X over Y | v4.5 §"Lock-In Decisions" + v4.5 §"Per-Tool Deep Dives" |
 
@@ -560,8 +559,8 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
 | `vol_psscan` wrapper integration test passes | `uv run pytest tests/tools/test_vol_psscan.py -v` |
 | Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES}.md` |
-| `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
-| `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
+| `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " src/verdict/planning/prompts/examiner_caveats.md` returns 7 |
+| `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('src/verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
 | Schema and DFIR rule patches represented in current architecture | `docs/ARCHITECTURE.md` cites the current decisions |
 | Conventional Commits enforced (no `--no-verify`) | `git log --oneline -50 | grep -c '^[a-f0-9]\+ \(feat\|test\|fix\|docs\|chore\)' = 50` |
 
