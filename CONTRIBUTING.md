@@ -16,7 +16,7 @@ Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` �
 >
 > The minimum sweep:
 >
-> - Did you add/rename/remove a file under `verdict/`? Grep `docs/` + `CLAUDE.md` + `README.md` for the old path; update every reference.
+> - Did you add/rename/remove a file under `src/verdict/`? Grep `docs/` + `CLAUDE.md` + `README.md` for the old path; update every reference.
 > - Did you add/change/remove a CLI command, flag, or env var? Update `CLAUDE.md` §10 and `README.md` "CLI surface".
 > - Did you add/change/remove a schema field, validator, enum member, or playbook rule? Update `docs/ARCHITECTURE.md` §4 and any `CLAUDE.md` §3.x rule that cites it.
 > - Did you add/remove a dependency, change a version pin, or vendor a skill/MCP? Update `CONTRIBUTING.md` §2 toolchain table + `docs/RELEASE.md` (deps) or `docs/SKILLS_FRAMEWORK.md` / `docs/MCP_FRAMEWORK.md` + license audit (vendored).
