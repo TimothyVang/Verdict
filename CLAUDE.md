@@ -203,7 +203,7 @@ Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm
 
 ## 6. Target repo layout
 
-Today the workspace holds docs only — code scaffolding is **W1.A** of `docs/BUILD_PLAN.md`. Active layout:
+Active layout (code under `src/verdict/`; full tree in `docs/BUILD_PLAN.md` §file-layout):
 
 ```
 Verdict/
@@ -211,20 +211,14 @@ Verdict/
 ├── docs/
 │   ├── ARCHITECTURE.md  BUILD_PLAN.md  DEVPOST_COMPLIANCE.md  DOCS_ACCURACY_REPORT.md
 │   └── spec/           ← frozen audit archive (01..04 + README)
+├── src/verdict/        ← production package
+├── tests/              ← pytest test suite
+├── inspect_ai/         ← Inspect AI eval tasks
+├── scripts/            ← bootstrap, CI, packaging
+├── infra/              ← Langfuse docker-compose, SIFT Containerfile
+├── swarm/              ← build-side LLM swarm
 ├── downloads/          ← SIFT OVA, evidence samples (gitignored)
 └── protocol-sift/      ← upstream submodule
-```
-
-Code surface to land in W1+ (target ~140 files; full tree in `docs/BUILD_PLAN.md` §file-layout):
-
-```
-verdict/
-├── runtime/        schemas/        verification/    planning/
-├── playbooks/      knowledge/      graph/wrappers/  tools/vol3/
-├── sandboxes/      ledger/         observability/   cli/         adapters/
-verdict-skills/  tests/{schemas,graph,tools,chaos,smoke,e2e,…}
-inspect_ai/{tasks,scorers,ground_truth/case_00{1..3}_*}
-scripts/  .github/workflows/  packer/
 ```
 
 ## 7. Forensic doctrine (one-paragraph summaries)
