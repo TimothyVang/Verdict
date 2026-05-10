@@ -226,7 +226,7 @@ class CaveatID(str, Enum):
     SYSMON_PROCESSGUID_OVER_PID = "sysmon_processguid_correlation_key_not_pid"
 ```
 
-Loaded into every executor system prompt via `verdict/planning/prompts/examiner_caveats.md`.
+Loaded into every executor system prompt via `src/verdict/planning/prompts/examiner_caveats.md`.
 
 ### ArtifactClass — multi-source corroboration vocabulary
 
@@ -249,7 +249,7 @@ class ArtifactClass(str, Enum):
 
 ### Playbooks — SANS canonical tool sequencing
 
-Three YAMLs in `verdict/playbooks/` (memory.yml / disk.yml / triage.yml) encode the SANS-canonical sequencing summarized in `CLAUDE.md` §7 and this document's forensic doctrine. Loaded into planner system prompt at case_init based on detected evidence type.
+Three YAMLs in `src/verdict/playbooks/` (memory.yml / disk.yml / triage.yml) encode the SANS-canonical sequencing summarized in `CLAUDE.md` §7 and this document's forensic doctrine. Loaded into planner system prompt at case_init based on detected evidence type.
 
 `memory.yml` example rule (DKOM detection):
 ```yaml
@@ -263,7 +263,7 @@ This is one of the architecture's clearest moats — DKOM/T1014 detection auto-f
 
 ### Hunt Evil baseline
 
-`verdict/knowledge/hunt_evil.yml` keyed by process name with expected parent / path / signing / instance count for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` Hypothesis subtype maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
+`src/verdict/knowledge/hunt_evil.yml` keyed by process name with expected parent / path / signing / instance count for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` Hypothesis subtype maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
 
 ---
 
@@ -530,5 +530,5 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 | v4.4 agentic + DFIR research findings (raw) | `docs/spec/02-audit-v4.4.md` |
 | v4.6 schema patches (raw spec) | `docs/spec/04-spec-plan-v4.6.md` |
 | Project-wide build conventions | `../CLAUDE.md` |
-| Tier-1 examiner caveat source | `../CLAUDE.md` §3.3 and planned `../verdict/planning/prompts/examiner_caveats.md` |
-| Tool sequencing playbook source | `../verdict/playbooks/*.yml` and `docs/ARCHITECTURE.md` §4 |
+| Tier-1 examiner caveat source | `../CLAUDE.md` §3.3 and `../src/verdict/planning/prompts/examiner_caveats.md` |
+| Tool sequencing playbook source | `../src/verdict/playbooks/*.yml` and `docs/ARCHITECTURE.md` §4 |
