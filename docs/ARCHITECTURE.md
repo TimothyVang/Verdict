@@ -410,7 +410,7 @@ class CaseConclusion(BaseModel):
 
 ### Sanitization for prompt injection
 
-`verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
+`src/verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
 
 ---
 
