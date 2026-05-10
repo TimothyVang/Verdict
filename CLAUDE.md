@@ -229,7 +229,7 @@ scripts/  .github/workflows/  packer/
 
 ## 7. Forensic doctrine (one-paragraph summaries)
 
-The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/playbooks/`, `verdict/knowledge/`, `verdict/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
+The SANS-canonical knowledge an agent must internalise. Encoded in `src/verdict/playbooks/`, `src/verdict/knowledge/`, `src/verdict/planning/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
 
 - **Canonical first moves.** Memory → `windows.info`. Disk → `image_hash_verify` → `mmls` → `fsstat`. Triage zip → registry hives first.
 - **DKOM / T1014.** `set(psscan_pids) - set(pslist_pids)` non-empty → emit T1014 hypothesis. First-class playbook rule (v4.6 F4), not a prompt suggestion.
