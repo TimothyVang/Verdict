@@ -58,6 +58,7 @@ Code wins over docs. If code is right and a doc is wrong, fix the doc — don't 
 |------|------|--------------|
 | [`DOCS_ACCURACY_REPORT.md`](DOCS_ACCURACY_REPORT.md) | Cross-doc consistency audit — counts, labels, MITRE IDs, version pins, terminology. | When docs appear to contradict each other, or before a major doc edit. |
 | [`AGENTIC_WORKFLOW_REVIEW.md`](AGENTIC_WORKFLOW_REVIEW.md) | Sister audit covering the agentic workflow itself — runtime LangGraph loop *and* the dev TDD loop. Filtered to not overlap with `DOCS_ACCURACY_REPORT.md`. | When evaluating whether the workflow rules in `../CLAUDE.md` §3 are coherent with the runtime topology in `ARCHITECTURE.md`. |
+| [`DFIR_MEMORY.md`](DFIR_MEMORY.md) | VERDICT's memory model for evidence-first IR — memory layers, controlled-evolution rules, and governance for persistent memory. | When implementing or extending the self-evolving memory layer (`src/verdict/memory/`). |
 
 ### Engineering frameworks (scaffolding — *not* runtime authority)
 
