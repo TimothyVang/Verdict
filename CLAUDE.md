@@ -78,18 +78,18 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 ### 3.1 Evidence integrity
 
 - **Never write to `/evidence/`.** It is a read-only microsandbox mount with `noexec` on data partitions; the host also `chattr +i`s evidence files. Any tool wrapper that writes to evidence is a bug, not a feature.
-- **Hash on entry, re-hash periodically.** Every evidence file gets a SHA-256 at `case_init` recorded in the `EvidenceManifest`. The runtime re-hashes every 10 super-steps (`verdict/runtime/evidence_recheck.py`). Mismatch raises `HashMismatchError` and halts the case.
+- **Hash on entry, re-hash periodically.** Every evidence file gets a SHA-256 at `case_init` recorded in the `EvidenceManifest`. The runtime re-hashes every 10 super-steps (`src/verdict/runtime/evidence_recheck.py`). Mismatch raises `HashMismatchError` and halts the case.
 - **Per-invocation hash.** Every tool call records `invocation_hash = blake3(tool_name + tool_version + args + evidence_hash)` in its `ToolOutput` and ledger entry.
 - **Per-output-file hash.** `LedgerEntry.output_files_sha256: dict[str, str]` records SHA-256 of every file the tool emits. NIST SP 800-86 §5.1.2 / §5.1.4 compliance.
 
 ### 3.2 Multi-artifact corroboration
 
 - `Finding.artifact_paths` and `Finding.artifact_classes` both have `min_length=2`. Single-artifact execution claims are forensically unsound and the validator rejects them.
-- **Execution-class MITRE techniques** — T1059, T1106, T1204, T1218, T1543, T1547 — require **≥2 distinct `ArtifactClass` values** (not just two paths in the same class). Validator: `Finding._execution_requires_two_classes`.
+- **Execution-class MITRE techniques** — T1059, T1106, T1204, T1218, T1543, T1547 — require **≥2 distinct `ArtifactClass` values** (not just two paths in the same class). Validator: `Finding._forensic_corroboration`.
 
 ### 3.3 Tier-1 caveat acknowledgment
 
-`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. Caveat triggers are keyed by `Finding.artifact_classes` membership unless otherwise noted; `LOGON_TYPE_3_VS_10` is the named exception (triggered by `EVTX_4624` artifact_class AND the `EvtxRecord.LogonType` field equaling 3 or 10). The seven Tier-1 caveats (encoded in `verdict/schemas/caveat_id.py` and `verdict/prompts/examiner_caveats.md`):
+`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. Caveat triggers are keyed by `Finding.artifact_classes` membership unless otherwise noted; `LOGON_TYPE_3_VS_10` is the named exception (triggered by `EVTX_4624` artifact_class AND the `EvtxRecord.LogonType` field equaling 3 or 10). The seven Tier-1 caveats (encoded in `src/verdict/schemas/caveat_id.py` and `src/verdict/planning/prompts/examiner_caveats.md`):
 
 | CaveatID | Trigger |
 |----------|---------|
@@ -153,7 +153,7 @@ Every new dependency must be **MIT or Apache-2.0** unless explicitly approved in
 
 - API keys, OAuth tokens, and bearer tokens **never enter a microVM**. This includes `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`, GitHub tokens, Langfuse keys, and any bearer token used by host-side AI agents. They are injected via TSI on host egress only; tcpdump-verifiable.
 - HMAC ledger key is TPM-backed (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` with passphrase prompted at gateway init.
-- Ledger redaction strips `authorization`, `auth_user`, `api_key` **before** the entry is hashed and HMAC-signed (`verdict/ledger/redaction.py`).
+- Ledger redaction strips `authorization`, `auth_user`, `api_key` **before** the entry is hashed and HMAC-signed (`src/verdict/ledger/redaction.py`).
 - Anthropic OAuth tokens (Claude Code interactive auth) are not redistributable per Anthropic's commercial terms — do not commit, do not bake into images.
 
 ### 3.10 No mocks, no stubs, no placeholders — full-stack real
@@ -183,7 +183,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 ## 4. Architecture at a glance
 
-9-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4; each branch composed of DenyRuleWrapper / ToolExecutor / LedgerEmitter) → pivot (≤15) → quorum → replan (≤3) → unverifiable_finalize → finalize**.
+8-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4; each branch composed of DenyRuleWrapper / ToolExecutor / LedgerEmitter) → pivot (≤15) → quorum → replan (≤3) → finalize**. (`unverifiable_finalize_node` is a helper called by `replan_node` when the budget is exhausted — it is not a registered graph node; `build_graph()` registers 8 nodes.)
 
 Three operational modes, auto-detected at `case_init` and **locked**:
 
@@ -210,7 +210,7 @@ Verdict/
 ├── CLAUDE.md  README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  .env.example
 ├── docs/
 │   ├── ARCHITECTURE.md  BUILD_PLAN.md  DEVPOST_COMPLIANCE.md  DOCS_ACCURACY_REPORT.md
-│   └── spec/           ← frozen audit archive (01..05 + README)
+│   └── spec/           ← frozen audit archive (01..04 + README)
 ├── downloads/          ← SIFT OVA, evidence samples (gitignored)
 └── protocol-sift/      ← upstream submodule
 ```
@@ -229,7 +229,7 @@ scripts/  .github/workflows/  packer/
 
 ## 7. Forensic doctrine (one-paragraph summaries)
 
-The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/playbooks/`, `verdict/knowledge/`, `verdict/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
+The SANS-canonical knowledge an agent must internalise. Encoded in `src/verdict/playbooks/`, `src/verdict/knowledge/`, `src/verdict/planning/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
 
 - **Canonical first moves.** Memory → `windows.info`. Disk → `image_hash_verify` → `mmls` → `fsstat`. Triage zip → registry hives first.
 - **DKOM / T1014.** `set(psscan_pids) - set(pslist_pids)` non-empty → emit T1014 hypothesis. First-class playbook rule (v4.6 F4), not a prompt suggestion.
@@ -241,10 +241,10 @@ The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/play
 
 ## 8. Verifier strategies (one-line each)
 
-`verdict/verification/strategy.py` — `VerifierStrategy` Protocol; quorum dispatches per locked mode.
+`src/verdict/verification/strategy.py` — `VerifierStrategy` Protocol; quorum dispatches per locked mode.
 
 - `CloudSelfConsistency` — n=3 with three blake3-keyed seeds at `temp=0.7` (v4.6 F1; **never** temp=0, that collapses to n=1). ≥ 2-of-3 → `VETTED_CLOUD`.
-- `AirGapCrossEngine` — Qwen3 + GLM-4.5-Air both execute. Jaccard ≥ 0.80 on `artifact_paths` AND identical `mitre_technique` → `VETTED_AIRGAP`.
+- `AirGapCrossEngine` — Qwen3 + GLM-4.5-Air both execute. Jaccard ≥ 0.80 on `parsed_artifacts` AND identical `mitre_technique` → `VETTED_AIRGAP`.
 - `DualLaneCrossEngine` — cloud + both locals. Cloud agrees with ≥1 local AND locals agree → `VETTED_DUAL`.
 - `UniversalSelfConsistency` (Chen 2023) — judge of last resort before declaring `CONTESTED`.
 
@@ -254,7 +254,7 @@ The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/play
 
 ## 9. Ledger discipline
 
-`verdict/ledger/writer.py` + `chain.py`. The ledger is the chain-of-custody artifact a SANS judge will scrutinise.
+`src/verdict/ledger/writer.py`. The ledger is the chain-of-custody artifact a SANS judge will scrutinise.
 
 - JSONL append-only at `cases/<id>/ledger.jsonl`. `prev_entry_hash` chains entries; `verdict validate <case_id>` walks them.
 - Three-tier IDs on every entry: `case_id` → `langfuse_trace_id` → `langgraph_checkpoint_id`.
@@ -275,7 +275,7 @@ Event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode
 
 ```bash
 # Microsandbox
-curl -sSL https://get.microsandbox.dev | sh
+curl -fsSL https://install.microsandbox.dev | sh
 
 # Bootstrap (three-credential-path detection)
 bash scripts/install.sh
@@ -316,7 +316,7 @@ verdict health
 
 ```bash
 # Schema/playbook/knowledge gates (W1)
-uv run --directory services/agent pytest tests/schemas/    -v
+uv run pytest tests/schemas/ -v
 uv run pytest tests/playbooks/  -v
 uv run pytest tests/knowledge/  -v
 
