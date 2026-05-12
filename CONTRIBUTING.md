@@ -6,7 +6,7 @@ New-contributor setup guide. If you've already done the SANS Find Evil! 2026 tea
 **Default branch:** `main`
 **License:** MIT
 **Deadline gate:** 2026-06-15 22:45 CDT (team-internal target: 2026-06-14 EOD = ~28 h buffer)
-**Recommended platform:** SANS **SIFT Workstation VM** (canonical — all forensic tools, Microsandbox, SGLang, evidence mounts work out-of-box) **or** any modern **Linux box** (Ubuntu 22.04+ / Debian 12+ / Fedora 39+ / Arch). **macOS host is acceptable** for schema/planner/MCP/unit-test work that doesn't shell out to forensic tools — but the moment your task touches `verdict/sandboxes/`, `verdict/tools/vol3/`, or anything that runs in Microsandbox, switch into the SIFT VM. **Windows host is not supported** for development; use WSL2 + Ubuntu or pull the SIFT VM (it runs under Hyper-V / VMware / VirtualBox).
+**Recommended platform:** SANS **SIFT Workstation VM** (canonical — all forensic tools, Microsandbox, SGLang, evidence mounts work out-of-box) **or** any modern **Linux box** (Ubuntu 22.04+ / Debian 12+ / Fedora 39+ / Arch). **macOS host is acceptable** for schema/planner/MCP/unit-test work that doesn't shell out to forensic tools — but the moment your task touches `src/verdict/sandboxes/`, `src/verdict/tools/`, or anything that runs in Microsandbox, switch into the SIFT VM. **Windows host is not supported** for development; use WSL2 + Ubuntu or pull the SIFT VM (it runs under Hyper-V / VMware / VirtualBox).
 
 Authority chain when docs disagree: Devpost rules → `DEVPOST_COMPLIANCE.md` → `ARCHITECTURE.md` → `BUILD_PLAN.md` → this file. Code + lockfiles win over docs (per `CLAUDE.md`); update the doc, don't roll back the code, unless the code is wrong.
 
@@ -118,13 +118,13 @@ Idempotent. Installs uv + Python 3.11, Rust 1.88, Node 20 + pnpm, and Microsandb
 
 **Where to develop.** Three supported configurations, in order of preference:
 
-1. **Inside the SIFT VM** (canonical, recommended for everyone). All forensic tools, Microsandbox, SGLang, and the evidence mounts resolve here without setup. **Required** for any work touching the executor branches, the Microsandbox layer, evidence I/O, or anything under `verdict/sandboxes/`, `verdict/tools/vol3/`, or `services/mcp/src/tools/`. Pull the OVA from `downloads/README.md`; snapshot it as `clean-install` before installing anything.
+1. **Inside the SIFT VM** (canonical, recommended for everyone). All forensic tools, Microsandbox, SGLang, and the evidence mounts resolve here without setup. **Required** for any work touching the executor branches, the Microsandbox layer, evidence I/O, or anything under `src/verdict/sandboxes/`, `src/verdict/tools/`. Pull the OVA from `downloads/README.md`; snapshot it as `clean-install` before installing anything.
 2. **A modern Linux box** (Ubuntu 22.04+ / Debian 12+ / Fedora 39+ / Arch). Acceptable for the full stack as long as you can install Microsandbox (Linux-only) and run the SIFT toolchain (`apt install sleuthkit volatility ...`). Faster I/O than the VM. Take a `pre-verdict` snapshot of your home before installing forensic tools — they leave state.
 3. **macOS host with the SIFT VM as a runtime target** (faster edit loop, smaller surface). Use VS Code Remote-SSH or `Develop on a Container` into the VM. Acceptable for schema, planner, MCP gateway, and unit-test work that doesn't shell out to forensic tools or Microsandbox. The moment your task touches a Microsandbox path or a forensic CLI, switch into the VM.
 
 **Windows host is not supported** for development. Either use WSL2 + Ubuntu (treat as configuration #2) or run the SIFT VM under Hyper-V / VMware / VirtualBox (configuration #1). Native Windows breaks Microsandbox (libkrun is Linux-only), pre-commit hooks (path/exec semantics), and several SIFT tools.
 
-If your work touches `services/mcp/src/tools/`, `services/agent_mcp/`, or anything under a Microsandbox path, you **must** run integration tests inside the SIFT VM (or your Linux box with Microsandbox installed) before opening a PR. macOS-only test runs do not satisfy the gate.
+If your work touches `src/verdict/tools/`, `src/verdict/sandboxes/`, or anything under a Microsandbox path, you **must** run integration tests inside the SIFT VM (or your Linux box with Microsandbox installed) before opening a PR. macOS-only test runs do not satisfy the gate.
 
 ---
 
@@ -271,7 +271,7 @@ If the run fails before producing a Finding, you have a P0 environment problem. 
 Authority order (escalate left-to-right):
 
 1. **NotebookLM Q&A:** https://notebooklm.google.com/notebook/f0957a60-6fb2-452b-93d4-ecd73ba47779?authuser=1 — chief location for "how does X work?"
-2. **`docs/` and the audit history in `archive/`** — most "why did we choose X?" questions are answered in `archive/03-audit-v4.5.md`.
+2. **`docs/` and the audit history in `docs/spec/`** — most "why did we choose X?" questions are answered in `docs/spec/03-audit-v4.5.md`.
 3. **Team chat** — PUG / Beaver / Haley / KP. Use the appropriate thread; don't DM PUG for things the team should see.
 4. **Devpost platform issues only:** https://help.devpost.com/
 
