@@ -401,7 +401,6 @@ Benign or red-herring cases do not produce a `Finding` with empty artifacts. The
 
 ```python
 class CaseConclusion(BaseModel):
-    case_id: str
     status: Literal["NO_EVIL_FOUND", "EVIL_FOUND", "UNVERIFIABLE"]
     playbook_steps_executed: list[str] = Field(min_length=1)
     evidence_hashes: dict[Path, str]
