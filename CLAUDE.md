@@ -302,12 +302,12 @@ verdict mode                                    # show detected + locked mode
 verdict init  <evidence_path> [--mode {cloud,airgap,dual}]
 verdict resume   <case_id>
 verdict reverify <case_id> --mode dual          # parallel re-run; non-mutating
-verdict status
+verdict status   <case_id>
 verdict ls
 verdict show     <case_id>
 verdict export   <case_id> [--format {jsonl,execution-logs,html}]
 verdict validate <case_id>                      # ledger chain + HMAC integrity
-verdict approve  <finding_id>                   # HMAC-signed approval w/ timestamp
+verdict approve  <case_id> <finding_id> --approver <approver>   # HMAC-signed approval w/ timestamp
 verdict gc                                      # garbage-collect old cases
 verdict health
 ```
