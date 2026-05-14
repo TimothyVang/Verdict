@@ -216,14 +216,14 @@ class Finding(BaseModel):
 ### CaveatID — Tier-1 examiner caveats from `CLAUDE.md` §3.3
 
 ```python
-class CaveatID(str, Enum):
-    AMCACHE_LASTMODIFIED_NOT_EXEC = "amcache_lastmodified_neq_execution"
-    SHIMCACHE_ORDER_CHANGED_WIN81 = "shimcache_order_lru_pre81_insertion_post81"
-    PREFETCH_SSD_DISABLED = "prefetch_disabled_on_ssd_or_gpo"
-    MFT_SI_STOMPABLE = "mft_si_timestomp_use_fn"
-    USNJRNL_WRAPS = "usnjrnl_wraps_treat_gaps_carefully"
-    LOGON_TYPE_3_VS_10 = "evtx_4624_type3_network_neq_type10_rdp"
-    SYSMON_PROCESSGUID_OVER_PID = "sysmon_processguid_correlation_key_not_pid"
+class CaveatID(StrEnum):
+    AMCACHE_LASTMODIFIED_NOT_EXEC = "AMCACHE_LASTMODIFIED_NOT_EXEC"
+    SHIMCACHE_ORDER_CHANGED_WIN81 = "SHIMCACHE_ORDER_CHANGED_WIN81"
+    PREFETCH_SSD_DISABLED = "PREFETCH_SSD_DISABLED"
+    MFT_SI_STOMPABLE = "MFT_SI_STOMPABLE"
+    USNJRNL_WRAPS = "USNJRNL_WRAPS"
+    LOGON_TYPE_3_VS_10 = "LOGON_TYPE_3_VS_10"
+    SYSMON_PROCESSGUID_OVER_PID = "SYSMON_PROCESSGUID_OVER_PID"
 ```
 
 Loaded into every executor system prompt via `src/verdict/planning/prompts/examiner_caveats.md`.
@@ -231,10 +231,11 @@ Loaded into every executor system prompt via `src/verdict/planning/prompts/exami
 ### ArtifactClass — multi-source corroboration vocabulary
 
 ```python
-class ArtifactClass(str, Enum):
+class ArtifactClass(StrEnum):
     PREFETCH = "prefetch"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
+    EVTX_4624 = "evtx_4624"
     EVTX_4688 = "evtx_4688"
     SYSMON_1 = "sysmon_1"
     NETWORK = "network"
@@ -242,6 +243,7 @@ class ArtifactClass(str, Enum):
     TASK_SCHEDULER = "task_scheduler"
     WMI_SUBSCRIPTION = "wmi_subscription"
     MFT = "mft"
+    USNJRNL = "usnjrnl"
     PROCESS_MEMORY = "process_memory"
     YARA_HIT = "yara_hit"
     SIGMA_HIT = "sigma_hit"
