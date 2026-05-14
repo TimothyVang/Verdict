@@ -41,7 +41,7 @@ Source code lives under `src/verdict/`. The outer `Verdict/` directory is the re
    │  1. Plans the investigation   │   "Where would evil hide?"
    │  2. Runs forensic tools       │   vol3, hayabusa, plaso, MFTECmd...
    │  3. Two models cross-check    │   Qwen3 vs GLM-4.5-Air
-   │  4. Quorum decides verdict    │   VERIFIED / CONTESTED / UNVERIFIABLE
+   │  4. Quorum decides verdict    │   VETTED_* / CONTESTED / UNVERIFIABLE
    │  5. HMAC-signs the audit log  │   Tamper-evident chain
    └───────────────────────────────┘
                  │
@@ -103,7 +103,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
        │  ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
        │  ⓷ Amcache caveat acknowledged in rationale
        │  ⓸ Pivot in action (1 pivot, 0 replans)
-       │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★ (Devpost-required self-correction)
+       │  ⓹ Disagreement → CONTESTED → replan → VETTED_AIRGAP ★ (Devpost-required self-correction)
        │  ⓺ TSI tcpdump proof (key never enters VM)
        │  ⓻ Kill -9 + verdict resume
 3:00 ─┤ DUAL MODE (60s) — three-way verification → VETTED_DUAL
