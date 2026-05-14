@@ -189,27 +189,45 @@ The differentiator vs. competitors. Schema validators reject sloppy findings bef
 ### Artifact-pair corroboration
 
 ```python
+AVAILABLE_CAVEAT_TRIGGERS = {
+    ArtifactClass.AMCACHE: CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC,
+    ArtifactClass.SHIMCACHE: CaveatID.SHIMCACHE_ORDER_CHANGED_WIN81,
+    ArtifactClass.PREFETCH: CaveatID.PREFETCH_SSD_DISABLED,
+    ArtifactClass.MFT: CaveatID.MFT_SI_STOMPABLE,
+    ArtifactClass.USNJRNL: CaveatID.USNJRNL_WRAPS,
+    ArtifactClass.SYSMON_1: CaveatID.SYSMON_PROCESSGUID_OVER_PID,
+}
+
 class Finding(BaseModel):
     artifact_paths: list[Path] = Field(min_length=2)
     artifact_classes: list[ArtifactClass] = Field(min_length=2)
     caveats_acknowledged: list[CaveatID] = []
     mitre_technique: str | None  # validated against ^T\d{4}(\.\d{3})?$
+    evtx_4624_logon_types: list[int] = []
 
     @model_validator(mode="after")
-    def _execution_claims_need_two_classes(self):
-        is_exec = any(
-            self.mitre_technique and self.mitre_technique.startswith(p)
-            for p in ("T1059", "T1106", "T1204", "T1218", "T1543", "T1547")
+    def _forensic_corroboration(self):
+        # Execution-class techniques need ≥2 distinct artifact classes
+        is_execution = self.mitre_technique and self.mitre_technique.startswith(
+            ("T1059", "T1106", "T1204", "T1218", "T1543", "T1547")
         )
-        if is_exec and len(set(self.artifact_classes)) < 2:
-            raise ValueError(f"execution claim needs ≥2 distinct artifact classes")
-        return self
+        if is_execution and len(set(self.artifact_classes)) < 2:
+            raise ValueError("execution claims require two distinct artifact classes")
 
-    @model_validator(mode="after")
-    def _amcache_caveat_required(self):
-        if ArtifactClass.AMCACHE in self.artifact_classes:
-            if CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC not in self.caveats_acknowledged:
-                raise ValueError("Finding cites Amcache without LastModified caveat")
+        # Each cited artifact class requires its Tier-1 caveat to be acknowledged
+        acknowledged = set(self.caveats_acknowledged)
+        for artifact_class, required_caveat in AVAILABLE_CAVEAT_TRIGGERS.items():
+            if artifact_class in self.artifact_classes and required_caveat not in acknowledged:
+                raise ValueError(f"{required_caveat.value} must be acknowledged")
+
+        # EVTX_4624 logon-type caveat (named exception — not keyed by artifact class alone)
+        evtx_4624_cited = ArtifactClass.EVTX_4624 in self.artifact_classes
+        evtx_type_requires_caveat = not self.evtx_4624_logon_types or any(
+            t in {3, 10} for t in self.evtx_4624_logon_types
+        )
+        if evtx_4624_cited and evtx_type_requires_caveat:
+            if CaveatID.LOGON_TYPE_3_VS_10 not in acknowledged:
+                raise ValueError(f"{CaveatID.LOGON_TYPE_3_VS_10.value} must be acknowledged")
         return self
 ```
 
