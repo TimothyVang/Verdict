@@ -305,7 +305,7 @@ verdict reverify <case_id> --mode dual          # parallel re-run; non-mutating
 verdict status
 verdict ls
 verdict show     <case_id>
-verdict export   <case_id> [--format {json,csv,sigtools_triage}]
+verdict export   <case_id> [--format {jsonl,execution-logs,html}]
 verdict validate <case_id>                      # ledger chain + HMAC integrity
 verdict approve  <finding_id>                   # HMAC-signed approval w/ timestamp
 verdict gc                                      # garbage-collect old cases
