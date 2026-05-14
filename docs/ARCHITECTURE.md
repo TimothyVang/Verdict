@@ -96,7 +96,7 @@ START
 │                 │  parsed_success_criteria_hash. Mismatch
 │                 │  → clarify sub-state (re-prompts within
 │                 │  the same node, not a separate top-level
-│                 │  node — total node count stays 9).
+│                 │  node — total node count stays 8).
 └────────┬────────┘
          ▼  (fanout — 4 parallel branches)
 ┌─────────────────┐

@@ -294,7 +294,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │           ~22 teammate-days                            │
 │  GIAC: GNFA, GCFA, GMLE · runs HW+local LLMs at home   │
 │                                                        │
-│  • Plan-then-Execute LangGraph topology (9 nodes)      │
+│  • Plan-then-Execute LangGraph topology (8 nodes)      │
 │  • Three verifier strategies (Cloud/Airgap/Dual)       │
 │  • Seed-derivation fix (n=3 actually diverse paths)    │
 │  • planner_critique_node (CoVe)                        │

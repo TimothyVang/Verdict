@@ -183,7 +183,7 @@ If you find yourself reaching for a mock to make a test fast or hermetic, you ar
 
 ## 4. Architecture at a glance
 
-9-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4; each branch composed of DenyRuleWrapper / ToolExecutor / LedgerEmitter) → pivot (≤15) → quorum → replan (≤3) → unverifiable_finalize → finalize**.
+8-node LangGraph state machine: **planner → planner_critique (CoVe) → comprehension_gate → executor_fanout (n=4; each branch composed of DenyRuleWrapper / ToolExecutor / LedgerEmitter) → pivot (≤15) → quorum → replan (≤3) → finalize**. (`unverifiable_finalize_node` is a helper called from `replan_node` after budget exhaustion; it is not a registered graph node.)
 
 Three operational modes, auto-detected at `case_init` and **locked**:
 

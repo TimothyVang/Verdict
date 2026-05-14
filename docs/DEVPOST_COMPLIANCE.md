@@ -63,7 +63,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - Mode-aware verifier strategy (cloud-only/airgap/dual auto-detected, mode-locked at case_init)
-- Plan-then-Execute LangGraph with 9 nodes including planner_critique_node (CoVe), comprehension_gate, pivot_node, replan_node, unverifiable_finalize_node
+- Plan-then-Execute LangGraph with 8 registered nodes (planner, planner_critique, comprehension_gate, executor_fanout, pivot, quorum, replan, finalize); `unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node
 - Self-correction via cross-engine quorum CONTESTED → replan loop
 - Bounded recovery: pivot_max=15 (cheap), replan_max=3 (expensive), then explicit UNVERIFIABLE + interrupt()
 - Tool-call argument hallucination caught by Pydantic-AI args_validator before sandbox spawn (W2.E.1)
