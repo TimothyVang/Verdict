@@ -85,7 +85,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 ### 3.2 Multi-artifact corroboration
 
 - `Finding.artifact_paths` and `Finding.artifact_classes` both have `min_length=2`. Single-artifact execution claims are forensically unsound and the validator rejects them.
-- **Execution-class MITRE techniques** — T1059, T1106, T1204, T1218, T1543, T1547 — require **≥2 distinct `ArtifactClass` values** (not just two paths in the same class). Validator: `Finding._execution_requires_two_classes`.
+- **Execution-class MITRE techniques** — T1059, T1106, T1204, T1218, T1543, T1547 — require **≥2 distinct `ArtifactClass` values** (not just two paths in the same class). Validator: `Finding._forensic_corroboration`.
 
 ### 3.3 Tier-1 caveat acknowledgment
 
@@ -300,6 +300,8 @@ curl http://localhost:3000/api/public/health   # expect 200
 verdict doctor                                  # pre-flight: API, SGLang, microsandbox, Langfuse, HMAC key
 verdict mode                                    # show detected + locked mode
 verdict init  <evidence_path> [--mode {cloud,airgap,dual}]
+verdict run-tool <case_id> <tool>               # run a single registered SIFT tool
+verdict run-case <case_id>                      # run the canonical triage sequence
 verdict resume   <case_id>
 verdict reverify <case_id> --mode dual          # parallel re-run; non-mutating
 verdict status   <case_id>
@@ -308,7 +310,8 @@ verdict show     <case_id>
 verdict export   <case_id> [--format {jsonl,execution-logs,html}]
 verdict validate <case_id>                      # ledger chain + HMAC integrity
 verdict approve  <case_id> <finding_id> --approver <approver>   # HMAC-signed approval w/ timestamp
-verdict gc                                      # garbage-collect old cases
+verdict gc                                      # list cases eligible for cleanup
+verdict package-check [--output <zip>]          # validate + optionally zip Devpost artifacts
 verdict health
 ```
 
