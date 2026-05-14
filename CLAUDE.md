@@ -210,7 +210,7 @@ Verdict/
 ├── CLAUDE.md  README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  .env.example
 ├── docs/
 │   ├── ARCHITECTURE.md  BUILD_PLAN.md  DEVPOST_COMPLIANCE.md  DOCS_ACCURACY_REPORT.md
-│   └── spec/           ← frozen audit archive (01..05 + README)
+│   └── spec/           ← frozen audit archive (01..04 + README)
 ├── downloads/          ← SIFT OVA, evidence samples (gitignored)
 └── protocol-sift/      ← upstream submodule
 ```
