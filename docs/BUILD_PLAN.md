@@ -35,7 +35,7 @@ Use the ID in commit messages: `feat(schema): add ArtifactClass enum [W1.B.1]`. 
 VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 1. **Three operational modes** (cloud-only / air-gap-only / dual) auto-selected by infrastructure detection; operator overrides via `--mode={cloud,airgap,dual}`. Mode locked at `case_init`.
-2. **Plan-then-Execute LangGraph topology** (9 nodes) with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` (per-branch composition: `DenyRuleWrapper → ToolExecutor → LedgerEmitter`; the composition is referred to internally as `executor_work` and is a sub-state of fanout, not a separate top-level node) → `pivot_node` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
+2. **Plan-then-Execute LangGraph topology** (8 nodes) with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` (per-branch composition: `DenyRuleWrapper → ToolExecutor → LedgerEmitter`; the composition is referred to internally as `executor_work` and is a sub-state of fanout, not a separate top-level node) → `pivot_node` → `quorum` → `replan` → `finalize`. (`unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node.)
 3. **12 SIFT tool wrappers** as MCP tools running in per-call ephemeral microsandbox VMs: `mmls`, `fls`, `fsstat`, `vol3` (10 plugins), `hayabusa` (split: csv-timeline + filter), `plaso` (split: extract + filter), `MFTECmd`, `RECmd`, `PECmd`, `bulk_extractor`, `exiftool`, `capa`.
 4. **Three-layer immutability defense**: Layer 1 = Claude PreToolUse hook (best-effort, version-dependent caveat per #33106/#37210); Layer 2 = LangGraph `DenyRuleWrapper` (architectural guarantee, all modes); Layer 3 = Microsandbox read-only mount (kernel-enforced).
 5. **Cryptographic chain-of-custody**: HMAC-signed append-only JSONL ledger with `prev_entry_hash`, three-tier ID hierarchy (`case_id` / `langfuse_trace_id` / `langgraph_checkpoint_id`), per-output-file SHA-256, examination-environment metadata (`microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version`).
@@ -56,8 +56,7 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 | Project-level conventions | `CLAUDE.md` (this repo) |
 | Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `src/verdict/planning/prompts/examiner_caveats.md` |
 | Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `src/verdict/playbooks/*.yml` |
-| Tool surface (Rust MCP) | `services/mcp/src/tools/` |
-| Tool surface (Python MCP) | `services/agent_mcp/` |
+| Tool surface | `src/verdict/tools/` |
 | Decision history | `CHANGELOG.md` + `git log --oneline` |
 | Why we picked X over Y | v4.5 §"Lock-In Decisions" + v4.5 §"Per-Tool Deep Dives" |
 
@@ -551,7 +550,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 
 | Gate | Verification command |
 |---|---|
-| All schema tests pass | `uv run --directory services/agent pytest tests/schemas/ -v` |
+| All schema tests pass | `uv run pytest tests/schemas/ -v` |
 | All playbook tests pass | `uv run pytest tests/playbooks/ -v` |
 | All knowledge tests pass | `uv run pytest tests/knowledge/ -v` |
 | Microsandbox spawns + runs vol3 -h on a sample image | `bash scripts/healthcheck.sh microsandbox` |
@@ -572,7 +571,7 @@ If any gate is RED on May 8: **descope before slipping**. Drop in this priority 
 # WEEK 2 (May 9 – May 15): Tool surface + Plan-then-Execute refactor
 
 **Theme:** Wrap all 12 SIFT tools as MCP tools. Refactor LangGraph topology to explicit Plan-then-Execute. Add `planner_critique_node`. Wire per-tool args validators. Split plaso/Hayabusa.
-**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 9 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` (composes DenyRuleWrapper / ToolExecutor / LedgerEmitter per branch) → `pivot` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
+**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 8 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` (composes DenyRuleWrapper / ToolExecutor / LedgerEmitter per branch) → `pivot` → `quorum` → `replan` → `finalize`. (`unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node.)
 **If this week slips:** week 3 verifier work pushes; cut pivot_node + unverifiable_finalize from v1; ship pure replan_max=3 → quietly stuck CONTESTED (v4.4 SHOULD-FIX leaks back in).
 **Cumulative team-days:** Tim ~5, Beaver ~5, Haley ~1, KP ~3.
 
