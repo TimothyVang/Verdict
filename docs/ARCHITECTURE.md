@@ -330,7 +330,7 @@ class LedgerEntry(BaseModel):
     # Ledger chain integrity
     payload: dict
     payload_redactions: list[str] = []
-    prev_entry_hash: str
+    prev_entry_hash: str | None  # None for the first entry in a case
     hmac_sig: str
     schema_version: int = 1
 ```
