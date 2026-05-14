@@ -265,7 +265,7 @@ The SANS-canonical knowledge an agent must internalise. Encoded in `src/verdict/
 - `write() + fsync() + verify-readback` in `LedgerEmitter`. No buffered writes.
 - Bidirectional cross-link with Langfuse trace tree via `trace_id`.
 
-Event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode_lock`, `comprehension_check`, `critique_verdict`, `pivot`, `exhausted_replan`, `evidence_hash_recheck`, `sandbox_failure`, `planner_cot`.
+Event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode_lock`, `comprehension_check`, `critique_verdict`, `pivot`, `exhausted_replan`, `evidence_hash_recheck`, `sandbox_failure`, `planner_cot`, `case_conclusion`.
 
 → Schema fields, validation flow, key-management decisions: **`docs/ARCHITECTURE.md` §5**.
 

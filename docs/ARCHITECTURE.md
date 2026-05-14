@@ -282,7 +282,7 @@ class LedgerEntry(BaseModel):
         "case_init", "tool_call", "finding", "approval", "rejection",
         "mode_lock", "comprehension_check", "critique_verdict",
         "pivot", "exhausted_replan", "evidence_hash_recheck",
-        "sandbox_failure", "planner_cot",
+        "sandbox_failure", "planner_cot", "case_conclusion",
     ]
     timestamp_utc: datetime
 
@@ -301,10 +301,10 @@ class LedgerEntry(BaseModel):
     langgraph_checkpoint_id: str
 
     # Examination-environment metadata (NIST SP 800-86 §5.1.4)
-    microsandbox_version: str | None = None
-    rootfs_sha256: str | None = None
-    tool_version: str | None = None
-    kernel_version: str | None = None
+    microsandbox_version: str
+    rootfs_sha256: str
+    tool_version: str
+    kernel_version: str
 
     # Per-output-file hashes (NIST SP 800-86 §5.1.2)
     output_files_sha256: dict[str, str] = {}
