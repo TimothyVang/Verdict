@@ -285,7 +285,8 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │  • OpenLLMetry / Langfuse instrumentation              │
 │  • TSI secret injection + tcpdump demo                 │
 │  • Mode autodetect + verdict CLI                       │
-│  • THREAT_MODEL.md + FAILURE_MODES.md + CLI.md         │
+│  • Threat model (ARCHITECTURE.md §9) + FAILURE_MODES.md│
+│    + CLI reference (RELEASE.md)                        │
 │  • Devpost packaging + submission                      │
 └────────────────────────────────────────────────────────┘
 
