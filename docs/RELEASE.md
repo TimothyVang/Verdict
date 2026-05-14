@@ -90,7 +90,7 @@ Planned v1 command surface. Commands remain documentation-only until their imple
 | `verdict gc` | Rotate local logs and old traces | Roadmap |
 | `verdict health` | Machine-readable health endpoint/check | Roadmap |
 | `verdict doctor` | Human pre-flight for dependencies/secrets/services | Roadmap W5 |
-| `verdict approve <finding_id>` | HMAC-sign human approval | Roadmap W5 |
+| `verdict approve <case_id> <finding_id> --approver <approver>` | HMAC-sign human approval | Roadmap W5 |
 
 Export formats:
 
