@@ -271,7 +271,7 @@ If the run fails before producing a Finding, you have a P0 environment problem. 
 Authority order (escalate left-to-right):
 
 1. **NotebookLM Q&A:** https://notebooklm.google.com/notebook/f0957a60-6fb2-452b-93d4-ecd73ba47779?authuser=1 — chief location for "how does X work?"
-2. **`docs/` and the audit history in `archive/`** — most "why did we choose X?" questions are answered in `archive/03-audit-v4.5.md`.
+2. **`docs/` and the audit history in `docs/spec/`** — most "why did we choose X?" questions are answered in `docs/spec/03-audit-v4.5.md`.
 3. **Team chat** — PUG / Beaver / Haley / KP. Use the appropriate thread; don't DM PUG for things the team should see.
 4. **Devpost platform issues only:** https://help.devpost.com/
 
