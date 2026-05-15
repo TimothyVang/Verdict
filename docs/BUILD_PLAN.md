@@ -296,7 +296,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.2.c** — Commit: `docs(build): SIFT VM provisioning checklist [W1.A.2]`
 
 ### W1.A.3 — Microsandbox install
-- [ ] **W1.A.3.a** — Run `curl -sSL https://get.microsandbox.dev | sh` inside SIFT VM. Verify `microsandbox --version` returns. Verify `microsandbox-mcp` binary present.
+- [ ] **W1.A.3.a** — Run `curl -fsSL https://install.microsandbox.dev | sh` inside SIFT VM. Verify `microsandbox --version` returns. Verify `microsandbox-mcp` binary present.
 - [ ] **W1.A.3.b** — Smoke test: spawn an Ubuntu 22.04 microVM, run `vol3 -h`, destroy. Document spawn time in `docs/RELEASE.md` (target <500ms).
 - [ ] **W1.A.3.c** — Build `verdict-sift-tools` rootfs Docker image with the 12 forensic tools pinned to versions: `vol3==2.10.0`, `hayabusa==2.18.0`, `plaso==20260427`, `MFTECmd==1.2.x`, etc. Push as `verdict-sift-tools:v0.1` and capture SHA-256.
 - [ ] **W1.A.3.d** — Commit: `feat(sandbox): microsandbox install + verdict-sift-tools rootfs pinned [W1.A.3]`
