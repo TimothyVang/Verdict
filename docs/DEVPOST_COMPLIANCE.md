@@ -146,7 +146,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - `scripts/install.sh` with cloud credential detection (`CLAUDE_CODE_OAUTH_TOKEN`, interactive Claude Code OAuth, `ANTHROPIC_API_KEY`, optional host-side `OPENROUTER_API_KEY`); auto-detects and configures without passing secrets into microVMs
 - `verdict doctor` pre-flight (W5.A.4) reports each component status before first use
 - `docs/RELEASE.md` reproducible-build section verified from a fresh SIFT VM and second VM in W6.C.3
-- Full CLI surface: `verdict {init, resume, reverify, status, ls, show, export, validate, mode, gc, health, doctor}`
+- Full CLI surface: `verdict {doctor, mode, init, run-tool, run-case, resume, reverify, status, ls, show, export, validate, approve, gc, package-check, health}`
 - Consolidated documentation set: README, ARCHITECTURE, DEVPOST_COMPLIANCE, RELEASE, FAILURE_MODES, CASE_ISOLATION, and the docs wiki index
 - Conventional Commits with task ID embedded (e.g. `feat(schema): foo [W1.B.1]`) — git log archeology trivial
 - Architecture diagram as rendered visual (`docs/ARCHITECTURE_DIAGRAM.svg`)
