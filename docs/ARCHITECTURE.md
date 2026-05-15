@@ -142,7 +142,7 @@ Real DFIR pivots 8–15 times per investigation; v4.4 research showed that bound
 
 ### Pivot state-merge contract
 
-When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
+When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.positive_hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
 
 ### Interrupt idempotency contract
 
@@ -305,7 +305,7 @@ class LedgerEntry(BaseModel):
     timestamp_utc: datetime
 
     # Mode lock
-    mode_at_case_init: Mode
+    mode_at_case_init: str
     verifier_strategy_used: str
 
     # Langfuse cross-references
