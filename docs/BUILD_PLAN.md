@@ -1539,21 +1539,13 @@ class ToolOutput(BaseModel):
 
 ## A.5 — `src/verdict/verification/cloud_self_consistency.py`
 
+`derive_seeds` is already shipped in `src/verdict/verification/derive_seeds.py`
+(W1.C.1). Implement `CloudSelfConsistency` here to use it:
+
 ```python
 from blake3 import blake3
 import asyncio
-
-def derive_seeds(case_id: str) -> tuple[int, int, int]:
-    """Three different seeds, deterministic per case for reproducibility,
-    distinct so n=3 actually samples three different reasoning paths.
-    Wang et al. 2022 (arXiv:2203.11171) requires diverse paths — temp 0
-    + same seed = identical output = n=1 in disguise."""
-    h = blake3(case_id.encode())
-    return (
-        int.from_bytes(h.derive_key("seed_a").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_b").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_c").digest()[:4], "big"),
-    )
+from verdict.verification.derive_seeds import derive_seeds
 
 class CloudSelfConsistency:
     async def verify(self, plan, evidence_hash):
@@ -1564,6 +1556,10 @@ class CloudSelfConsistency:
         ])
         return await self.usc_judge(samples, plan)  # Chen 2023
 ```
+
+`derive_seeds` uses a keyed blake3 digest (`key=b"VERDICT self-consistency seeds\0\0"`,
+`digest(length=12)`) — do not inline a copy. See `docs/ARCHITECTURE.md` §1 for the
+rationale and the shipping implementation.
 
 (Other schemas — Hypothesis, InvestigationPlan, Finding, LedgerEntry — are large; reference v4.5 lines 195–290 + v4.6 schema patch sections.)
 
