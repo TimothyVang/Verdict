@@ -67,7 +67,7 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 
 ## Stack lock-in (one paragraph each — full rationale in v4.5)
 
-- **Cloud agent:** Claude Code + Claude Agent SDK (Python). Used in cloud-only and dual modes. Credential paths: `CLAUDE_CODE_OAUTH_TOKEN` env var, interactive `~/.claude/`, `ANTHROPIC_API_KEY`, or optional host-side `OPENROUTER_API_KEY` fallback for build-side AI agents. OAuth/API tokens are NOT redistributable and never enter microsandboxes.
+- **Cloud agent:** Claude Code + Claude Agent SDK (Python). Used in cloud-only and dual modes. Credential paths: `CLAUDE_CODE_OAUTH_TOKEN` env var, interactive `~/.claude/`, `ANTHROPIC_API_KEY`, or optional host-side `OPENROUTER_API_KEY` fallback for runtime inference. OAuth/API tokens are NOT redistributable and never enter microsandboxes.
 - **Local inference primary:** SGLang (Apache-2.0). RadixAttention prefix cache; native `--tool-call-parser glm` and `qwen` families per current SGLang docs. Used in air-gap and dual modes.
 - **Local inference fallback:** vLLM (Apache-2.0). Pinned to a release containing PR #39055 (Qwen3 reasoning-parser fix).
 - **Local Model A:** Qwen3-30B-A3B-Thinking-2507 (Apache-2.0). Air-gap planner/executor; dual-mode local executor/verifier lane. Cloud-only remains Claude Code/Agent SDK only because the mode trigger is GPU absent.
@@ -1456,8 +1456,10 @@ class ArtifactClass(str, Enum):
     SANS FOR500 doctrine: no single artifact proves execution.
     Cited from CLAUDE.md §3.2 and docs/ARCHITECTURE.md §4."""
     PREFETCH = "prefetch"
+    POWERSHELL_TRANSCRIPT = "powershell_transcript"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
+    EVTX_4624 = "evtx_4624"               # Logon events
     EVTX_4688 = "evtx_4688"               # Process Creation
     SYSMON_1 = "sysmon_1"                 # Sysmon ProcessCreate
     NETWORK = "network"                   # netscan, conn logs
@@ -1465,6 +1467,7 @@ class ArtifactClass(str, Enum):
     TASK_SCHEDULER = "task_scheduler"
     WMI_SUBSCRIPTION = "wmi_subscription"
     MFT = "mft"                           # $MFT, $J/UsnJrnl
+    USNJRNL = "usnjrnl"
     PROCESS_MEMORY = "process_memory"     # malfind/RWX/hollowed
     YARA_HIT = "yara_hit"
     SIGMA_HIT = "sigma_hit"

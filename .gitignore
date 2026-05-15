@@ -5,6 +5,8 @@ downloads/sift-workstation/*
 !downloads/sift-workstation/.gitkeep
 downloads/evidence-samples/*
 !downloads/evidence-samples/.gitkeep
+downloads/volatility-symbols/*
+!downloads/volatility-symbols/.gitkeep
 
 # Case data + ledgers (per-investigation, never committed)
 cases/
@@ -70,6 +72,7 @@ clickhouse-data/
 
 # Inspect AI logs
 inspect_logs/
+logs/*.eval
 
 # Proof run artifacts: keep README/checklists, ignore per-run logs and captures
 proof/runs/

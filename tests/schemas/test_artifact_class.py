@@ -6,6 +6,7 @@ from verdict.schemas.artifact_class import ArtifactClass
 def test_enum_has_required_members_for_tier_1_caveat_triggers() -> None:
     assert {member.value for member in ArtifactClass} == {
         "prefetch",
+        "powershell_transcript",
         "amcache",
         "shimcache",
         "evtx_4624",
