@@ -91,6 +91,9 @@ Planned v1 command surface. Commands remain documentation-only until their imple
 | `verdict health` | Machine-readable health endpoint/check | Roadmap |
 | `verdict doctor` | Human pre-flight for dependencies/secrets/services | Roadmap W5 |
 | `verdict approve <case_id> <finding_id> --approver <approver>` | HMAC-sign human approval | Roadmap W5 |
+| `verdict run-tool <case_id> <tool>` | Run a single registered SIFT tool | Implemented |
+| `verdict run-case <case_id>` | Run canonical real-tool triage sequence | Implemented |
+| `verdict package-check [--output <zip>]` | Validate and optionally zip Devpost artifacts | Implemented |
 
 Export formats:
 
