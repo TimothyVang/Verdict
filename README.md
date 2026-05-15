@@ -213,7 +213,13 @@ Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-key
 ### CLI surface (one-liner)
 
 ```
-verdict {doctor, mode, init, resume, reverify, status, ls, show, export, validate, approve, gc, health}
+verdict {doctor, mode, init, investigate, run-case, run-tool, resume, reverify, status, ls, show, export, validate, approve, gc, package-check, health}
 ```
+
+`verdict investigate <evidence_path> [--export-dir <path>]` is the autonomous evidence-to-report spine: it initializes the case, runs the local case workflow, validates the HMAC ledger, writes execution-log, analyst-report, and manifest exports, and leaves final approval as a separate human action.
+
+`verdict approve <case_id> <finding_id> --approver <name>` signs only findings from the latest non-superseded case run; nonexistent or superseded finding IDs are rejected without appending approval entries.
+
+`verdict ls`, `verdict status <case_id>`, and `verdict show <case_id>` provide local case visibility without mutating case state.
 
 `verdict reverify <case_id> --mode <cloud|airgap|dual>` re-runs verification under a new mode and writes a *parallel* verdict chain — the original ledger is never mutated. Full CLI reference in `CLAUDE.md` §10.2; flag spec in `docs/BUILD_PLAN.md` W3.C.2.
