@@ -87,6 +87,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Fix:** Add task to `BUILD_PLAN.md` `W1.A.7` (pre-commit setup): write a ~40-LOC custom AST hook (`scripts/check_no_mocks.py`) that walks all `.py` files under `verdict/` and `tests/` and rejects any of: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `if .*(MOCK|TEST_MODE).*:`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Wire as a `pre-commit` local hook.
 
+**Fix status:** `scripts/check_no_mocks.py` exists and is wired as the `check-no-mocks` hook in `.pre-commit-config.yaml`, scanning `src/verdict tests scripts swarm`.
+
 ---
 
 ## HIGH — must fix before W2.B (LangGraph compile)
@@ -184,6 +186,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 **Reality:** No `.pre-commit-config.yaml` exists. Line 140 uses `test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks` — silently no-ops because the file is missing. Line 220's "hooks installed; green" is currently a lie. The grep gate at line 556 only catches missing prefixes after the fact (does not block bad commits). All §3.7 rules are unenforced.
 
 **Fix:** Pull `.pre-commit-config.yaml` creation into the W1.A.7 acceptance criteria (today it's implicit). Bare-minimum config: (a) `commitizen check` against a regex requiring `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$`; (b) `ruff check --select ALL`; (c) the `scripts/check_no_mocks.py` AST hook from D1; (d) `cargo fmt --check`. Once the file lands, drop the `test -f` short-circuit in `CONTRIBUTING.md` line 140.
+
+**Fix status:** `.pre-commit-config.yaml` now exists at the repo root with `verdict-commit-msg`, `check-no-mocks`, and `ruff-check` local hooks. `CONTRIBUTING.md` no longer guards the `pre-commit install` call with `test -f`.
 
 ---
 
