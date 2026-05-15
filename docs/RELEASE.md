@@ -78,19 +78,19 @@ Planned v1 command surface. Commands remain documentation-only until their imple
 
 | Command | Purpose | Status |
 |---|---|---|
-| `verdict init <evidence>` | Create case, hash evidence, detect/lock mode | Roadmap W1/W5 |
-| `verdict resume <case_id>` | Resume interrupted chain from checkpoint | Roadmap W3 |
-| `verdict reverify <case_id> --mode <mode>` | Create parallel verification chain | Roadmap W5 |
-| `verdict status <case_id>` | Show current graph/checkpoint status | Roadmap |
-| `verdict ls` | List local cases | Roadmap |
-| `verdict show <case_id>` | Render findings/chains | Roadmap |
-| `verdict export <case_id>` | Export report, JSONL, or execution logs | Roadmap |
-| `verdict validate <case_id>` | Verify ledger HMAC/chain and hashes | Roadmap W3 |
-| `verdict mode` | Explain detected mode and prerequisites | Roadmap W5 |
-| `verdict gc` | Rotate local logs and old traces | Roadmap |
-| `verdict health` | Machine-readable health endpoint/check | Roadmap |
-| `verdict doctor` | Human pre-flight for dependencies/secrets/services | Roadmap W5 |
-| `verdict approve <case_id> <finding_id> --approver <approver>` | HMAC-sign human approval | Roadmap W5 |
+| `verdict init <evidence>` | Create case, hash evidence, detect/lock mode | Implemented |
+| `verdict resume <case_id>` | Resume interrupted chain from checkpoint | Implemented |
+| `verdict reverify <case_id> --mode <mode>` | Create parallel verification chain | Implemented |
+| `verdict status <case_id>` | Show current graph/checkpoint status | Implemented |
+| `verdict ls` | List local cases | Implemented |
+| `verdict show <case_id>` | Render findings/chains | Implemented |
+| `verdict export <case_id>` | Export report, JSONL, or execution logs | Implemented |
+| `verdict validate <case_id>` | Verify ledger HMAC/chain and hashes | Implemented |
+| `verdict mode` | Explain detected mode and prerequisites | Implemented |
+| `verdict gc` | Rotate local logs and old traces | Implemented |
+| `verdict health` | Machine-readable health endpoint/check | Implemented |
+| `verdict doctor` | Human pre-flight for dependencies/secrets/services | Implemented |
+| `verdict approve <case_id> <finding_id> --approver <approver>` | HMAC-sign human approval | Implemented |
 | `verdict run-tool <case_id> <tool>` | Run a single registered SIFT tool | Implemented |
 | `verdict run-case <case_id>` | Run canonical real-tool triage sequence | Implemented |
 | `verdict package-check [--output <zip>]` | Validate and optionally zip Devpost artifacts | Implemented |
