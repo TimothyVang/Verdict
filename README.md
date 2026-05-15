@@ -130,7 +130,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
 
 ```
 RISK #1 — Microsandbox hits a blocker week 4+
-  Likelihood: MEDIUM (pre-1.0; latest 0.1.x).  Impact: HIGH (kills TSI hero shot).
+  Likelihood: MEDIUM (pre-1.0; pinned 0.4.x line).  Impact: HIGH (kills TSI hero shot).
   Mitigation: Test it HARD in week 2, not week 4.
 
 RISK #2 — Case 001 doesn't disagree by end of week 4
