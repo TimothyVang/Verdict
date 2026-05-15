@@ -446,7 +446,7 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 
 ### W1.E.1 — `vol_psscan` MCP tool wrapper
 - [ ] **W1.E.1.a** — Failing integration test `tests/tools/test_vol_psscan.py::test_psscan_returns_pids`. Require `verdict doctor --mode airgap` and a real memory image from `inspect_ai/ground_truth/case_001_lolbins/`; invoke `vol3 windows.psscan` through the real microsandbox provider; assert returned `ToolOutput` contains process artifacts and a valid invocation hash. Run → RED.
-- [ ] **W1.E.1.b** — Implement `src/verdict/tools/vol3/psscan.py` mirroring `vol_pslist` shape from project's `services/mcp/`.
+- [ ] **W1.E.1.b** — Implement `src/verdict/tools/vol3/psscan.py` mirroring the `ToolWrapper` shape from `src/verdict/tools/base.py`.
 - [ ] **W1.E.1.c** — Commit: `feat(tools): vol_psscan wrapper for DKOM/T1014 cross-validation [W1.E.1]`
 
 ### W1.E.2 — Tool wrapper base class
