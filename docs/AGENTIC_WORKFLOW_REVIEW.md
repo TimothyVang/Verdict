@@ -251,6 +251,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Fix:** Stage a real workflow `.github/workflows/eval-hallucination-gate.yml` in W1.A.9 that runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the job must fail closed with `scorer_not_implemented` rather than returning a passing score. W1-W3 may publish an advisory ≤10% trend report; W4+ release gates are hard ≤5%.
 
+**Fix status:** `.github/workflows/eval-hallucination-gate.yml` now exists (landed in W1.A.9). The file runs `inspect eval` against the three per-mode eval tasks and fails closed when the scorer is not yet implemented.
+
 ---
 
 ## LOW — verified accurate (no action)
@@ -282,7 +284,7 @@ The following workflow claims were checked and hold up:
 8. **D2** — BUILD_PLAN sweep: every `*.a` "Failing test" subtask names the literal RED assertion; add RED-line policy to BUILD_PLAN intro.
 9. **R12** — Caveat-trigger-keying note at top of CLAUDE.md §3.3 table.
 10. **R13** — Sub-technique-applies-to-negatives sentence appended to CLAUDE.md §3.5.
-11. **D4** — Stage `.github/workflows/eval-hallucination-gate.yml` fail-closed task in W1.A.9.
+11. **D4 — RESOLVED** — `.github/workflows/eval-hallucination-gate.yml` now exists (W1.A.9); see Fix status note above.
 12. **R6, R10, R11, R8 — RESOLVED** — `docs/FAILURE_MODES.md` covers branch timeout, sandbox spawn failure, and TSI proxy failure; `docs/CASE_ISOLATION.md` covers reverify chain semantics.
 
 **Estimated fix effort:** ~75 minutes for items 1–11 (in-place edits to 5 existing docs); items 12 are next-turn doc creation already scoped.
