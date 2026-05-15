@@ -23,16 +23,20 @@ def _require_real_ground_truth(mode: str) -> None:
             f"missing case directories: {', '.join(missing_dirs)}"
         )
 
-    evidence_files = [
+    for case in REQUIRED_CASE_DIRS:
+        if not _case_evidence_files(GROUND_TRUTH_ROOT / case):
+            raise GroundTruthMissingError(
+                f"{mode} eval requires real evidence under inspect_ai/ground_truth/{case}; "
+                "no .E01, .raw, .mem, .pcap, or .zip files found"
+            )
+
+
+def _case_evidence_files(case_dir: Path) -> list[Path]:
+    return sorted(
         path
-        for path in GROUND_TRUTH_ROOT.rglob("*")
+        for path in case_dir.rglob("*")
         if path.is_file() and path.suffix.lower() in REAL_EVIDENCE_SUFFIXES
-    ]
-    if not evidence_files:
-        raise GroundTruthMissingError(
-            f"{mode} eval requires real evidence under inspect_ai/ground_truth; "
-            "no .E01, .raw, .mem, .pcap, or .zip files found"
-        )
+    )
 
 
 def _not_wired(mode: str) -> Task:

@@ -1,0 +1,22 @@
+Case ID: case_001
+Scope: Cloud-only VERDICT proof planning input for SANS FIND EVIL submission evidence.
+
+Evidence inventory:
+- Disk image: base-wkstn-01-cdrive.E01
+- Memory image: base-wkstn-01-memory.mem
+- Case manifest hash: 1fe226a2db026306aec3dbb80f5a81e42c0fcc8a57d026b9d6f9f4f7ad162217
+
+Known local run evidence from the HMAC ledger:
+- Mode: CLOUD
+- Ledger events: 10
+- Ledger validation: valid
+- Case conclusion status: EVIL_FOUND
+- Primary rationale: evidence consistent with rundll32 LOLBin execution; PowerShell transcript invocation is corroborated by Prefetch listing evidence.
+- Finding artifact classes: powershell_transcript and prefetch
+- Caveat acknowledged: PREFETCH_SSD_DISABLED
+
+Planner expectations:
+- Produce an InvestigationPlan JSON object only.
+- Include at least one positive hypothesis and at least one meaningful negative hypothesis.
+- Use epistemic phrasing and MITRE sub-technique precision where determinable.
+- Prefer validating LOLBin execution with at least two artifact classes.
