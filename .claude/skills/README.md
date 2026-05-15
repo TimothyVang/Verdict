@@ -14,7 +14,7 @@ Project-scoped skills loaded automatically by every Claude Code session in this 
 | `writing-plans/` | obra/superpowers | Decompose feature into 2–5-min tasks with file paths + tests-before-code. |
 | `executing-plans/` | obra/superpowers | Batch-execute a plan with human checkpoints between steps. |
 | `test-driven-development/` | obra/superpowers | Strict RED → GREEN → REFACTOR. Verdict-house-rules adds `[W#.#.#]` requirement on top. |
-| `subagent-driven-development/` | obra/superpowers | Dispatch implementation to a fresh subagent (plan + tests only); a second subagent reviews. Maps onto `swarm/` topology. |
+| `subagent-driven-development/` | obra/superpowers | Dispatch implementation to a fresh subagent (plan + tests only); a second subagent reviews. Local development pattern only. |
 | `dispatching-parallel-agents/` | obra/superpowers | Concurrent subagent workflows. |
 | `using-git-worktrees/` | obra/superpowers | Isolated parallel branches. |
 | `systematic-debugging/` | obra/superpowers | 4-phase root-cause loop. Forbids fixing what isn't understood. |

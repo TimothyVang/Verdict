@@ -14,7 +14,7 @@ Devpost rules → [`DEVPOST_COMPLIANCE.md`](DEVPOST_COMPLIANCE.md) → [`ARCHITE
 
 Code wins over docs. If code is right and a doc is wrong, fix the doc — don't roll back the code.
 
-`AGENT_SWARM.md`, `MCP_FRAMEWORK.md`, `SKILLS_FRAMEWORK.md`, `SKILLS_LICENSE_AUDIT.md`, and `AGENTIC_WORKFLOW_REVIEW.md` are **engineering scaffolding** — they sit *below* `BUILD_PLAN.md` / `CLAUDE.md` and never override the runtime authority chain (each says so in its own header).
+`MCP_FRAMEWORK.md`, `SKILLS_FRAMEWORK.md`, `SKILLS_LICENSE_AUDIT.md`, and `AGENTIC_WORKFLOW_REVIEW.md` are **engineering scaffolding** — they sit *below* `BUILD_PLAN.md` / `CLAUDE.md` and never override the runtime authority chain (each says so in its own header).
 
 ## Where to start
 
@@ -24,7 +24,7 @@ Code wins over docs. If code is right and a doc is wrong, fix the doc — don't 
 | A Claude Code session picking up work | root [`../CLAUDE.md`](../CLAUDE.md) → [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`BUILD_PLAN.md`](BUILD_PLAN.md) → the task ID you were assigned |
 | Asking "why was X decided?" | [`spec/README.md`](spec/README.md) → the relevant numbered audit |
 | Preparing the Devpost submission | [`DEVPOST_COMPLIANCE.md`](DEVPOST_COMPLIANCE.md) → [`hackathon/RULES.md`](hackathon/RULES.md) → [`hackathon/OVERVIEW.md`](hackathon/OVERVIEW.md) |
-| Wiring an MCP server, skill, or swarm worker | [`MCP_FRAMEWORK.md`](MCP_FRAMEWORK.md) / [`SKILLS_FRAMEWORK.md`](SKILLS_FRAMEWORK.md) / [`AGENT_SWARM.md`](AGENT_SWARM.md) (whichever applies) |
+| Wiring an MCP server or skill | [`MCP_FRAMEWORK.md`](MCP_FRAMEWORK.md) / [`SKILLS_FRAMEWORK.md`](SKILLS_FRAMEWORK.md) (whichever applies) |
 | Auditing cross-doc consistency | [`DOCS_ACCURACY_REPORT.md`](DOCS_ACCURACY_REPORT.md) → [`AGENTIC_WORKFLOW_REVIEW.md`](AGENTIC_WORKFLOW_REVIEW.md) |
 
 ## Index — every doc, grouped by role
@@ -65,7 +65,6 @@ Each of these explicitly subordinates itself to `BUILD_PLAN.md` and `../CLAUDE.m
 
 | File | Role | When to read |
 |------|------|--------------|
-| [`AGENT_SWARM.md`](AGENT_SWARM.md) | Build-side LLM swarm spec — conductor / worker / reviewer / auditor agents that take `BUILD_PLAN.md` task IDs and open PRs. State machine, role contracts, coordination protocol. The `swarm/` source tree is its executable skeleton. | Before reading anything under `swarm/`; before reviewing a PR authored by a `swarm:*` worker. |
 | [`MCP_FRAMEWORK.md`](MCP_FRAMEWORK.md) | Mode-scoped MCP allowlists + credential-isolation discipline. Every entry in `.mcp*.json` traces here. License-gated by `../CLAUDE.md` §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp*.json`. |
 | [`SKILLS_FRAMEWORK.md`](SKILLS_FRAMEWORK.md) | How the vendored skills under `.claude/skills/` compose into a Plan → TDD → subagent-driven-dev → Review → Commit pipeline. `verdict-house-rules` is the overlay that enforces `../CLAUDE.md` §3 over upstream skill defaults. | Before authoring a new workflow, before vendoring a new skill. |
 | [`SKILLS_LICENSE_AUDIT.md`](SKILLS_LICENSE_AUDIT.md) | Per-skill license audit log. Every entry under `.claude/skills/` (and any future MCP, hook, vendored artifact) gets a row here per `../CLAUDE.md` §3.8. | Before vendoring anything new; when answering "is X license-clean?". |
@@ -96,7 +95,7 @@ These are cited by `../CLAUDE.md` and `BUILD_PLAN.md` but not yet written. Each 
 - **`BUILD_PLAN.md` task IDs are immutable** once a contributor has committed against them. New work gets a new ID.
 - **Keep this index in sync.** Any new file under `docs/` needs a row above; any rename or deletion needs to be reflected here. Same for the authority table in `../CLAUDE.md` §2.
 - **Wiki-nav header on every new doc.** Any new `docs/*.md` (except files under `spec/`) must carry a one-line `> **Wiki:** [Index](README.md) · …` strip directly under its H1, linking to the index plus 4–6 closest siblings. Subdirectory docs use `../` prefixes (see `hackathon/RULES.md` for the pattern).
-- **Engineering-scaffolding docs (`AGENT_SWARM.md`, `MCP_FRAMEWORK.md`, `SKILLS_FRAMEWORK.md`, `SKILLS_LICENSE_AUDIT.md`, `AGENTIC_WORKFLOW_REVIEW.md`)** must keep their "below `BUILD_PLAN.md` and `CLAUDE.md`" disclaimer in their headers — they are not allowed to drift into supplanting authority.
+- **Engineering-scaffolding docs (`MCP_FRAMEWORK.md`, `SKILLS_FRAMEWORK.md`, `SKILLS_LICENSE_AUDIT.md`, `AGENTIC_WORKFLOW_REVIEW.md`)** must keep their "below `BUILD_PLAN.md` and `CLAUDE.md`" disclaimer in their headers — they are not allowed to drift into supplanting authority.
 
 ## Note on `protocol-sift/`
 

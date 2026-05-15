@@ -213,7 +213,7 @@ VETTED is the schema's vetted-by-quorum outcome; the persisted Finding carries t
 
 ## 6-week roadmap
 
-> **Where we are now — 2026-05-02 (W1 Day 1):** Vang has solo-shipped ~190 commits across **W0** (bootstrap, swarm, skills, devcontainer, Langfuse), **W1.A** (doc wiki, infra), **W1.B** partial (`ArtifactClass`, `ToolOutput` w/ blake3), **W1.E.2** (`ToolWrapper` base), and **all of W2.C** (`DenyRuleWrapper` + `ToolExecutor` + `LedgerEmitter` + composed `executor_work`). That's ~3 nominal-weeks of solo throughput, ahead of the planned Tim track. **Beaver / Haley / KP are at 0 commits.** The Gantt below is the *planned* 4-person allocation; if the team stays solo, the descope priority list at the bottom of "What could kill us" kicks in by W4.
+> **Where we are now — 2026-05-02 (W1 Day 1):** Vang has solo-shipped ~190 commits across **W0** (bootstrap, skills, devcontainer, Langfuse), **W1.A** (doc wiki, infra), **W1.B** partial (`ArtifactClass`, `ToolOutput` w/ blake3), **W1.E.2** (`ToolWrapper` base), and **all of W2.C** (`DenyRuleWrapper` + `ToolExecutor` + `LedgerEmitter` + composed `executor_work`). That's ~3 nominal-weeks of solo throughput, ahead of the planned Tim track. **Beaver / Haley / KP are at 0 commits.** The Gantt below is the *planned* 4-person allocation; if the team stays solo, the descope priority list at the bottom of "What could kill us" kicks in by W4.
 
 ```
 WEEK 1 ── May 2-8 ── FOUNDATIONS + SCHEMAS
