@@ -290,7 +290,7 @@ sglang_server_v1 --model-path /path/to/qwen3 --tool-call-parser qwen --port 3000
 sglang_server_v1 --model-path /path/to/glm-4.5-air --tool-call-parser glm --port 30001
 
 # Langfuse v2 self-host
-docker-compose up -d
+docker-compose -f infra/langfuse/docker-compose.yml up -d
 curl http://localhost:3000/api/public/health   # expect 200
 ```
 

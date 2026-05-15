@@ -561,7 +561,7 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 | **SGLang** serving Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) | Air-gap + dual modes (planner/executor) | `sglang_server_v1 --model-path … --tool-call-parser qwen --port 30000` |
 | **SGLang** serving GLM-4.5-Air (MIT) | Air-gap + dual modes (verifier only) | `sglang_server_v1 --model-path … --tool-call-parser glm --port 30001` |
 | **Anthropic / OpenRouter API** | Cloud + dual modes | `ANTHROPIC_API_KEY` preferred; `OPENROUTER_API_KEY` optional host-side AI-agent fallback. OAuth/API tokens are per-contributor and never enter microVMs. |
-| **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose up -d` |
+| **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose -f infra/langfuse/docker-compose.yml up -d` |
 | **HMAC signing key** | Ledger integrity (CLAUDE.md §3.9) | TPM (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` |
 
 `verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, Langfuse healthy, HMAC key resolvable. CI fails closed if it fails.
@@ -656,7 +656,7 @@ Full template in `.env.example`. **Never** commit `.env` — `.gitignore` covers
 ```bash
 bash scripts/bootstrap-dev.sh   # toolchain (uv, rustup, nvm, microsandbox), pinned versions, idempotent
 uv sync                         # Python deps
-docker-compose up -d            # Langfuse v2
+docker-compose -f infra/langfuse/docker-compose.yml up -d  # Langfuse v2
 verdict doctor                  # pre-flight: all of the above must be green
 ```
 
