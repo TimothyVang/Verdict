@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VERDICT Analyst Report - case_003</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.45; margin: 2rem; color: #172033; }
+h1, h2, h3 { color: #0f2742; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #bac4d1; padding: 0.45rem; vertical-align: top; }
+th { background: #eef3f8; text-align: left; }
+.finding, figure { border: 1px solid #9fb1c5; padding: 1rem; margin: 1rem 0; }
+.citation { font-family: Consolas, monospace; color: #143d66; }
+.review li { margin: 0.35rem 0; }
+svg { width: 100%; max-width: 980px; height: auto; border: 1px solid #cbd5df; }
+</style>
+</head>
+<body>
+<h1>VERDICT Analyst Report</h1>
+<p><strong>Case:</strong> case_003</p>
+<section>
+<h2>Executive Summary</h2>
+<p><strong>Case conclusion:</strong> EVIL_FOUND</p>
+<p>Evidence is consistent with hidden process activity: psscan PID(s) absent from pslist: 7132, 9936, 10368, 11936.</p>
+</section>
+<section class="review">
+<h2>Human Review Checklist</h2>
+<ul>
+<li>Confirm every narrative claim cites a <span class="citation">CIT-####</span> item.</li>
+<li>Verify evidence hashes against the case manifest before relying on findings.</li>
+<li>Review rendered evidence figures and linked tool-output hashes for each finding.</li>
+<li>Confirm caveats are acknowledged before approving execution claims.</li>
+<li>Approve or reject findings only after the cited artifacts prove the claim.</li>
+</ul>
+</section>
+<section>
+<h2>Evidence Inventory</h2>
+<table><thead><tr><th>Type</th><th>Path</th><th>SHA-256</th><th>Size</th></tr></thead>
+<tbody><tr><td>disk_image</td><td>base-rd-01-cdrive.E01</td><td class="citation">12a622aa073dbbda3a4983014328a6085c8247ce93fe47fd6ba7483ed9d19aab</td><td>17820145297</td></tr>
+<tr><td>memory</td><td>base-rd01-memory.mem</td><td class="citation">83456c716bbbeb116b474b87473445629db5dd018d0c667ec99f088871e1cbca</td><td>3221225472</td></tr>
+<tr><td>disk_image</td><td>base-wkstn-05-cdrive.E01</td><td class="citation">a94f2a866e2e562c58c3fbcd3a94882f2d3c3db3c66a5e5eedf16a4b1c0a65e0</td><td>14809873122</td></tr>
+<tr><td>memory</td><td>base-wkstn-05-memory.mem</td><td class="citation">74ff679b25727d5fb7a8f70217d6fad965efd806260b7d224f0b38bd1c436115</td><td>3221225472</td></tr></tbody></table>
+</section>
+<section>
+<h2>Investigation Timeline</h2>
+<table><thead><tr><th>UTC</th><th>Event</th><th>Checkpoint</th><th>Citation</th></tr></thead>
+<tbody><tr><td>2026-05-09T19:41:15.498860Z</td><td>case_init</td><td>case_init</td><td><a class="citation" href="#fig-7b9627e4c78ef7910b71bd7129bb99a7f4978f2713aa60ba7e4101e4cd4f5e86">CIT-0001</a></td></tr>
+<tr><td>2026-05-09T19:41:50.877678Z</td><td>tool_call</td><td>tool_call:mmls</td><td><a class="citation" href="#fig-111793f138be954de7a4c237de836cc916faf131c7252617ffa484b228fbc2a3">CIT-0002</a></td></tr>
+<tr><td>2026-05-09T19:42:23.623725Z</td><td>tool_call</td><td>tool_call:fsstat</td><td><a class="citation" href="#fig-9615c239b2fa8ff6e2a98a2f650732dd63b46143be38997c05051556dc754e87">CIT-0003</a></td></tr>
+<tr><td>2026-05-09T19:42:57.877836Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-7dce9a8f99aed61c679961f3f878c0e8d4cc293c4e9a81282a105b7a84cfc3a3">CIT-0004</a></td></tr>
+<tr><td>2026-05-09T19:44:06.740225Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-1a83114b3df2a90dc122f0ab0953d538f8177dadf41301619a2c8224665f2304">CIT-0005</a></td></tr>
+<tr><td>2026-05-09T19:44:47.420651Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-7909f330aa616e2e6eb7ef9311aacb281a31eb4ea1cc57b218e01c0cffc66bae">CIT-0006</a></td></tr>
+<tr><td>2026-05-09T19:45:25.262491Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-ca46205aef432e027b7c583cbd6d45d23241390662313b797843e21726b1527b">CIT-0007</a></td></tr>
+<tr><td>2026-05-09T19:46:02.631173Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-ad19263f829e1862843b7729aae852564aa240148183ebaa265545c298f30934">CIT-0008</a></td></tr>
+<tr><td>2026-05-09T19:46:40.162749Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-f23993acbf593854ff52a87db7a559eaf37d6abee4353c9e4591b09b5d73d45d">CIT-0009</a></td></tr>
+<tr><td>2026-05-09T19:47:17.396937Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-c16ca59b3f3a0d35162e4b7f806d06a9edab04b88c5dd99c9f1a516da6a331e2">CIT-0010</a></td></tr>
+<tr><td>2026-05-09T19:47:54.259595Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-d49ce1ab90c37167f199f1f1c6c0b39e5922ae7ff709a82d43b56abd711e0343">CIT-0011</a></td></tr>
+<tr><td>2026-05-09T19:48:31.109278Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-3fddf7e308aae640187235c8820a18a62f37110f41f2695ca2aaa72e75797ef0">CIT-0012</a></td></tr>
+<tr><td>2026-05-09T19:49:07.663580Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-bffc893b795d1104955a8059f5c54aa669c4a74df89f052473605082da3a37b3">CIT-0013</a></td></tr>
+<tr><td>2026-05-09T19:49:45.481998Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-a33006c75becb60758da6429bb68a1ff14f17087be8109789d2b056fe8b1ed92">CIT-0014</a></td></tr>
+<tr><td>2026-05-09T19:50:21.935448Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-28ce0e8ccd77f4fbbe249083b7f4278a61d20d9d49adf20ab71314ee121217b1">CIT-0015</a></td></tr>
+<tr><td>2026-05-09T19:50:33.501474Z</td><td>tool_call</td><td>tool_call:vol3_info</td><td><a class="citation" href="#fig-6e503c0a72d4ff26e2649a43a3aa507dccb604b7bde5a75c2968538d88df7e22">CIT-0016</a></td></tr>
+<tr><td>2026-05-09T19:50:38.228020Z</td><td>case_conclusion</td><td>case_conclusion</td><td><a class="citation" href="#fig-0df8b068f10232263d0c447d082fcc11505fffbd2388954f200d039503714340">CIT-0017</a></td></tr>
+<tr><td>2026-05-09T21:06:27.636739Z</td><td>tool_call</td><td>tool_call:mmls</td><td><a class="citation" href="#fig-cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01">CIT-0018</a></td></tr>
+<tr><td>2026-05-09T21:07:06.898389Z</td><td>tool_call</td><td>tool_call:fsstat</td><td><a class="citation" href="#fig-f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229">CIT-0019</a></td></tr>
+<tr><td>2026-05-09T21:07:50.865707Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5">CIT-0020</a></td></tr>
+<tr><td>2026-05-09T21:10:08.133720Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095">CIT-0021</a></td></tr>
+<tr><td>2026-05-09T21:11:01.100127Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf">CIT-0022</a></td></tr>
+<tr><td>2026-05-09T21:11:42.663032Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd">CIT-0023</a></td></tr>
+<tr><td>2026-05-09T21:12:22.442397Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61">CIT-0024</a></td></tr>
+<tr><td>2026-05-09T21:13:02.446563Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb">CIT-0025</a></td></tr>
+<tr><td>2026-05-09T21:13:45.923130Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88">CIT-0026</a></td></tr>
+<tr><td>2026-05-09T21:14:29.298661Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5">CIT-0027</a></td></tr>
+<tr><td>2026-05-09T21:15:13.667107Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea">CIT-0028</a></td></tr>
+<tr><td>2026-05-09T21:15:58.317071Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604">CIT-0029</a></td></tr>
+<tr><td>2026-05-09T21:16:44.192210Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900">CIT-0030</a></td></tr>
+<tr><td>2026-05-09T21:17:27.953124Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9">CIT-0031</a></td></tr>
+<tr><td>2026-05-09T21:17:46.982684Z</td><td>tool_call</td><td>tool_call:vol3_info</td><td><a class="citation" href="#fig-a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197">CIT-0032</a></td></tr>
+<tr><td>2026-05-09T21:18:06.383001Z</td><td>tool_call</td><td>tool_call:vol3_pslist</td><td><a class="citation" href="#fig-c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012">CIT-0033</a></td></tr>
+<tr><td>2026-05-09T21:19:17.033205Z</td><td>tool_call</td><td>tool_call:vol3_psscan</td><td><a class="citation" href="#fig-767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651">CIT-0034</a></td></tr>
+<tr><td>2026-05-09T21:19:55.718880Z</td><td>tool_call</td><td>tool_call:mmls</td><td><a class="citation" href="#fig-5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83">CIT-0035</a></td></tr>
+<tr><td>2026-05-09T21:20:33.452372Z</td><td>tool_call</td><td>tool_call:fsstat</td><td><a class="citation" href="#fig-4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b">CIT-0036</a></td></tr>
+<tr><td>2026-05-09T21:21:10.860941Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499">CIT-0037</a></td></tr>
+<tr><td>2026-05-09T21:22:10.062092Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c">CIT-0038</a></td></tr>
+<tr><td>2026-05-09T21:22:54.916761Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33">CIT-0039</a></td></tr>
+<tr><td>2026-05-09T21:23:33.524934Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f">CIT-0040</a></td></tr>
+<tr><td>2026-05-09T21:24:11.621206Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95">CIT-0041</a></td></tr>
+<tr><td>2026-05-09T21:24:51.212249Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135">CIT-0042</a></td></tr>
+<tr><td>2026-05-09T21:25:29.438061Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1">CIT-0043</a></td></tr>
+<tr><td>2026-05-09T21:28:40.343902Z</td><td>tool_call</td><td>tool_call:mmls</td><td><a class="citation" href="#fig-4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928">CIT-0044</a></td></tr>
+<tr><td>2026-05-09T21:29:30.870217Z</td><td>tool_call</td><td>tool_call:fsstat</td><td><a class="citation" href="#fig-5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25">CIT-0045</a></td></tr>
+<tr><td>2026-05-09T21:30:22.578400Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572">CIT-0046</a></td></tr>
+<tr><td>2026-05-09T21:32:28.427912Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb">CIT-0047</a></td></tr>
+<tr><td>2026-05-09T21:33:26.414210Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745">CIT-0048</a></td></tr>
+<tr><td>2026-05-09T21:34:21.020075Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0">CIT-0049</a></td></tr>
+<tr><td>2026-05-09T21:35:23.677806Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8">CIT-0050</a></td></tr>
+<tr><td>2026-05-09T21:36:24.819511Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e">CIT-0051</a></td></tr>
+<tr><td>2026-05-09T21:37:17.781820Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f">CIT-0052</a></td></tr>
+<tr><td>2026-05-09T21:38:13.611531Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6">CIT-0053</a></td></tr>
+<tr><td>2026-05-09T21:39:16.306867Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186">CIT-0054</a></td></tr>
+<tr><td>2026-05-09T21:40:15.917026Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d">CIT-0055</a></td></tr>
+<tr><td>2026-05-09T21:41:07.752992Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4">CIT-0056</a></td></tr>
+<tr><td>2026-05-09T21:42:02.737561Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc">CIT-0057</a></td></tr>
+<tr><td>2026-05-09T21:42:32.120140Z</td><td>tool_call</td><td>tool_call:vol3_info</td><td><a class="citation" href="#fig-4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865">CIT-0058</a></td></tr>
+<tr><td>2026-05-09T21:42:59.845069Z</td><td>tool_call</td><td>tool_call:vol3_pslist</td><td><a class="citation" href="#fig-5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82">CIT-0059</a></td></tr>
+<tr><td>2026-05-09T21:45:05.968424Z</td><td>tool_call</td><td>tool_call:vol3_psscan</td><td><a class="citation" href="#fig-956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748">CIT-0060</a></td></tr>
+<tr><td>2026-05-09T21:45:28.850986Z</td><td>case_conclusion</td><td>case_conclusion</td><td><a class="citation" href="#fig-4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805">CIT-0061</a></td></tr></tbody></table>
+</section>
+<section>
+<h2>Findings And Citations</h2>
+<p>No finding entries are present in the ledger.</p>
+</section>
+<section>
+<h2>Evidence Figures</h2>
+<figure id="fig-7b9627e4c78ef7910b71bd7129bb99a7f4978f2713aa60ba7e4101e4cd4f5e86">
+<figcaption><span class="citation">CIT-0001</span> Evidence Figure CIT-0001: case_init</figcaption>
+<svg viewBox="0 0 1000 154" role="img" aria-label="Evidence Figure CIT-0001: case_init">
+<rect x="8" y="8" width="984" height="138" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0001: case_init</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:41:15.498860Z</text><text x="24" y="78">Checkpoint: case_init</text><text x="24" y="100">Entry hash: 7b9627e4c78ef7910b71bd7129bb99a7f4978f2713aa60ba7e4101e4cd4f5e86</text></g>
+</svg>
+</figure>
+<figure id="fig-111793f138be954de7a4c237de836cc916faf131c7252617ffa484b228fbc2a3">
+<figcaption><span class="citation">CIT-0002</span> Evidence Figure CIT-0002: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0002: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0002: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:41:50.877678Z</text><text x="24" y="78">Checkpoint: tool_call:mmls</text><text x="24" y="100">Entry hash: 111793f138be954de7a4c237de836cc916faf131c7252617ffa484b228fbc2a3</text><text x="24" y="122">Tool: mmls</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</text><text x="24" y="188">Output path: outputs/mmls-2026-05-09T194150.877678Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-9615c239b2fa8ff6e2a98a2f650732dd63b46143be38997c05051556dc754e87">
+<figcaption><span class="citation">CIT-0003</span> Evidence Figure CIT-0003: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0003: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0003: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:42:23.623725Z</text><text x="24" y="78">Checkpoint: tool_call:fsstat</text><text x="24" y="100">Entry hash: 9615c239b2fa8ff6e2a98a2f650732dd63b46143be38997c05051556dc754e87</text><text x="24" y="122">Tool: fsstat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400</text><text x="24" y="188">Output path: outputs/fsstat-2026-05-09T194223.623725Z.json</text><text x="24" y="210">Artifact IDs: fsstat:7c9ef0fbf93626f8e1eb577c7e97b716dea231691460ba9f171efb288204f256</text></g>
+</svg>
+</figure>
+<figure id="fig-7dce9a8f99aed61c679961f3f878c0e8d4cc293c4e9a81282a105b7a84cfc3a3">
+<figcaption><span class="citation">CIT-0004</span> Evidence Figure CIT-0004: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0004: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0004: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:42:57.877836Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 7dce9a8f99aed61c679961f3f878c0e8d4cc293c4e9a81282a105b7a84cfc3a3</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: e76c9e043e2960408eaed09a4aeb16234063b5f3ee16d3d6d8b6710084496275</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T194257.877836Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-1a83114b3df2a90dc122f0ab0953d538f8177dadf41301619a2c8224665f2304">
+<figcaption><span class="citation">CIT-0005</span> Evidence Figure CIT-0005: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0005: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0005: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:44:06.740225Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 1a83114b3df2a90dc122f0ab0953d538f8177dadf41301619a2c8224665f2304</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: c4e9f27b68b48de77aec06d8277dd47e14f7d798c11276bcef26db1ea8584708</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T194406.740225Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-7909f330aa616e2e6eb7ef9311aacb281a31eb4ea1cc57b218e01c0cffc66bae">
+<figcaption><span class="citation">CIT-0006</span> Evidence Figure CIT-0006: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0006: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0006: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:44:47.420651Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 7909f330aa616e2e6eb7ef9311aacb281a31eb4ea1cc57b218e01c0cffc66bae</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 467208e289d1881ca5fddef3dc9aef6add653a7d30cebf244bc081ef53495483</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194447.420651Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-ca46205aef432e027b7c583cbd6d45d23241390662313b797843e21726b1527b">
+<figcaption><span class="citation">CIT-0007</span> Evidence Figure CIT-0007: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0007: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0007: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:45:25.262491Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: ca46205aef432e027b7c583cbd6d45d23241390662313b797843e21726b1527b</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 738a4ed9c27456c76f2de43beba8f7fd0d1acaf5f4450006c4d2d34fce715fa3</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194525.262491Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-ad19263f829e1862843b7729aae852564aa240148183ebaa265545c298f30934">
+<figcaption><span class="citation">CIT-0008</span> Evidence Figure CIT-0008: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0008: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0008: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:46:02.631173Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: ad19263f829e1862843b7729aae852564aa240148183ebaa265545c298f30934</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 199c16c8dee53d93caae9043bf46e0409fa0795c421d93564ee43832af48556c</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194602.631173Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-f23993acbf593854ff52a87db7a559eaf37d6abee4353c9e4591b09b5d73d45d">
+<figcaption><span class="citation">CIT-0009</span> Evidence Figure CIT-0009: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0009: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0009: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:46:40.162749Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: f23993acbf593854ff52a87db7a559eaf37d6abee4353c9e4591b09b5d73d45d</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 78b224c51a7213bfd78228e194eaf1ffba93470c68bf35db5ad9b7b73ce74c2d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194640.162749Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-c16ca59b3f3a0d35162e4b7f806d06a9edab04b88c5dd99c9f1a516da6a331e2">
+<figcaption><span class="citation">CIT-0010</span> Evidence Figure CIT-0010: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0010: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0010: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:47:17.396937Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: c16ca59b3f3a0d35162e4b7f806d06a9edab04b88c5dd99c9f1a516da6a331e2</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: b7da760a09590dc2ab730e5c1a25962cc05d02b2c57dd59197de09dec2d035f5</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194717.396937Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-d49ce1ab90c37167f199f1f1c6c0b39e5922ae7ff709a82d43b56abd711e0343">
+<figcaption><span class="citation">CIT-0011</span> Evidence Figure CIT-0011: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0011: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0011: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:47:54.259595Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: d49ce1ab90c37167f199f1f1c6c0b39e5922ae7ff709a82d43b56abd711e0343</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 7358bf622d5fdb27db9476e7e840019ab9e00885f5b7c4323a8c03b179d7622d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194754.259595Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-3fddf7e308aae640187235c8820a18a62f37110f41f2695ca2aaa72e75797ef0">
+<figcaption><span class="citation">CIT-0012</span> Evidence Figure CIT-0012: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0012: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0012: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:48:31.109278Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 3fddf7e308aae640187235c8820a18a62f37110f41f2695ca2aaa72e75797ef0</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: be4305ff9e3b4d779e5093f437ea626945439d9788e8817028c4fe449b2803a2</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194831.109278Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-bffc893b795d1104955a8059f5c54aa669c4a74df89f052473605082da3a37b3">
+<figcaption><span class="citation">CIT-0013</span> Evidence Figure CIT-0013: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0013: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0013: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:49:07.663580Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: bffc893b795d1104955a8059f5c54aa669c4a74df89f052473605082da3a37b3</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 67bb641864fbec0c4b226d229992d0030df5b9d05e8a04962ec259f5489f24ec</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194907.663580Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-a33006c75becb60758da6429bb68a1ff14f17087be8109789d2b056fe8b1ed92">
+<figcaption><span class="citation">CIT-0014</span> Evidence Figure CIT-0014: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0014: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0014: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:49:45.481998Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: a33006c75becb60758da6429bb68a1ff14f17087be8109789d2b056fe8b1ed92</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 273870f07b2de9cb4c1ad21a243a7eb6f2245080cb2fffba921dc3e63f9d457b</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T194945.481998Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-28ce0e8ccd77f4fbbe249083b7f4278a61d20d9d49adf20ab71314ee121217b1">
+<figcaption><span class="citation">CIT-0015</span> Evidence Figure CIT-0015: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0015: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0015: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:50:21.935448Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 28ce0e8ccd77f4fbbe249083b7f4278a61d20d9d49adf20ab71314ee121217b1</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 45594dd9d807df716c5e3c0a71c4fec6d5d90637679f1766e4c31972e7b495b0</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T195021.935448Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-6e503c0a72d4ff26e2649a43a3aa507dccb604b7bde5a75c2968538d88df7e22">
+<figcaption><span class="citation">CIT-0016</span> Evidence Figure CIT-0016: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0016: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0016: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:50:33.501474Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_info</text><text x="24" y="100">Entry hash: 6e503c0a72d4ff26e2649a43a3aa507dccb604b7bde5a75c2968538d88df7e22</text><text x="24" y="122">Tool: vol3.windows.info</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: c87afa779fb605ac6a9a682f00a9a905fd8676808cd0037dda8ab72b36ae128f</text><text x="24" y="188">Output path: outputs/vol3_info-2026-05-09T195033.501474Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-0df8b068f10232263d0c447d082fcc11505fffbd2388954f200d039503714340">
+<figcaption><span class="citation">CIT-0017</span> Evidence Figure CIT-0017: case_conclusion</figcaption>
+<svg viewBox="0 0 1000 198" role="img" aria-label="Evidence Figure CIT-0017: case_conclusion">
+<rect x="8" y="8" width="984" height="182" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0017: case_conclusion</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T19:50:38.228020Z</text><text x="24" y="78">Checkpoint: case_conclusion</text><text x="24" y="100">Entry hash: 0df8b068f10232263d0c447d082fcc11505fffbd2388954f200d039503714340</text><text x="24" y="122">Conclusion: UNVERIFIABLE</text><text x="24" y="144">Rationale: vol3.windows.info exited with code 1; VERDICT cannot support a case-level finding from incomplete tool outp</text></g>
+</svg>
+</figure>
+<figure id="fig-cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01">
+<figcaption><span class="citation">CIT-0018</span> Evidence Figure CIT-0018: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0018: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0018: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:06:27.636739Z</text><text x="24" y="78">Checkpoint: tool_call:mmls</text><text x="24" y="100">Entry hash: cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01</text><text x="24" y="122">Tool: mmls</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</text><text x="24" y="188">Output path: outputs/mmls-2026-05-09T210627.636739Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229">
+<figcaption><span class="citation">CIT-0019</span> Evidence Figure CIT-0019: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0019: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0019: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:07:06.898389Z</text><text x="24" y="78">Checkpoint: tool_call:fsstat</text><text x="24" y="100">Entry hash: f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229</text><text x="24" y="122">Tool: fsstat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400</text><text x="24" y="188">Output path: outputs/fsstat-2026-05-09T210706.898389Z.json</text><text x="24" y="210">Artifact IDs: fsstat:7c9ef0fbf93626f8e1eb577c7e97b716dea231691460ba9f171efb288204f256</text></g>
+</svg>
+</figure>
+<figure id="fig-82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5">
+<figcaption><span class="citation">CIT-0020</span> Evidence Figure CIT-0020: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0020: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0020: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:07:50.865707Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: e76c9e043e2960408eaed09a4aeb16234063b5f3ee16d3d6d8b6710084496275</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T210750.865707Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095">
+<figcaption><span class="citation">CIT-0021</span> Evidence Figure CIT-0021: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0021: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0021: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:10:08.133720Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 255</text><text x="24" y="166">Stdout SHA-256: 3bd39122f0b1ce4928aa831008186455e3ff9af35b01206fdb830fd576b9630b</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T211008.133720Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf">
+<figcaption><span class="citation">CIT-0022</span> Evidence Figure CIT-0022: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0022: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0022: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:11:01.100127Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 467208e289d1881ca5fddef3dc9aef6add653a7d30cebf244bc081ef53495483</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211101.100127Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd">
+<figcaption><span class="citation">CIT-0023</span> Evidence Figure CIT-0023: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0023: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0023: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:11:42.663032Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 738a4ed9c27456c76f2de43beba8f7fd0d1acaf5f4450006c4d2d34fce715fa3</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211142.663032Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61">
+<figcaption><span class="citation">CIT-0024</span> Evidence Figure CIT-0024: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0024: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0024: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:12:22.442397Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 199c16c8dee53d93caae9043bf46e0409fa0795c421d93564ee43832af48556c</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211222.442397Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb">
+<figcaption><span class="citation">CIT-0025</span> Evidence Figure CIT-0025: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0025: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0025: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:13:02.446563Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 78b224c51a7213bfd78228e194eaf1ffba93470c68bf35db5ad9b7b73ce74c2d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211302.446563Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88">
+<figcaption><span class="citation">CIT-0026</span> Evidence Figure CIT-0026: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0026: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0026: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:13:45.923130Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: b7da760a09590dc2ab730e5c1a25962cc05d02b2c57dd59197de09dec2d035f5</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211345.923130Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5">
+<figcaption><span class="citation">CIT-0027</span> Evidence Figure CIT-0027: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0027: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0027: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:14:29.298661Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 7358bf622d5fdb27db9476e7e840019ab9e00885f5b7c4323a8c03b179d7622d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211429.298661Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea">
+<figcaption><span class="citation">CIT-0028</span> Evidence Figure CIT-0028: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0028: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0028: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:15:13.667107Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: be4305ff9e3b4d779e5093f437ea626945439d9788e8817028c4fe449b2803a2</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211513.667107Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604">
+<figcaption><span class="citation">CIT-0029</span> Evidence Figure CIT-0029: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0029: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0029: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:15:58.317071Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 67bb641864fbec0c4b226d229992d0030df5b9d05e8a04962ec259f5489f24ec</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211558.317071Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900">
+<figcaption><span class="citation">CIT-0030</span> Evidence Figure CIT-0030: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0030: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0030: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:16:44.192210Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 273870f07b2de9cb4c1ad21a243a7eb6f2245080cb2fffba921dc3e63f9d457b</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211644.192210Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9">
+<figcaption><span class="citation">CIT-0031</span> Evidence Figure CIT-0031: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0031: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0031: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:17:27.953124Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 45594dd9d807df716c5e3c0a71c4fec6d5d90637679f1766e4c31972e7b495b0</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T211727.953124Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197">
+<figcaption><span class="citation">CIT-0032</span> Evidence Figure CIT-0032: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0032: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0032: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:17:46.982684Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_info</text><text x="24" y="100">Entry hash: a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197</text><text x="24" y="122">Tool: vol3.windows.info</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 23edd20ced4fdf0e4f9047ad4a622af1b739c4b5d3bb0c383001d7e604786fc4</text><text x="24" y="188">Output path: outputs/vol3_info-2026-05-09T211746.982684Z.json</text><text x="24" y="210">Artifact IDs: vol3.info:cda7be72600d56d4b960003c4f3f3eb16416da4b3316ba74e73f185bf6360556</text></g>
+</svg>
+</figure>
+<figure id="fig-c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012">
+<figcaption><span class="citation">CIT-0033</span> Evidence Figure CIT-0033: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0033: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0033: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:18:06.383001Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_pslist</text><text x="24" y="100">Entry hash: c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012</text><text x="24" y="122">Tool: vol3.windows.pslist</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: b93fadc3de40ac750a255f97df914c61ab2a214993f420bc07cbdb2cd963f3be</text><text x="24" y="188">Output path: outputs/vol3_pslist-2026-05-09T211806.383001Z.json</text><text x="24" y="210">Artifact IDs: vol3.pslist:e21fad25ed2ce88d9961337bb8db18dcfbceb96c9b64091ab760919541a834d5, vol3.pslist:4a29f44b79bec1</text></g>
+</svg>
+</figure>
+<figure id="fig-767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651">
+<figcaption><span class="citation">CIT-0034</span> Evidence Figure CIT-0034: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0034: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0034: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:19:17.033205Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_psscan</text><text x="24" y="100">Entry hash: 767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651</text><text x="24" y="122">Tool: vol3.windows.psscan</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: cf05c50ca5cffb9b3804d6b30d9e1a653ed5a17fab40c1394e9714c807a2012c</text><text x="24" y="188">Output path: outputs/vol3_psscan-2026-05-09T211917.033205Z.json</text><text x="24" y="210">Artifact IDs: vol3.psscan:a54b73fa221e39c7af5b69378381959affda6b6ac568295e61a5200a95ec344c, vol3.psscan:254596fdfd649d</text></g>
+</svg>
+</figure>
+<figure id="fig-5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83">
+<figcaption><span class="citation">CIT-0035</span> Evidence Figure CIT-0035: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0035: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0035: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:19:55.718880Z</text><text x="24" y="78">Checkpoint: tool_call:mmls</text><text x="24" y="100">Entry hash: 5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83</text><text x="24" y="122">Tool: mmls</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</text><text x="24" y="188">Output path: outputs/mmls-2026-05-09T211955.718880Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b">
+<figcaption><span class="citation">CIT-0036</span> Evidence Figure CIT-0036: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0036: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0036: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:20:33.452372Z</text><text x="24" y="78">Checkpoint: tool_call:fsstat</text><text x="24" y="100">Entry hash: 4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b</text><text x="24" y="122">Tool: fsstat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 8f466ebe03e321c61a3a741081bbd93e32850d0610ffbc2bbc9470f1f47da0e8</text><text x="24" y="188">Output path: outputs/fsstat-2026-05-09T212033.452372Z.json</text><text x="24" y="210">Artifact IDs: fsstat:0b28598d2dbe9c24328baa08091d3cd99a5da3570271110e6e6cd4276ecb237f</text></g>
+</svg>
+</figure>
+<figure id="fig-235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499">
+<figcaption><span class="citation">CIT-0037</span> Evidence Figure CIT-0037: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0037: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0037: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:21:10.860941Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 4f580b401cab81b2b4d89cd0a7b17fad45ce9da96102d8a383c8ebda9a639166</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T212110.860941Z.json</text><text x="24" y="210">Artifact IDs: fls:3ecb715cb9638cf8f956ad46bcd497b4393bd44bb0a2b5bcbcb80c5688ccc416, fls:608a8aa3e5829786e52525d492350b</text></g>
+</svg>
+</figure>
+<figure id="fig-f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c">
+<figcaption><span class="citation">CIT-0038</span> Evidence Figure CIT-0038: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0038: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0038: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:22:10.062092Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: c9d9c3c5a6addad135f8c9fc10c17fd46e5ecaf4471b4ccbc264c01445572e3e</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T212210.062092Z.json</text><text x="24" y="210">Artifact IDs: fls:3ecb715cb9638cf8f956ad46bcd497b4393bd44bb0a2b5bcbcb80c5688ccc416, fls:608a8aa3e5829786e52525d492350b</text></g>
+</svg>
+</figure>
+<figure id="fig-27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33">
+<figcaption><span class="citation">CIT-0039</span> Evidence Figure CIT-0039: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0039: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0039: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:22:54.916761Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 47f582e7db3681325745198547f4f5d518cd123d3956c300a8f1b1c4994d7119</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T212254.916761Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f">
+<figcaption><span class="citation">CIT-0040</span> Evidence Figure CIT-0040: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0040: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0040: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:23:33.524934Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 84a8de53dd4907f3632488558d405a265792dd425969910ad55d4dde124a49f2</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T212333.524934Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95">
+<figcaption><span class="citation">CIT-0041</span> Evidence Figure CIT-0041: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0041: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0041: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:24:11.621206Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: e31045df874673c3664a2b2e3f1935ee00eb73d7436c8614d68e9c9d47550a12</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T212411.621206Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135">
+<figcaption><span class="citation">CIT-0042</span> Evidence Figure CIT-0042: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0042: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0042: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:24:51.212249Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 7e1638ff617be50b2c8d58f28b5e8d15271d0dd306bd82602ba195c1c3da24d0</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T212451.212249Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1">
+<figcaption><span class="citation">CIT-0043</span> Evidence Figure CIT-0043: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0043: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0043: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:25:29.438061Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 427aad3373c850244300e4e9948528bb91e7626a6c70d0b6fe476c7e520e33d3</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T212529.438061Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928">
+<figcaption><span class="citation">CIT-0044</span> Evidence Figure CIT-0044: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0044: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0044: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:28:40.343902Z</text><text x="24" y="78">Checkpoint: tool_call:mmls</text><text x="24" y="100">Entry hash: 4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928</text><text x="24" y="122">Tool: mmls</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</text><text x="24" y="188">Output path: outputs/mmls-2026-05-09T212840.343902Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25">
+<figcaption><span class="citation">CIT-0045</span> Evidence Figure CIT-0045: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0045: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0045: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:29:30.870217Z</text><text x="24" y="78">Checkpoint: tool_call:fsstat</text><text x="24" y="100">Entry hash: 5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25</text><text x="24" y="122">Tool: fsstat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400</text><text x="24" y="188">Output path: outputs/fsstat-2026-05-09T212930.870217Z.json</text><text x="24" y="210">Artifact IDs: fsstat:7c9ef0fbf93626f8e1eb577c7e97b716dea231691460ba9f171efb288204f256</text></g>
+</svg>
+</figure>
+<figure id="fig-c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572">
+<figcaption><span class="citation">CIT-0046</span> Evidence Figure CIT-0046: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0046: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0046: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:30:22.578400Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: e76c9e043e2960408eaed09a4aeb16234063b5f3ee16d3d6d8b6710084496275</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T213022.578400Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb">
+<figcaption><span class="citation">CIT-0047</span> Evidence Figure CIT-0047: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0047: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0047: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:32:28.427912Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: c4e9f27b68b48de77aec06d8277dd47e14f7d798c11276bcef26db1ea8584708</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T213228.427912Z.json</text><text x="24" y="210">Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236, fls:ba57e612055d796b33dc444e924a6c</text></g>
+</svg>
+</figure>
+<figure id="fig-a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745">
+<figcaption><span class="citation">CIT-0048</span> Evidence Figure CIT-0048: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0048: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0048: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:33:26.414210Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 467208e289d1881ca5fddef3dc9aef6add653a7d30cebf244bc081ef53495483</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213326.414210Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0">
+<figcaption><span class="citation">CIT-0049</span> Evidence Figure CIT-0049: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0049: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0049: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:34:21.020075Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 738a4ed9c27456c76f2de43beba8f7fd0d1acaf5f4450006c4d2d34fce715fa3</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213421.020075Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8">
+<figcaption><span class="citation">CIT-0050</span> Evidence Figure CIT-0050: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0050: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0050: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:35:23.677806Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 199c16c8dee53d93caae9043bf46e0409fa0795c421d93564ee43832af48556c</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213523.677806Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e">
+<figcaption><span class="citation">CIT-0051</span> Evidence Figure CIT-0051: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0051: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0051: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:36:24.819511Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 78b224c51a7213bfd78228e194eaf1ffba93470c68bf35db5ad9b7b73ce74c2d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213624.819511Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f">
+<figcaption><span class="citation">CIT-0052</span> Evidence Figure CIT-0052: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0052: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0052: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:37:17.781820Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: b7da760a09590dc2ab730e5c1a25962cc05d02b2c57dd59197de09dec2d035f5</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213717.781820Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6">
+<figcaption><span class="citation">CIT-0053</span> Evidence Figure CIT-0053: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0053: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0053: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:38:13.611531Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 7358bf622d5fdb27db9476e7e840019ab9e00885f5b7c4323a8c03b179d7622d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213813.611531Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186">
+<figcaption><span class="citation">CIT-0054</span> Evidence Figure CIT-0054: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0054: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0054: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:39:16.306867Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: be4305ff9e3b4d779e5093f437ea626945439d9788e8817028c4fe449b2803a2</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T213916.306867Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d">
+<figcaption><span class="citation">CIT-0055</span> Evidence Figure CIT-0055: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0055: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0055: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:40:15.917026Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 67bb641864fbec0c4b226d229992d0030df5b9d05e8a04962ec259f5489f24ec</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T214015.917026Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4">
+<figcaption><span class="citation">CIT-0056</span> Evidence Figure CIT-0056: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0056: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0056: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:41:07.752992Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: 93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 273870f07b2de9cb4c1ad21a243a7eb6f2245080cb2fffba921dc3e63f9d457b</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T214107.752992Z.json</text><text x="24" y="210">Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b, icat:b734b4aae6ec511f26e247bee58e</text></g>
+</svg>
+</figure>
+<figure id="fig-df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc">
+<figcaption><span class="citation">CIT-0057</span> Evidence Figure CIT-0057: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0057: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0057: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:42:02.737561Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 45594dd9d807df716c5e3c0a71c4fec6d5d90637679f1766e4c31972e7b495b0</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T214202.737561Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865">
+<figcaption><span class="citation">CIT-0058</span> Evidence Figure CIT-0058: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0058: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0058: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:42:32.120140Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_info</text><text x="24" y="100">Entry hash: 4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865</text><text x="24" y="122">Tool: vol3.windows.info</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 23edd20ced4fdf0e4f9047ad4a622af1b739c4b5d3bb0c383001d7e604786fc4</text><text x="24" y="188">Output path: outputs/vol3_info-2026-05-09T214232.120140Z.json</text><text x="24" y="210">Artifact IDs: vol3.info:cda7be72600d56d4b960003c4f3f3eb16416da4b3316ba74e73f185bf6360556</text></g>
+</svg>
+</figure>
+<figure id="fig-5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82">
+<figcaption><span class="citation">CIT-0059</span> Evidence Figure CIT-0059: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0059: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0059: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:42:59.845069Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_pslist</text><text x="24" y="100">Entry hash: 5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82</text><text x="24" y="122">Tool: vol3.windows.pslist</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: b93fadc3de40ac750a255f97df914c61ab2a214993f420bc07cbdb2cd963f3be</text><text x="24" y="188">Output path: outputs/vol3_pslist-2026-05-09T214259.845069Z.json</text><text x="24" y="210">Artifact IDs: vol3.pslist:e21fad25ed2ce88d9961337bb8db18dcfbceb96c9b64091ab760919541a834d5, vol3.pslist:4a29f44b79bec1</text></g>
+</svg>
+</figure>
+<figure id="fig-956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748">
+<figcaption><span class="citation">CIT-0060</span> Evidence Figure CIT-0060: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0060: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0060: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:45:05.968424Z</text><text x="24" y="78">Checkpoint: tool_call:vol3_psscan</text><text x="24" y="100">Entry hash: 956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748</text><text x="24" y="122">Tool: vol3.windows.psscan</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: cf05c50ca5cffb9b3804d6b30d9e1a653ed5a17fab40c1394e9714c807a2012c</text><text x="24" y="188">Output path: outputs/vol3_psscan-2026-05-09T214505.968424Z.json</text><text x="24" y="210">Artifact IDs: vol3.psscan:a54b73fa221e39c7af5b69378381959affda6b6ac568295e61a5200a95ec344c, vol3.psscan:254596fdfd649d</text></g>
+</svg>
+</figure>
+<figure id="fig-4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805">
+<figcaption><span class="citation">CIT-0061</span> Evidence Figure CIT-0061: case_conclusion</figcaption>
+<svg viewBox="0 0 1000 198" role="img" aria-label="Evidence Figure CIT-0061: case_conclusion">
+<rect x="8" y="8" width="984" height="182" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0061: case_conclusion</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:45:28.850986Z</text><text x="24" y="78">Checkpoint: case_conclusion</text><text x="24" y="100">Entry hash: 4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805</text><text x="24" y="122">Conclusion: EVIL_FOUND</text><text x="24" y="144">Rationale: Evidence is consistent with hidden process activity: psscan PID(s) absent from pslist: 7132, 9936, 10368, 1</text></g>
+</svg>
+</figure>
+</section>
+<section>
+<h2>Chain Of Custody Appendix</h2>
+<table><thead><tr><th>UTC</th><th>Event</th><th>Entry Hash</th><th>HMAC</th></tr></thead>
+<tbody><tr><td>2026-05-09T19:41:15.498860Z</td><td>case_init</td><td class="citation">7b9627e4c78ef7910b71bd7129bb99a7f4978f2713aa60ba7e4101e4cd4f5e86</td><td class="citation">523ecbfdfd7405ec88e8836f99be5655301038961fd0219c4229131e030d7a13</td></tr>
+<tr><td>2026-05-09T19:41:50.877678Z</td><td>tool_call</td><td class="citation">111793f138be954de7a4c237de836cc916faf131c7252617ffa484b228fbc2a3</td><td class="citation">b64e33d57530b19963ff928a08bc59aeb14914b8cb5c6032b10c2b735309f520</td></tr>
+<tr><td>2026-05-09T19:42:23.623725Z</td><td>tool_call</td><td class="citation">9615c239b2fa8ff6e2a98a2f650732dd63b46143be38997c05051556dc754e87</td><td class="citation">3cab53985d40ca0b2f42428d72d1ac13ff83b009482ac65d1ed1ae618b790d92</td></tr>
+<tr><td>2026-05-09T19:42:57.877836Z</td><td>tool_call</td><td class="citation">7dce9a8f99aed61c679961f3f878c0e8d4cc293c4e9a81282a105b7a84cfc3a3</td><td class="citation">6f0938220250dd9a4135013663148a2ddb474ffbf62da92b25c2d3cc85e29cf9</td></tr>
+<tr><td>2026-05-09T19:44:06.740225Z</td><td>tool_call</td><td class="citation">1a83114b3df2a90dc122f0ab0953d538f8177dadf41301619a2c8224665f2304</td><td class="citation">69abc284abe9dc7766d8ee1a7817536b39609e748603c7cce9d4f554667a586e</td></tr>
+<tr><td>2026-05-09T19:44:47.420651Z</td><td>tool_call</td><td class="citation">7909f330aa616e2e6eb7ef9311aacb281a31eb4ea1cc57b218e01c0cffc66bae</td><td class="citation">d3905632e1bf71e581bedb488059861386ca8829dfcd4b2006705c33ba00644e</td></tr>
+<tr><td>2026-05-09T19:45:25.262491Z</td><td>tool_call</td><td class="citation">ca46205aef432e027b7c583cbd6d45d23241390662313b797843e21726b1527b</td><td class="citation">36e82e91dc46ca8e8f4d1646eb51fcb55510056f2dc952f2880be91da403a190</td></tr>
+<tr><td>2026-05-09T19:46:02.631173Z</td><td>tool_call</td><td class="citation">ad19263f829e1862843b7729aae852564aa240148183ebaa265545c298f30934</td><td class="citation">0eb1c05945d9843b3dd542fb9e0c9fe41d601971caed33e264595e60fd7a8f9c</td></tr>
+<tr><td>2026-05-09T19:46:40.162749Z</td><td>tool_call</td><td class="citation">f23993acbf593854ff52a87db7a559eaf37d6abee4353c9e4591b09b5d73d45d</td><td class="citation">eee5fdbfd074e28670547932e9c8ad7321e53e511355b097c1ebd2c8bde4af4c</td></tr>
+<tr><td>2026-05-09T19:47:17.396937Z</td><td>tool_call</td><td class="citation">c16ca59b3f3a0d35162e4b7f806d06a9edab04b88c5dd99c9f1a516da6a331e2</td><td class="citation">8a9f56b9f73e29adb9d837762bd4b9e35ab37eb12c73819db56316a3d2e24e24</td></tr>
+<tr><td>2026-05-09T19:47:54.259595Z</td><td>tool_call</td><td class="citation">d49ce1ab90c37167f199f1f1c6c0b39e5922ae7ff709a82d43b56abd711e0343</td><td class="citation">dd6e18edde5c82adc60e7a68ddca767aefd249577e2735ce13c49fdf9d4015ad</td></tr>
+<tr><td>2026-05-09T19:48:31.109278Z</td><td>tool_call</td><td class="citation">3fddf7e308aae640187235c8820a18a62f37110f41f2695ca2aaa72e75797ef0</td><td class="citation">153bf73de972ce4793937b852895b48052a0f4569d8db0963ca2b7b4a0094734</td></tr>
+<tr><td>2026-05-09T19:49:07.663580Z</td><td>tool_call</td><td class="citation">bffc893b795d1104955a8059f5c54aa669c4a74df89f052473605082da3a37b3</td><td class="citation">51f18199b867d284a7e2944c8b2a07c6ad8bb1b654fa5aa49a95592e7c65d5df</td></tr>
+<tr><td>2026-05-09T19:49:45.481998Z</td><td>tool_call</td><td class="citation">a33006c75becb60758da6429bb68a1ff14f17087be8109789d2b056fe8b1ed92</td><td class="citation">e4c212c38d5834aa5058da0475469540e6a4050ac4497d5d82bc264a57eb8444</td></tr>
+<tr><td>2026-05-09T19:50:21.935448Z</td><td>tool_call</td><td class="citation">28ce0e8ccd77f4fbbe249083b7f4278a61d20d9d49adf20ab71314ee121217b1</td><td class="citation">bfe035ed4b3cb90eb7eaf4fc4074ddd9702ded49579fa939fa9321c8aa7e17cc</td></tr>
+<tr><td>2026-05-09T19:50:33.501474Z</td><td>tool_call</td><td class="citation">6e503c0a72d4ff26e2649a43a3aa507dccb604b7bde5a75c2968538d88df7e22</td><td class="citation">459054a642a9773c9f71471ce51757ca14d93a1a178344f0322afd8241ee1106</td></tr>
+<tr><td>2026-05-09T19:50:38.228020Z</td><td>case_conclusion</td><td class="citation">0df8b068f10232263d0c447d082fcc11505fffbd2388954f200d039503714340</td><td class="citation">9c967413375a6cbe6c233211eb3e7e8a9d0ef2d957607530afda9305509fe67c</td></tr>
+<tr><td>2026-05-09T21:06:27.636739Z</td><td>tool_call</td><td class="citation">cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01</td><td class="citation">9c3687cf2e87041e061637211ef0ca84f48a47994421399418c14c33cd1381e5</td></tr>
+<tr><td>2026-05-09T21:07:06.898389Z</td><td>tool_call</td><td class="citation">f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229</td><td class="citation">9c9da465f1b6a0c9f76310fe0950a9258cb1c312c19367671841b8cce361cfc8</td></tr>
+<tr><td>2026-05-09T21:07:50.865707Z</td><td>tool_call</td><td class="citation">82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5</td><td class="citation">a6ddf478a9310ff66120c5bb7ae90cc36338fdb1230e8e40475631bb5dd50c39</td></tr>
+<tr><td>2026-05-09T21:10:08.133720Z</td><td>tool_call</td><td class="citation">87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095</td><td class="citation">4b20bf39c1db502ca55e69e5a51f99cfe047c7d7723da8150e75f5ddc34da3d2</td></tr>
+<tr><td>2026-05-09T21:11:01.100127Z</td><td>tool_call</td><td class="citation">acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf</td><td class="citation">6e103d637748931f070aa6f912158b8ff37e71c3a2060a8db76976a567764061</td></tr>
+<tr><td>2026-05-09T21:11:42.663032Z</td><td>tool_call</td><td class="citation">9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd</td><td class="citation">2fca9b133e09eb57c1cc78a806fcc7df720f78b6987634ac1a5f7a1fdacb1ab8</td></tr>
+<tr><td>2026-05-09T21:12:22.442397Z</td><td>tool_call</td><td class="citation">90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61</td><td class="citation">92130c1227fe2dfb06c96a68a50a56d4fd1ec79591c8e3468149cbf8cbee9bcd</td></tr>
+<tr><td>2026-05-09T21:13:02.446563Z</td><td>tool_call</td><td class="citation">1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb</td><td class="citation">5030a60f399b0e0a6a89642ce9835358f17833e19db7ade582050c101ba24e0b</td></tr>
+<tr><td>2026-05-09T21:13:45.923130Z</td><td>tool_call</td><td class="citation">2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88</td><td class="citation">484a525cf1e52b479cdfdb535652f05fb8bb78ba2ea8a65e8a43533dd5c323f5</td></tr>
+<tr><td>2026-05-09T21:14:29.298661Z</td><td>tool_call</td><td class="citation">d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5</td><td class="citation">b01d3808de473148b3f93308c101224de2598d5fad1ceb8f80ec3771eb3841ec</td></tr>
+<tr><td>2026-05-09T21:15:13.667107Z</td><td>tool_call</td><td class="citation">731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea</td><td class="citation">f0ccfe2fb714313b65f5cff27cb158450c9114b4ecfa72479f673d9c53b7b714</td></tr>
+<tr><td>2026-05-09T21:15:58.317071Z</td><td>tool_call</td><td class="citation">22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604</td><td class="citation">ceaba61eb6b07dab25dde0a141e6424ddb007709d091200b0cbeafbf414210ca</td></tr>
+<tr><td>2026-05-09T21:16:44.192210Z</td><td>tool_call</td><td class="citation">e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900</td><td class="citation">2101885d65b9556a4edf5d4877f55cdcf12fe39a2b08cf299899482e84ff1d51</td></tr>
+<tr><td>2026-05-09T21:17:27.953124Z</td><td>tool_call</td><td class="citation">747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9</td><td class="citation">1ae4054cb323e176ab03b1eff08c055021662989d07481d940af09a0d7743847</td></tr>
+<tr><td>2026-05-09T21:17:46.982684Z</td><td>tool_call</td><td class="citation">a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197</td><td class="citation">b100106d5958bfe9c164c107637f1983020809042c2ded9fcb99fddf6d07bf70</td></tr>
+<tr><td>2026-05-09T21:18:06.383001Z</td><td>tool_call</td><td class="citation">c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012</td><td class="citation">c03c7b8417177a2536fe3ef9bdc55ec97df73e10a31546842432af132c202356</td></tr>
+<tr><td>2026-05-09T21:19:17.033205Z</td><td>tool_call</td><td class="citation">767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651</td><td class="citation">be71b49b0e912caf691fc62c39f7f0392ba65b47450bf515b04b45a596d04544</td></tr>
+<tr><td>2026-05-09T21:19:55.718880Z</td><td>tool_call</td><td class="citation">5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83</td><td class="citation">2ee3ff3a464383fc52fcd626c6b11fd122b1dac3d98e013a3358fe5d73af92ac</td></tr>
+<tr><td>2026-05-09T21:20:33.452372Z</td><td>tool_call</td><td class="citation">4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b</td><td class="citation">ebed4bae7f60c84fd0d80f846d5c7fe86becbf34b8e9140c3b28777da3408d5b</td></tr>
+<tr><td>2026-05-09T21:21:10.860941Z</td><td>tool_call</td><td class="citation">235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499</td><td class="citation">1090983b0d4a30573a6582f2270545dc9c7ca5fe7daf2cb6a5ace0e58e7b6573</td></tr>
+<tr><td>2026-05-09T21:22:10.062092Z</td><td>tool_call</td><td class="citation">f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c</td><td class="citation">30323e6aac0d14d8c9214cef73dfabb9430acca0b4a97d7a5cce19f78218e790</td></tr>
+<tr><td>2026-05-09T21:22:54.916761Z</td><td>tool_call</td><td class="citation">27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33</td><td class="citation">bd54f4f201177b42dfd658b13c78d36c2cd7f31c204b9ea26d82432bd752aedb</td></tr>
+<tr><td>2026-05-09T21:23:33.524934Z</td><td>tool_call</td><td class="citation">a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f</td><td class="citation">5cea7b6073edaae11003214653b94bfd3a5bd0434ff547d109ecd99e9b47b905</td></tr>
+<tr><td>2026-05-09T21:24:11.621206Z</td><td>tool_call</td><td class="citation">2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95</td><td class="citation">1173cb3ac9b4ec7bb52dd1c36b2f0f1c598d4967972077dabc05ff5b03189a05</td></tr>
+<tr><td>2026-05-09T21:24:51.212249Z</td><td>tool_call</td><td class="citation">b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135</td><td class="citation">09c4436cb4f98209df2d2c1bcd3a2dca7d800fe7b0464adcb2e2f754dd034198</td></tr>
+<tr><td>2026-05-09T21:25:29.438061Z</td><td>tool_call</td><td class="citation">a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1</td><td class="citation">2a104a722490e6a8ea09620d311855007bf17d49ff907173ef067fba1d4e8167</td></tr>
+<tr><td>2026-05-09T21:28:40.343902Z</td><td>tool_call</td><td class="citation">4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928</td><td class="citation">557c035cdee16bfa6066bf48db752fc65449e5a7efb7c00325cda8c7b2a13f74</td></tr>
+<tr><td>2026-05-09T21:29:30.870217Z</td><td>tool_call</td><td class="citation">5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25</td><td class="citation">47c95eba888cb77402c4ecccc63b88d74f2e801c177eab539819a9ebf536bcb0</td></tr>
+<tr><td>2026-05-09T21:30:22.578400Z</td><td>tool_call</td><td class="citation">c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572</td><td class="citation">51ccc4b6f46b536bf7dec873906b8831eb0894273b9503df29290666588a3a23</td></tr>
+<tr><td>2026-05-09T21:32:28.427912Z</td><td>tool_call</td><td class="citation">c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb</td><td class="citation">91686afead621a3997ed78eb64aef4f30f77c9586bbd4e6f4cf6fd4ed752a7f8</td></tr>
+<tr><td>2026-05-09T21:33:26.414210Z</td><td>tool_call</td><td class="citation">a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745</td><td class="citation">f94500f9d3755d07ddac8916e5c738955d0cbfadb4d808e68be1e2d042bad8ab</td></tr>
+<tr><td>2026-05-09T21:34:21.020075Z</td><td>tool_call</td><td class="citation">485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0</td><td class="citation">7640f7c83cf5e385f898c45762a76c50e07f96ab33de2daa6497349f19223361</td></tr>
+<tr><td>2026-05-09T21:35:23.677806Z</td><td>tool_call</td><td class="citation">2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8</td><td class="citation">1215b3cba2a49711ab0d12dd2b4cbb746672a59166ff4b13c3e7962c1bdd7f88</td></tr>
+<tr><td>2026-05-09T21:36:24.819511Z</td><td>tool_call</td><td class="citation">0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e</td><td class="citation">12ca9913e5317efa3ee40701a68c870fc320e5a2b40b1c019529d3b6453d067c</td></tr>
+<tr><td>2026-05-09T21:37:17.781820Z</td><td>tool_call</td><td class="citation">93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f</td><td class="citation">0efdab6f24df002ed70ec520fc0949392fbbb0b6236ff6062f4f3b26f99d641d</td></tr>
+<tr><td>2026-05-09T21:38:13.611531Z</td><td>tool_call</td><td class="citation">64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6</td><td class="citation">b0c75bd7af078824be49c5f98fb64bb67a46a8e54b8157842484bd21a5c725c9</td></tr>
+<tr><td>2026-05-09T21:39:16.306867Z</td><td>tool_call</td><td class="citation">a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186</td><td class="citation">e9e4542606f0666869de782c96599d29ff078989499d228bafa75d2da3e64890</td></tr>
+<tr><td>2026-05-09T21:40:15.917026Z</td><td>tool_call</td><td class="citation">8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d</td><td class="citation">60a15b4917c84150b9ddb3d1e99bfe7c90c82acc32ff9d5cbff37a8d167bf864</td></tr>
+<tr><td>2026-05-09T21:41:07.752992Z</td><td>tool_call</td><td class="citation">93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4</td><td class="citation">4fd9e3d6ec7b619593fb8ade5a5782d46e5ec2e329a881425e93b51217e9b85f</td></tr>
+<tr><td>2026-05-09T21:42:02.737561Z</td><td>tool_call</td><td class="citation">df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc</td><td class="citation">90ef284e17555620172fe3cef401530bd5fd65742126befb388e0507a838f74a</td></tr>
+<tr><td>2026-05-09T21:42:32.120140Z</td><td>tool_call</td><td class="citation">4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865</td><td class="citation">a867542e18ffdd6f9525274b2aa915d2255f82c51990d8fa4ad375aa4cded4f7</td></tr>
+<tr><td>2026-05-09T21:42:59.845069Z</td><td>tool_call</td><td class="citation">5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82</td><td class="citation">855445243f2a1f96ecf027fcb92f4ca5dbcf48b668596dd7b199590beeb9cf68</td></tr>
+<tr><td>2026-05-09T21:45:05.968424Z</td><td>tool_call</td><td class="citation">956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748</td><td class="citation">49ff35ead0d9a84b3a07c21e5f523e1e1103c8f8ea9a322c1172d976dbb361de</td></tr>
+<tr><td>2026-05-09T21:45:28.850986Z</td><td>case_conclusion</td><td class="citation">4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805</td><td class="citation">c65ca99ffb2ea11dd4eeb43394cf0c475d9c793f591c818f7e9a8f13f66fb1cb</td></tr></tbody></table>
+</section>
+</body>
+</html>

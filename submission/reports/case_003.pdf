@@ -1,0 +1,3671 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R 31 0 R 33 0 R 35 0 R] /Count 15 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Length 3828 >>
+stream
+q 0.06 0.16 0.28 rg 0 772 612 20 re f Q
+BT
+/F2 18 Tf
+50 752 Td
+(VERDICT DFIR Analyst Report) Tj
+ET
+BT
+/F1 9 Tf
+50 740 Td
+(VERDICT Analyst Report) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(Case ID: case_003) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(Report purpose: professional writeup for final examiner review) Tj
+ET
+BT
+/F1 9 Tf
+50 704 Td
+(Review state: human approval required before external reliance) Tj
+ET
+q 0.90 0.94 0.98 rg 42 680 528 18 re f Q
+BT
+/F2 12 Tf
+50 684 Td
+(Executive Assessment) Tj
+ET
+BT
+/F1 9 Tf
+50 672 Td
+(Final case status: EVIL_FOUND) Tj
+ET
+BT
+/F1 9 Tf
+50 660 Td
+(Assessment: Evidence is consistent with hidden process activity: psscan PID\(s\) absent from) Tj
+ET
+BT
+/F1 9 Tf
+50 648 Td
+(pslist: 7132, 9936, 10368, 11936.) Tj
+ET
+BT
+/F1 9 Tf
+50 636 Td
+(Scope note: this writeup summarizes the latest case run. Earlier failed or unverifiable attempts) Tj
+ET
+BT
+/F1 9 Tf
+50 624 Td
+(are preserved in Superseded Run History and chain of custody.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 600 528 18 re f Q
+BT
+/F2 12 Tf
+50 604 Td
+(Human Review Checklist) Tj
+ET
+BT
+/F1 9 Tf
+50 592 Td
+([ ] Every claim has a CIT-#### citation.) Tj
+ET
+BT
+/F1 9 Tf
+50 580 Td
+([ ] Evidence hashes match the case manifest.) Tj
+ET
+BT
+/F1 9 Tf
+50 568 Td
+([ ] Key Findings match the cited ledger evidence cards.) Tj
+ET
+BT
+/F1 9 Tf
+50 556 Td
+([ ] Caveats are acknowledged before approving findings.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 532 528 18 re f Q
+BT
+/F2 12 Tf
+50 536 Td
+(Key Findings) Tj
+ET
+BT
+/F1 9 Tf
+50 524 Td
+(- No separate finding entries were emitted in the latest run.) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(- Case-level conclusion: EVIL_FOUND; see Latest run evidence citations below.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 488 528 18 re f Q
+BT
+/F2 12 Tf
+50 492 Td
+(Evidence And Citation Summary) Tj
+ET
+BT
+/F1 9 Tf
+50 480 Td
+(Evidence inventory:) Tj
+ET
+BT
+/F1 9 Tf
+50 468 Td
+(- disk_image: base-rd-01-cdrive.E01;) Tj
+ET
+BT
+/F3 7 Tf
+50 456 Td
+(sha256=12a622aa073dbbda3a4983014328a6085c8247ce93fe47fd6ba7483ed9d19aab; size=17820145297) Tj
+ET
+BT
+/F1 9 Tf
+50 444 Td
+(- memory: base-rd01-memory.mem;) Tj
+ET
+BT
+/F3 7 Tf
+50 432 Td
+(sha256=83456c716bbbeb116b474b87473445629db5dd018d0c667ec99f088871e1cbca; size=3221225472) Tj
+ET
+BT
+/F1 9 Tf
+50 420 Td
+(- disk_image: base-wkstn-05-cdrive.E01;) Tj
+ET
+BT
+/F3 7 Tf
+50 408 Td
+(sha256=a94f2a866e2e562c58c3fbcd3a94882f2d3c3db3c66a5e5eedf16a4b1c0a65e0; size=14809873122) Tj
+ET
+BT
+/F1 9 Tf
+50 396 Td
+(- memory: base-wkstn-05-memory.mem;) Tj
+ET
+BT
+/F3 7 Tf
+50 384 Td
+(sha256=74ff679b25727d5fb7a8f70217d6fad965efd806260b7d224f0b38bd1c436115; size=3221225472) Tj
+ET
+BT
+/F1 9 Tf
+50 364 Td
+(Latest run evidence:) Tj
+ET
+BT
+/F1 9 Tf
+50 352 Td
+(- CIT-0018 2026-05-09T21:06:27.636739Z tool_call: mmls exit=1) Tj
+ET
+BT
+/F1 9 Tf
+50 340 Td
+(- CIT-0019 2026-05-09T21:07:06.898389Z tool_call: fsstat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 328 Td
+(- CIT-0020 2026-05-09T21:07:50.865707Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 316 Td
+(- CIT-0021 2026-05-09T21:10:08.133720Z tool_call: fls exit=255) Tj
+ET
+BT
+/F1 9 Tf
+50 304 Td
+(- CIT-0022 2026-05-09T21:11:01.100127Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 292 Td
+(- CIT-0023 2026-05-09T21:11:42.663032Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 280 Td
+(- CIT-0024 2026-05-09T21:12:22.442397Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 268 Td
+(- CIT-0025 2026-05-09T21:13:02.446563Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 256 Td
+(- CIT-0026 2026-05-09T21:13:45.923130Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 244 Td
+(- CIT-0027 2026-05-09T21:14:29.298661Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 232 Td
+(- CIT-0028 2026-05-09T21:15:13.667107Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 220 Td
+(- CIT-0029 2026-05-09T21:15:58.317071Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 208 Td
+(- CIT-0030 2026-05-09T21:16:44.192210Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 1 of 15) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 4374 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(- CIT-0031 2026-05-09T21:17:27.953124Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 740 Td
+(- CIT-0032 2026-05-09T21:17:46.982684Z tool_call: vol3.windows.info exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(- CIT-0033 2026-05-09T21:18:06.383001Z tool_call: vol3.windows.pslist exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(- CIT-0034 2026-05-09T21:19:17.033205Z tool_call: vol3.windows.psscan exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 704 Td
+(- CIT-0035 2026-05-09T21:19:55.718880Z tool_call: mmls exit=1) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(- CIT-0036 2026-05-09T21:20:33.452372Z tool_call: fsstat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(- CIT-0037 2026-05-09T21:21:10.860941Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 668 Td
+(- CIT-0038 2026-05-09T21:22:10.062092Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(- CIT-0039 2026-05-09T21:22:54.916761Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(- CIT-0040 2026-05-09T21:23:33.524934Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 632 Td
+(- CIT-0041 2026-05-09T21:24:11.621206Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(- CIT-0042 2026-05-09T21:24:51.212249Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 608 Td
+(- CIT-0043 2026-05-09T21:25:29.438061Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 596 Td
+(- CIT-0044 2026-05-09T21:28:40.343902Z tool_call: mmls exit=1) Tj
+ET
+BT
+/F1 9 Tf
+50 584 Td
+(- CIT-0045 2026-05-09T21:29:30.870217Z tool_call: fsstat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(- CIT-0046 2026-05-09T21:30:22.578400Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 560 Td
+(- CIT-0047 2026-05-09T21:32:28.427912Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 548 Td
+(- CIT-0048 2026-05-09T21:33:26.414210Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(- CIT-0049 2026-05-09T21:34:21.020075Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 524 Td
+(- CIT-0050 2026-05-09T21:35:23.677806Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(- CIT-0051 2026-05-09T21:36:24.819511Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(- CIT-0052 2026-05-09T21:37:17.781820Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 488 Td
+(- CIT-0053 2026-05-09T21:38:13.611531Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 476 Td
+(- CIT-0054 2026-05-09T21:39:16.306867Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 464 Td
+(- CIT-0055 2026-05-09T21:40:15.917026Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 452 Td
+(- CIT-0056 2026-05-09T21:41:07.752992Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 440 Td
+(- CIT-0057 2026-05-09T21:42:02.737561Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 428 Td
+(- CIT-0058 2026-05-09T21:42:32.120140Z tool_call: vol3.windows.info exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 416 Td
+(- CIT-0059 2026-05-09T21:42:59.845069Z tool_call: vol3.windows.pslist exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 404 Td
+(- CIT-0060 2026-05-09T21:45:05.968424Z tool_call: vol3.windows.psscan exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 392 Td
+(- CIT-0061 2026-05-09T21:45:28.850986Z case_conclusion: case conclusion EVIL_FOUND) Tj
+ET
+q 0.90 0.94 0.98 rg 42 368 528 18 re f Q
+BT
+/F2 12 Tf
+50 372 Td
+(Superseded Run History) Tj
+ET
+BT
+/F1 9 Tf
+50 360 Td
+(Latest run evidence is authoritative for the executive assessment above.) Tj
+ET
+BT
+/F1 9 Tf
+50 348 Td
+(- CIT-0017 2026-05-09T19:50:38.228020Z status=UNVERIFIABLE; vol3.windows.info exited with code) Tj
+ET
+BT
+/F1 9 Tf
+50 336 Td
+(1; VERDICT cannot support a case-level finding from incomplete tool output.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 312 528 18 re f Q
+BT
+/F2 12 Tf
+50 316 Td
+(Ledger Evidence Appendix) Tj
+ET
+BT
+/F1 9 Tf
+50 304 Td
+(The cards below are concise ledger-derived evidence figures. Raw tool output paths and hashes) Tj
+ET
+BT
+/F1 9 Tf
+50 292 Td
+(remain available in the case output directory and JSONL ledger.) Tj
+ET
+q 0.93 0.95 0.98 rg 45 277 522 14 re f Q
+BT
+/F2 9 Tf
+50 280 Td
+(Evidence Figure CIT-0018: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 268 Td
+(  UTC: 2026-05-09T21:06:27.636739Z) Tj
+ET
+BT
+/F1 8 Tf
+62 256 Td
+(  Checkpoint: tool_call:mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 244 Td
+(  Entry hash: cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01) Tj
+ET
+BT
+/F1 8 Tf
+62 232 Td
+(  Tool: mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 220 Td
+(  Exit code: 1) Tj
+ET
+BT
+/F1 8 Tf
+62 208 Td
+(  Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) Tj
+ET
+BT
+/F1 8 Tf
+62 196 Td
+(  Output path: outputs/mmls-2026-05-09T210627.636739Z.json) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 2 of 15) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3811 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 737 522 14 re f Q
+BT
+/F2 9 Tf
+50 740 Td
+(Evidence Figure CIT-0019: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  UTC: 2026-05-09T21:07:06.898389Z) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Checkpoint: tool_call:fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Entry hash: f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Tool: fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Output path: outputs/fsstat-2026-05-09T210706.898389Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Artifact IDs: fsstat:7c9ef0fbf93626f8e1eb577c7e97b716dea231691460ba9f171efb288204f256) Tj
+ET
+q 0.93 0.95 0.98 rg 45 629 522 14 re f Q
+BT
+/F2 9 Tf
+50 632 Td
+(Evidence Figure CIT-0020: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  UTC: 2026-05-09T21:07:50.865707Z) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Entry hash: 82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Stdout SHA-256: e76c9e043e2960408eaed09a4aeb16234063b5f3ee16d3d6d8b6710084496275) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Output path: outputs/fls-2026-05-09T210750.865707Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236,) Tj
+ET
+BT
+/F1 9 Tf
+50 524 Td
+(fls:ba57e612055d796b33dc444e924a6c) Tj
+ET
+q 0.93 0.95 0.98 rg 45 509 522 14 re f Q
+BT
+/F2 9 Tf
+50 512 Td
+(Evidence Figure CIT-0021: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  UTC: 2026-05-09T21:10:08.133720Z) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Entry hash: 87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Exit code: 255) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Stdout SHA-256: 3bd39122f0b1ce4928aa831008186455e3ff9af35b01206fdb830fd576b9630b) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Output path: outputs/fls-2026-05-09T211008.133720Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236,) Tj
+ET
+BT
+/F1 9 Tf
+50 404 Td
+(fls:ba57e612055d796b33dc444e924a6c) Tj
+ET
+q 0.93 0.95 0.98 rg 45 389 522 14 re f Q
+BT
+/F2 9 Tf
+50 392 Td
+(Evidence Figure CIT-0022: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  UTC: 2026-05-09T21:11:01.100127Z) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Entry hash: acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Stdout SHA-256: 467208e289d1881ca5fddef3dc9aef6add653a7d30cebf244bc081ef53495483) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Output path: outputs/icat-2026-05-09T211101.100127Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 281 522 14 re f Q
+BT
+/F2 9 Tf
+50 284 Td
+(Evidence Figure CIT-0023: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  UTC: 2026-05-09T21:11:42.663032Z) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Entry hash: 9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Stdout SHA-256: 738a4ed9c27456c76f2de43beba8f7fd0d1acaf5f4450006c4d2d34fce715fa3) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  Output path: outputs/icat-2026-05-09T211142.663032Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Artifact IDs:) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 3 of 15) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 3728 >>
+stream
+q 0.93 0.95 0.98 rg 45 749 522 14 re f Q
+BT
+/F2 9 Tf
+50 752 Td
+(Evidence Figure CIT-0024: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  UTC: 2026-05-09T21:12:22.442397Z) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Entry hash: 90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Stdout SHA-256: 199c16c8dee53d93caae9043bf46e0409fa0795c421d93564ee43832af48556c) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Output path: outputs/icat-2026-05-09T211222.442397Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b,) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(icat:b734b4aae6ec511f26e247bee58e) Tj
+ET
+q 0.93 0.95 0.98 rg 45 629 522 14 re f Q
+BT
+/F2 9 Tf
+50 632 Td
+(Evidence Figure CIT-0025: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  UTC: 2026-05-09T21:13:02.446563Z) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Entry hash: 1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Stdout SHA-256: 78b224c51a7213bfd78228e194eaf1ffba93470c68bf35db5ad9b7b73ce74c2d) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Output path: outputs/icat-2026-05-09T211302.446563Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 521 522 14 re f Q
+BT
+/F2 9 Tf
+50 524 Td
+(Evidence Figure CIT-0026: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  UTC: 2026-05-09T21:13:45.923130Z) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Entry hash: 2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Stdout SHA-256: b7da760a09590dc2ab730e5c1a25962cc05d02b2c57dd59197de09dec2d035f5) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Output path: outputs/icat-2026-05-09T211345.923130Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 413 522 14 re f Q
+BT
+/F2 9 Tf
+50 416 Td
+(Evidence Figure CIT-0027: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  UTC: 2026-05-09T21:14:29.298661Z) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Entry hash: d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Stdout SHA-256: 7358bf622d5fdb27db9476e7e840019ab9e00885f5b7c4323a8c03b179d7622d) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Output path: outputs/icat-2026-05-09T211429.298661Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 305 522 14 re f Q
+BT
+/F2 9 Tf
+50 308 Td
+(Evidence Figure CIT-0028: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  UTC: 2026-05-09T21:15:13.667107Z) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Entry hash: 731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Stdout SHA-256: be4305ff9e3b4d779e5093f437ea626945439d9788e8817028c4fe449b2803a2) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Output path: outputs/icat-2026-05-09T211513.667107Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 197 522 14 re f Q
+BT
+/F2 9 Tf
+50 200 Td
+(Evidence Figure CIT-0029: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  UTC: 2026-05-09T21:15:58.317071Z) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 4 of 15) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 3884 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Entry hash: 22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Stdout SHA-256: 67bb641864fbec0c4b226d229992d0030df5b9d05e8a04962ec259f5489f24ec) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Output path: outputs/icat-2026-05-09T211558.317071Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 665 522 14 re f Q
+BT
+/F2 9 Tf
+50 668 Td
+(Evidence Figure CIT-0030: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  UTC: 2026-05-09T21:16:44.192210Z) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Entry hash: e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Stdout SHA-256: 273870f07b2de9cb4c1ad21a243a7eb6f2245080cb2fffba921dc3e63f9d457b) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Output path: outputs/icat-2026-05-09T211644.192210Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b,) Tj
+ET
+BT
+/F1 9 Tf
+50 560 Td
+(icat:b734b4aae6ec511f26e247bee58e) Tj
+ET
+q 0.93 0.95 0.98 rg 45 545 522 14 re f Q
+BT
+/F2 9 Tf
+50 548 Td
+(Evidence Figure CIT-0031: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  UTC: 2026-05-09T21:17:27.953124Z) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Entry hash: 747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Stdout SHA-256: 45594dd9d807df716c5e3c0a71c4fec6d5d90637679f1766e4c31972e7b495b0) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Output path: outputs/icat-2026-05-09T211727.953124Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 437 522 14 re f Q
+BT
+/F2 9 Tf
+50 440 Td
+(Evidence Figure CIT-0032: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  UTC: 2026-05-09T21:17:46.982684Z) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Checkpoint: tool_call:vol3_info) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Entry hash: a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Tool: vol3.windows.info) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Stdout SHA-256: 23edd20ced4fdf0e4f9047ad4a622af1b739c4b5d3bb0c383001d7e604786fc4) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Output path: outputs/vol3_info-2026-05-09T211746.982684Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Artifact IDs: vol3.info:cda7be72600d56d4b960003c4f3f3eb16416da4b3316ba74e73f185bf6360556) Tj
+ET
+q 0.93 0.95 0.98 rg 45 329 522 14 re f Q
+BT
+/F2 9 Tf
+50 332 Td
+(Evidence Figure CIT-0033: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  UTC: 2026-05-09T21:18:06.383001Z) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Checkpoint: tool_call:vol3_pslist) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Entry hash: c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Tool: vol3.windows.pslist) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Stdout SHA-256: b93fadc3de40ac750a255f97df914c61ab2a214993f420bc07cbdb2cd963f3be) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Output path: outputs/vol3_pslist-2026-05-09T211806.383001Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Artifact IDs: vol3.pslist:e21fad25ed2ce88d9961337bb8db18dcfbceb96c9b64091ab760919541a834d5,) Tj
+ET
+BT
+/F1 9 Tf
+50 224 Td
+(vol3.pslist:4a29f44b79bec1) Tj
+ET
+q 0.93 0.95 0.98 rg 45 209 522 14 re f Q
+BT
+/F2 9 Tf
+50 212 Td
+(Evidence Figure CIT-0034: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  UTC: 2026-05-09T21:19:17.033205Z) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Checkpoint: tool_call:vol3_psscan) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 5 of 15) Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 3920 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Entry hash: 767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Tool: vol3.windows.psscan) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Stdout SHA-256: cf05c50ca5cffb9b3804d6b30d9e1a653ed5a17fab40c1394e9714c807a2012c) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Output path: outputs/vol3_psscan-2026-05-09T211917.033205Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Artifact IDs: vol3.psscan:a54b73fa221e39c7af5b69378381959affda6b6ac568295e61a5200a95ec344c,) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(vol3.psscan:254596fdfd649d) Tj
+ET
+q 0.93 0.95 0.98 rg 45 665 522 14 re f Q
+BT
+/F2 9 Tf
+50 668 Td
+(Evidence Figure CIT-0035: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  UTC: 2026-05-09T21:19:55.718880Z) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Checkpoint: tool_call:mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Entry hash: 5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Tool: mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Exit code: 1) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Output path: outputs/mmls-2026-05-09T211955.718880Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 557 522 14 re f Q
+BT
+/F2 9 Tf
+50 560 Td
+(Evidence Figure CIT-0036: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  UTC: 2026-05-09T21:20:33.452372Z) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Checkpoint: tool_call:fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Entry hash: 4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Tool: fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Stdout SHA-256: 8f466ebe03e321c61a3a741081bbd93e32850d0610ffbc2bbc9470f1f47da0e8) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Output path: outputs/fsstat-2026-05-09T212033.452372Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Artifact IDs: fsstat:0b28598d2dbe9c24328baa08091d3cd99a5da3570271110e6e6cd4276ecb237f) Tj
+ET
+q 0.93 0.95 0.98 rg 45 449 522 14 re f Q
+BT
+/F2 9 Tf
+50 452 Td
+(Evidence Figure CIT-0037: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  UTC: 2026-05-09T21:21:10.860941Z) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Entry hash: 235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Stdout SHA-256: 4f580b401cab81b2b4d89cd0a7b17fad45ce9da96102d8a383c8ebda9a639166) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Output path: outputs/fls-2026-05-09T212110.860941Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Artifact IDs: fls:3ecb715cb9638cf8f956ad46bcd497b4393bd44bb0a2b5bcbcb80c5688ccc416,) Tj
+ET
+BT
+/F1 9 Tf
+50 344 Td
+(fls:608a8aa3e5829786e52525d492350b) Tj
+ET
+q 0.93 0.95 0.98 rg 45 329 522 14 re f Q
+BT
+/F2 9 Tf
+50 332 Td
+(Evidence Figure CIT-0038: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  UTC: 2026-05-09T21:22:10.062092Z) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Entry hash: f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Stdout SHA-256: c9d9c3c5a6addad135f8c9fc10c17fd46e5ecaf4471b4ccbc264c01445572e3e) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Output path: outputs/fls-2026-05-09T212210.062092Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Artifact IDs: fls:3ecb715cb9638cf8f956ad46bcd497b4393bd44bb0a2b5bcbcb80c5688ccc416,) Tj
+ET
+BT
+/F1 9 Tf
+50 224 Td
+(fls:608a8aa3e5829786e52525d492350b) Tj
+ET
+q 0.93 0.95 0.98 rg 45 209 522 14 re f Q
+BT
+/F2 9 Tf
+50 212 Td
+(Evidence Figure CIT-0039: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  UTC: 2026-05-09T21:22:54.916761Z) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 6 of 15) Tj
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 3618 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Entry hash: 27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Stdout SHA-256: 47f582e7db3681325745198547f4f5d518cd123d3956c300a8f1b1c4994d7119) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Output path: outputs/icat-2026-05-09T212254.916761Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 677 522 14 re f Q
+BT
+/F2 9 Tf
+50 680 Td
+(Evidence Figure CIT-0040: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  UTC: 2026-05-09T21:23:33.524934Z) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Entry hash: a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Stdout SHA-256: 84a8de53dd4907f3632488558d405a265792dd425969910ad55d4dde124a49f2) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Output path: outputs/icat-2026-05-09T212333.524934Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 569 522 14 re f Q
+BT
+/F2 9 Tf
+50 572 Td
+(Evidence Figure CIT-0041: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  UTC: 2026-05-09T21:24:11.621206Z) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Entry hash: 2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Stdout SHA-256: e31045df874673c3664a2b2e3f1935ee00eb73d7436c8614d68e9c9d47550a12) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Output path: outputs/icat-2026-05-09T212411.621206Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 461 522 14 re f Q
+BT
+/F2 9 Tf
+50 464 Td
+(Evidence Figure CIT-0042: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  UTC: 2026-05-09T21:24:51.212249Z) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Entry hash: b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Stdout SHA-256: 7e1638ff617be50b2c8d58f28b5e8d15271d0dd306bd82602ba195c1c3da24d0) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Output path: outputs/icat-2026-05-09T212451.212249Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 353 522 14 re f Q
+BT
+/F2 9 Tf
+50 356 Td
+(Evidence Figure CIT-0043: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  UTC: 2026-05-09T21:25:29.438061Z) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Entry hash: a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Stdout SHA-256: 427aad3373c850244300e4e9948528bb91e7626a6c70d0b6fe476c7e520e33d3) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Output path: outputs/icat-2026-05-09T212529.438061Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 245 522 14 re f Q
+BT
+/F2 9 Tf
+50 248 Td
+(Evidence Figure CIT-0044: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  UTC: 2026-05-09T21:28:40.343902Z) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Checkpoint: tool_call:mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Entry hash: 4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  Tool: mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Exit code: 1) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 7 of 15) Tj
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 3876 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Output path: outputs/mmls-2026-05-09T212840.343902Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 713 522 14 re f Q
+BT
+/F2 9 Tf
+50 716 Td
+(Evidence Figure CIT-0045: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  UTC: 2026-05-09T21:29:30.870217Z) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Checkpoint: tool_call:fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Entry hash: 5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Tool: fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Output path: outputs/fsstat-2026-05-09T212930.870217Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Artifact IDs: fsstat:7c9ef0fbf93626f8e1eb577c7e97b716dea231691460ba9f171efb288204f256) Tj
+ET
+q 0.93 0.95 0.98 rg 45 605 522 14 re f Q
+BT
+/F2 9 Tf
+50 608 Td
+(Evidence Figure CIT-0046: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  UTC: 2026-05-09T21:30:22.578400Z) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Entry hash: c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Stdout SHA-256: e76c9e043e2960408eaed09a4aeb16234063b5f3ee16d3d6d8b6710084496275) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Output path: outputs/fls-2026-05-09T213022.578400Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236,) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(fls:ba57e612055d796b33dc444e924a6c) Tj
+ET
+q 0.93 0.95 0.98 rg 45 485 522 14 re f Q
+BT
+/F2 9 Tf
+50 488 Td
+(Evidence Figure CIT-0047: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  UTC: 2026-05-09T21:32:28.427912Z) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Entry hash: c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Stdout SHA-256: c4e9f27b68b48de77aec06d8277dd47e14f7d798c11276bcef26db1ea8584708) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Output path: outputs/fls-2026-05-09T213228.427912Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Artifact IDs: fls:7961e54f1d8fc0f75a9e34c2d86ec0441f5d86c13121f4c3464c5bb6b93ad236,) Tj
+ET
+BT
+/F1 9 Tf
+50 380 Td
+(fls:ba57e612055d796b33dc444e924a6c) Tj
+ET
+q 0.93 0.95 0.98 rg 45 365 522 14 re f Q
+BT
+/F2 9 Tf
+50 368 Td
+(Evidence Figure CIT-0048: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  UTC: 2026-05-09T21:33:26.414210Z) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Entry hash: a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Stdout SHA-256: 467208e289d1881ca5fddef3dc9aef6add653a7d30cebf244bc081ef53495483) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Output path: outputs/icat-2026-05-09T213326.414210Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 257 522 14 re f Q
+BT
+/F2 9 Tf
+50 260 Td
+(Evidence Figure CIT-0049: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  UTC: 2026-05-09T21:34:21.020075Z) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Entry hash: 485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Stdout SHA-256: 738a4ed9c27456c76f2de43beba8f7fd0d1acaf5f4450006c4d2d34fce715fa3) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 8 of 15) Tj
+ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 20 0 R >>
+endobj
+22 0 obj
+<< /Length 3691 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Output path: outputs/icat-2026-05-09T213421.020075Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 725 522 14 re f Q
+BT
+/F2 9 Tf
+50 728 Td
+(Evidence Figure CIT-0050: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  UTC: 2026-05-09T21:35:23.677806Z) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Entry hash: 2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Stdout SHA-256: 199c16c8dee53d93caae9043bf46e0409fa0795c421d93564ee43832af48556c) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Output path: outputs/icat-2026-05-09T213523.677806Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b,) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(icat:b734b4aae6ec511f26e247bee58e) Tj
+ET
+q 0.93 0.95 0.98 rg 45 605 522 14 re f Q
+BT
+/F2 9 Tf
+50 608 Td
+(Evidence Figure CIT-0051: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  UTC: 2026-05-09T21:36:24.819511Z) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Entry hash: 0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Stdout SHA-256: 78b224c51a7213bfd78228e194eaf1ffba93470c68bf35db5ad9b7b73ce74c2d) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Output path: outputs/icat-2026-05-09T213624.819511Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 497 522 14 re f Q
+BT
+/F2 9 Tf
+50 500 Td
+(Evidence Figure CIT-0052: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  UTC: 2026-05-09T21:37:17.781820Z) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Entry hash: 93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Stdout SHA-256: b7da760a09590dc2ab730e5c1a25962cc05d02b2c57dd59197de09dec2d035f5) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Output path: outputs/icat-2026-05-09T213717.781820Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 389 522 14 re f Q
+BT
+/F2 9 Tf
+50 392 Td
+(Evidence Figure CIT-0053: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  UTC: 2026-05-09T21:38:13.611531Z) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Entry hash: 64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Stdout SHA-256: 7358bf622d5fdb27db9476e7e840019ab9e00885f5b7c4323a8c03b179d7622d) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Output path: outputs/icat-2026-05-09T213813.611531Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 281 522 14 re f Q
+BT
+/F2 9 Tf
+50 284 Td
+(Evidence Figure CIT-0054: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  UTC: 2026-05-09T21:39:16.306867Z) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Entry hash: a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Stdout SHA-256: be4305ff9e3b4d779e5093f437ea626945439d9788e8817028c4fe449b2803a2) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  Output path: outputs/icat-2026-05-09T213916.306867Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Artifact IDs:) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 9 of 15) Tj
+ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 22 0 R >>
+endobj
+24 0 obj
+<< /Length 3926 >>
+stream
+q 0.93 0.95 0.98 rg 45 749 522 14 re f Q
+BT
+/F2 9 Tf
+50 752 Td
+(Evidence Figure CIT-0055: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  UTC: 2026-05-09T21:40:15.917026Z) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Entry hash: 8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Stdout SHA-256: 67bb641864fbec0c4b226d229992d0030df5b9d05e8a04962ec259f5489f24ec) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Output path: outputs/icat-2026-05-09T214015.917026Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 641 522 14 re f Q
+BT
+/F2 9 Tf
+50 644 Td
+(Evidence Figure CIT-0056: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  UTC: 2026-05-09T21:41:07.752992Z) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Entry hash: 93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  Stdout SHA-256: 273870f07b2de9cb4c1ad21a243a7eb6f2245080cb2fffba921dc3e63f9d457b) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Output path: outputs/icat-2026-05-09T214107.752992Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Artifact IDs: icat:bba92d658e93036b61828baee286c8b61c7d31e2a8b14638e86256248445c18b,) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(icat:b734b4aae6ec511f26e247bee58e) Tj
+ET
+q 0.93 0.95 0.98 rg 45 521 522 14 re f Q
+BT
+/F2 9 Tf
+50 524 Td
+(Evidence Figure CIT-0057: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  UTC: 2026-05-09T21:42:02.737561Z) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Entry hash: df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Stdout SHA-256: 45594dd9d807df716c5e3c0a71c4fec6d5d90637679f1766e4c31972e7b495b0) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Output path: outputs/icat-2026-05-09T214202.737561Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 413 522 14 re f Q
+BT
+/F2 9 Tf
+50 416 Td
+(Evidence Figure CIT-0058: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  UTC: 2026-05-09T21:42:32.120140Z) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Checkpoint: tool_call:vol3_info) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Entry hash: 4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Tool: vol3.windows.info) Tj
+ET
+BT
+/F1 8 Tf
+62 356 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  Stdout SHA-256: 23edd20ced4fdf0e4f9047ad4a622af1b739c4b5d3bb0c383001d7e604786fc4) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Output path: outputs/vol3_info-2026-05-09T214232.120140Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Artifact IDs: vol3.info:cda7be72600d56d4b960003c4f3f3eb16416da4b3316ba74e73f185bf6360556) Tj
+ET
+q 0.93 0.95 0.98 rg 45 305 522 14 re f Q
+BT
+/F2 9 Tf
+50 308 Td
+(Evidence Figure CIT-0059: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  UTC: 2026-05-09T21:42:59.845069Z) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Checkpoint: tool_call:vol3_pslist) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Entry hash: 5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Tool: vol3.windows.pslist) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 236 Td
+(  Stdout SHA-256: b93fadc3de40ac750a255f97df914c61ab2a214993f420bc07cbdb2cd963f3be) Tj
+ET
+BT
+/F1 8 Tf
+62 224 Td
+(  Output path: outputs/vol3_pslist-2026-05-09T214259.845069Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  Artifact IDs: vol3.pslist:e21fad25ed2ce88d9961337bb8db18dcfbceb96c9b64091ab760919541a834d5,) Tj
+ET
+BT
+/F1 9 Tf
+50 200 Td
+(vol3.pslist:4a29f44b79bec1) Tj
+ET
+q 0.93 0.95 0.98 rg 45 185 522 14 re f Q
+BT
+/F2 9 Tf
+50 188 Td
+(Evidence Figure CIT-0060: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 10 of 15) Tj
+ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 24 0 R >>
+endobj
+26 0 obj
+<< /Length 4288 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  UTC: 2026-05-09T21:45:05.968424Z) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Checkpoint: tool_call:vol3_psscan) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Entry hash: 956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Tool: vol3.windows.psscan) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Stdout SHA-256: cf05c50ca5cffb9b3804d6b30d9e1a653ed5a17fab40c1394e9714c807a2012c) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  Output path: outputs/vol3_psscan-2026-05-09T214505.968424Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Artifact IDs: vol3.psscan:a54b73fa221e39c7af5b69378381959affda6b6ac568295e61a5200a95ec344c,) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(vol3.psscan:254596fdfd649d) Tj
+ET
+q 0.93 0.95 0.98 rg 45 641 522 14 re f Q
+BT
+/F2 9 Tf
+50 644 Td
+(Evidence Figure CIT-0061: case_conclusion) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  UTC: 2026-05-09T21:45:28.850986Z) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Checkpoint: case_conclusion) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Entry hash: 4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Conclusion: EVIL_FOUND) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Rationale: Evidence is consistent with hidden process activity: psscan PID\(s\) absent from) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(pslist: 7132, 9936, 10368, 1) Tj
+ET
+q 0.90 0.94 0.98 rg 42 548 528 18 re f Q
+BT
+/F2 12 Tf
+50 552 Td
+(Chain Of Custody Appendix) Tj
+ET
+BT
+/F1 9 Tf
+50 540 Td
+(CIT-0001 2026-05-09T19:41:15.498860Z case_init) Tj
+ET
+BT
+/F3 7 Tf
+50 528 Td
+(entry_hash=7b9627e4c78ef7910b71bd7129bb99a7f4978f2713aa60ba7e4101e4cd4f5e86) Tj
+ET
+BT
+/F1 9 Tf
+50 516 Td
+(hmac=523ecbfdfd7405ec88e8836f99be5655301038961fd0219c4229131e030d7a13) Tj
+ET
+BT
+/F1 9 Tf
+50 504 Td
+(CIT-0002 2026-05-09T19:41:50.877678Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 492 Td
+(entry_hash=111793f138be954de7a4c237de836cc916faf131c7252617ffa484b228fbc2a3) Tj
+ET
+BT
+/F1 9 Tf
+50 480 Td
+(hmac=b64e33d57530b19963ff928a08bc59aeb14914b8cb5c6032b10c2b735309f520) Tj
+ET
+BT
+/F1 9 Tf
+50 468 Td
+(CIT-0003 2026-05-09T19:42:23.623725Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 456 Td
+(entry_hash=9615c239b2fa8ff6e2a98a2f650732dd63b46143be38997c05051556dc754e87) Tj
+ET
+BT
+/F1 9 Tf
+50 444 Td
+(hmac=3cab53985d40ca0b2f42428d72d1ac13ff83b009482ac65d1ed1ae618b790d92) Tj
+ET
+BT
+/F1 9 Tf
+50 432 Td
+(CIT-0004 2026-05-09T19:42:57.877836Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 420 Td
+(entry_hash=7dce9a8f99aed61c679961f3f878c0e8d4cc293c4e9a81282a105b7a84cfc3a3) Tj
+ET
+BT
+/F1 9 Tf
+50 408 Td
+(hmac=6f0938220250dd9a4135013663148a2ddb474ffbf62da92b25c2d3cc85e29cf9) Tj
+ET
+BT
+/F1 9 Tf
+50 396 Td
+(CIT-0005 2026-05-09T19:44:06.740225Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 384 Td
+(entry_hash=1a83114b3df2a90dc122f0ab0953d538f8177dadf41301619a2c8224665f2304) Tj
+ET
+BT
+/F1 9 Tf
+50 372 Td
+(hmac=69abc284abe9dc7766d8ee1a7817536b39609e748603c7cce9d4f554667a586e) Tj
+ET
+BT
+/F1 9 Tf
+50 360 Td
+(CIT-0006 2026-05-09T19:44:47.420651Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 348 Td
+(entry_hash=7909f330aa616e2e6eb7ef9311aacb281a31eb4ea1cc57b218e01c0cffc66bae) Tj
+ET
+BT
+/F1 9 Tf
+50 336 Td
+(hmac=d3905632e1bf71e581bedb488059861386ca8829dfcd4b2006705c33ba00644e) Tj
+ET
+BT
+/F1 9 Tf
+50 324 Td
+(CIT-0007 2026-05-09T19:45:25.262491Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 312 Td
+(entry_hash=ca46205aef432e027b7c583cbd6d45d23241390662313b797843e21726b1527b) Tj
+ET
+BT
+/F1 9 Tf
+50 300 Td
+(hmac=36e82e91dc46ca8e8f4d1646eb51fcb55510056f2dc952f2880be91da403a190) Tj
+ET
+BT
+/F1 9 Tf
+50 288 Td
+(CIT-0008 2026-05-09T19:46:02.631173Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 276 Td
+(entry_hash=ad19263f829e1862843b7729aae852564aa240148183ebaa265545c298f30934) Tj
+ET
+BT
+/F1 9 Tf
+50 264 Td
+(hmac=0eb1c05945d9843b3dd542fb9e0c9fe41d601971caed33e264595e60fd7a8f9c) Tj
+ET
+BT
+/F1 9 Tf
+50 252 Td
+(CIT-0009 2026-05-09T19:46:40.162749Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 240 Td
+(entry_hash=f23993acbf593854ff52a87db7a559eaf37d6abee4353c9e4591b09b5d73d45d) Tj
+ET
+BT
+/F1 9 Tf
+50 228 Td
+(hmac=eee5fdbfd074e28670547932e9c8ad7321e53e511355b097c1ebd2c8bde4af4c) Tj
+ET
+BT
+/F1 9 Tf
+50 216 Td
+(CIT-0010 2026-05-09T19:47:17.396937Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 204 Td
+(entry_hash=c16ca59b3f3a0d35162e4b7f806d06a9edab04b88c5dd99c9f1a516da6a331e2) Tj
+ET
+BT
+/F1 9 Tf
+50 192 Td
+(hmac=8a9f56b9f73e29adb9d837762bd4b9e35ab37eb12c73819db56316a3d2e24e24) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 11 of 15) Tj
+ET
+endstream
+endobj
+27 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 26 0 R >>
+endobj
+28 0 obj
+<< /Length 4576 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(CIT-0011 2026-05-09T19:47:54.259595Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 740 Td
+(entry_hash=d49ce1ab90c37167f199f1f1c6c0b39e5922ae7ff709a82d43b56abd711e0343) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(hmac=dd6e18edde5c82adc60e7a68ddca767aefd249577e2735ce13c49fdf9d4015ad) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(CIT-0012 2026-05-09T19:48:31.109278Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 704 Td
+(entry_hash=3fddf7e308aae640187235c8820a18a62f37110f41f2695ca2aaa72e75797ef0) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(hmac=153bf73de972ce4793937b852895b48052a0f4569d8db0963ca2b7b4a0094734) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(CIT-0013 2026-05-09T19:49:07.663580Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 668 Td
+(entry_hash=bffc893b795d1104955a8059f5c54aa669c4a74df89f052473605082da3a37b3) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(hmac=51f18199b867d284a7e2944c8b2a07c6ad8bb1b654fa5aa49a95592e7c65d5df) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(CIT-0014 2026-05-09T19:49:45.481998Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 632 Td
+(entry_hash=a33006c75becb60758da6429bb68a1ff14f17087be8109789d2b056fe8b1ed92) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(hmac=e4c212c38d5834aa5058da0475469540e6a4050ac4497d5d82bc264a57eb8444) Tj
+ET
+BT
+/F1 9 Tf
+50 608 Td
+(CIT-0015 2026-05-09T19:50:21.935448Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 596 Td
+(entry_hash=28ce0e8ccd77f4fbbe249083b7f4278a61d20d9d49adf20ab71314ee121217b1) Tj
+ET
+BT
+/F1 9 Tf
+50 584 Td
+(hmac=bfe035ed4b3cb90eb7eaf4fc4074ddd9702ded49579fa939fa9321c8aa7e17cc) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(CIT-0016 2026-05-09T19:50:33.501474Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 560 Td
+(entry_hash=6e503c0a72d4ff26e2649a43a3aa507dccb604b7bde5a75c2968538d88df7e22) Tj
+ET
+BT
+/F1 9 Tf
+50 548 Td
+(hmac=459054a642a9773c9f71471ce51757ca14d93a1a178344f0322afd8241ee1106) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(CIT-0017 2026-05-09T19:50:38.228020Z case_conclusion) Tj
+ET
+BT
+/F3 7 Tf
+50 524 Td
+(entry_hash=0df8b068f10232263d0c447d082fcc11505fffbd2388954f200d039503714340) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(hmac=9c967413375a6cbe6c233211eb3e7e8a9d0ef2d957607530afda9305509fe67c) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(CIT-0018 2026-05-09T21:06:27.636739Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 488 Td
+(entry_hash=cf0504a5ac0ca87b6960b303e7b244b12c8c16b0ff5267c7edc82f18a146ff01) Tj
+ET
+BT
+/F1 9 Tf
+50 476 Td
+(hmac=9c3687cf2e87041e061637211ef0ca84f48a47994421399418c14c33cd1381e5) Tj
+ET
+BT
+/F1 9 Tf
+50 464 Td
+(CIT-0019 2026-05-09T21:07:06.898389Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 452 Td
+(entry_hash=f1f5562cc4589079c224da5f6e73cc7eb9261d55e9a68893a257202faafde229) Tj
+ET
+BT
+/F1 9 Tf
+50 440 Td
+(hmac=9c9da465f1b6a0c9f76310fe0950a9258cb1c312c19367671841b8cce361cfc8) Tj
+ET
+BT
+/F1 9 Tf
+50 428 Td
+(CIT-0020 2026-05-09T21:07:50.865707Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 416 Td
+(entry_hash=82298ce4165ab446c37f130c1c178c85699b1101bba98d1328f49cd3f32831f5) Tj
+ET
+BT
+/F1 9 Tf
+50 404 Td
+(hmac=a6ddf478a9310ff66120c5bb7ae90cc36338fdb1230e8e40475631bb5dd50c39) Tj
+ET
+BT
+/F1 9 Tf
+50 392 Td
+(CIT-0021 2026-05-09T21:10:08.133720Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 380 Td
+(entry_hash=87292ea1303b1defe0ecf7817a40bc0ff8fb4e4d9edec7efbc72018266ac5095) Tj
+ET
+BT
+/F1 9 Tf
+50 368 Td
+(hmac=4b20bf39c1db502ca55e69e5a51f99cfe047c7d7723da8150e75f5ddc34da3d2) Tj
+ET
+BT
+/F1 9 Tf
+50 356 Td
+(CIT-0022 2026-05-09T21:11:01.100127Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 344 Td
+(entry_hash=acbd3fe75940c87b04add91e76f1106b98e68ec7a5057cda5cdb425409421fdf) Tj
+ET
+BT
+/F1 9 Tf
+50 332 Td
+(hmac=6e103d637748931f070aa6f912158b8ff37e71c3a2060a8db76976a567764061) Tj
+ET
+BT
+/F1 9 Tf
+50 320 Td
+(CIT-0023 2026-05-09T21:11:42.663032Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 308 Td
+(entry_hash=9ab3d2a3536e4e8a199f37f6bbee0edc030cfe70c507ff0d92b97afb4b9392fd) Tj
+ET
+BT
+/F1 9 Tf
+50 296 Td
+(hmac=2fca9b133e09eb57c1cc78a806fcc7df720f78b6987634ac1a5f7a1fdacb1ab8) Tj
+ET
+BT
+/F1 9 Tf
+50 284 Td
+(CIT-0024 2026-05-09T21:12:22.442397Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 272 Td
+(entry_hash=90221beb84db8df81d79b76b37cc1f7fe2eb23f2c8717321ade124fc4c241a61) Tj
+ET
+BT
+/F1 9 Tf
+50 260 Td
+(hmac=92130c1227fe2dfb06c96a68a50a56d4fd1ec79591c8e3468149cbf8cbee9bcd) Tj
+ET
+BT
+/F1 9 Tf
+50 248 Td
+(CIT-0025 2026-05-09T21:13:02.446563Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 236 Td
+(entry_hash=1eb4f98be144e8d684eea14aa36794d763ceb37f1d91186bd24958668d9cd3fb) Tj
+ET
+BT
+/F1 9 Tf
+50 224 Td
+(hmac=5030a60f399b0e0a6a89642ce9835358f17833e19db7ade582050c101ba24e0b) Tj
+ET
+BT
+/F1 9 Tf
+50 212 Td
+(CIT-0026 2026-05-09T21:13:45.923130Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 200 Td
+(entry_hash=2ddded01e2de203427415ea98b2ec036cf4eae125641790da69c920da560ad88) Tj
+ET
+BT
+/F1 9 Tf
+50 188 Td
+(hmac=484a525cf1e52b479cdfdb535652f05fb8bb78ba2ea8a65e8a43533dd5c323f5) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 12 of 15) Tj
+ET
+endstream
+endobj
+29 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 28 0 R >>
+endobj
+30 0 obj
+<< /Length 4570 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(CIT-0027 2026-05-09T21:14:29.298661Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 740 Td
+(entry_hash=d37cc6af3c08b71b64cbfae6a85c8cbdc823852ed8ee1053496c0519e1b680b5) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(hmac=b01d3808de473148b3f93308c101224de2598d5fad1ceb8f80ec3771eb3841ec) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(CIT-0028 2026-05-09T21:15:13.667107Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 704 Td
+(entry_hash=731df7638af27ebbaff9cf21efea9503c8f4e0bcf6d9d2bb76bfb1693d06f4ea) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(hmac=f0ccfe2fb714313b65f5cff27cb158450c9114b4ecfa72479f673d9c53b7b714) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(CIT-0029 2026-05-09T21:15:58.317071Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 668 Td
+(entry_hash=22ece978d3334cd6e5b1cee3e3108b7cefa1e58c3ddfe113c194be5372bfc604) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(hmac=ceaba61eb6b07dab25dde0a141e6424ddb007709d091200b0cbeafbf414210ca) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(CIT-0030 2026-05-09T21:16:44.192210Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 632 Td
+(entry_hash=e23f2c364f6187de0141450af3df99822e0b012f8c0dbad3ffc216e68e4ae900) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(hmac=2101885d65b9556a4edf5d4877f55cdcf12fe39a2b08cf299899482e84ff1d51) Tj
+ET
+BT
+/F1 9 Tf
+50 608 Td
+(CIT-0031 2026-05-09T21:17:27.953124Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 596 Td
+(entry_hash=747f748ebf9f8332b788dc6a9141c7dc8f431795ae20a864898d76e4714dffb9) Tj
+ET
+BT
+/F1 9 Tf
+50 584 Td
+(hmac=1ae4054cb323e176ab03b1eff08c055021662989d07481d940af09a0d7743847) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(CIT-0032 2026-05-09T21:17:46.982684Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 560 Td
+(entry_hash=a3e38a53807adb30911b327cabda1407f8a536200dc787631b0a42c9327a3197) Tj
+ET
+BT
+/F1 9 Tf
+50 548 Td
+(hmac=b100106d5958bfe9c164c107637f1983020809042c2ded9fcb99fddf6d07bf70) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(CIT-0033 2026-05-09T21:18:06.383001Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 524 Td
+(entry_hash=c334447e6e612799192906d9b88d3c45d7d6f716cb3e390440b8e81a0f66b012) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(hmac=c03c7b8417177a2536fe3ef9bdc55ec97df73e10a31546842432af132c202356) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(CIT-0034 2026-05-09T21:19:17.033205Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 488 Td
+(entry_hash=767d372412dcc8d83c0565908d0b7e682405403e0e1f11f793f05afdad073651) Tj
+ET
+BT
+/F1 9 Tf
+50 476 Td
+(hmac=be71b49b0e912caf691fc62c39f7f0392ba65b47450bf515b04b45a596d04544) Tj
+ET
+BT
+/F1 9 Tf
+50 464 Td
+(CIT-0035 2026-05-09T21:19:55.718880Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 452 Td
+(entry_hash=5a0ca917a14235c973d0315e3ad1b34e1e661c237799ba678a048211666f8f83) Tj
+ET
+BT
+/F1 9 Tf
+50 440 Td
+(hmac=2ee3ff3a464383fc52fcd626c6b11fd122b1dac3d98e013a3358fe5d73af92ac) Tj
+ET
+BT
+/F1 9 Tf
+50 428 Td
+(CIT-0036 2026-05-09T21:20:33.452372Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 416 Td
+(entry_hash=4733c9457ea89e2ed6a5af4e66d5f253f22db48acfb8527ee5aa5e7c28677f3b) Tj
+ET
+BT
+/F1 9 Tf
+50 404 Td
+(hmac=ebed4bae7f60c84fd0d80f846d5c7fe86becbf34b8e9140c3b28777da3408d5b) Tj
+ET
+BT
+/F1 9 Tf
+50 392 Td
+(CIT-0037 2026-05-09T21:21:10.860941Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 380 Td
+(entry_hash=235272d2ef2ba65962867838ee414161002795f9b98f6d1e1390ff61f3992499) Tj
+ET
+BT
+/F1 9 Tf
+50 368 Td
+(hmac=1090983b0d4a30573a6582f2270545dc9c7ca5fe7daf2cb6a5ace0e58e7b6573) Tj
+ET
+BT
+/F1 9 Tf
+50 356 Td
+(CIT-0038 2026-05-09T21:22:10.062092Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 344 Td
+(entry_hash=f867f2e16f5d035dc097c7529641af20feb4dcb57d146bfd726a8e3ddd76064c) Tj
+ET
+BT
+/F1 9 Tf
+50 332 Td
+(hmac=30323e6aac0d14d8c9214cef73dfabb9430acca0b4a97d7a5cce19f78218e790) Tj
+ET
+BT
+/F1 9 Tf
+50 320 Td
+(CIT-0039 2026-05-09T21:22:54.916761Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 308 Td
+(entry_hash=27431e18128c524788caf43aeaa31983220f449b9f44bb74752be577ffcc3c33) Tj
+ET
+BT
+/F1 9 Tf
+50 296 Td
+(hmac=bd54f4f201177b42dfd658b13c78d36c2cd7f31c204b9ea26d82432bd752aedb) Tj
+ET
+BT
+/F1 9 Tf
+50 284 Td
+(CIT-0040 2026-05-09T21:23:33.524934Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 272 Td
+(entry_hash=a2351c8df3e1f220ec90c8d07fb630b1bf08faeac00c2612f53d16d31c94255f) Tj
+ET
+BT
+/F1 9 Tf
+50 260 Td
+(hmac=5cea7b6073edaae11003214653b94bfd3a5bd0434ff547d109ecd99e9b47b905) Tj
+ET
+BT
+/F1 9 Tf
+50 248 Td
+(CIT-0041 2026-05-09T21:24:11.621206Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 236 Td
+(entry_hash=2c65aac7ad890cddab52be31da5a28b0609909dfe1e238fa49a3f86ad2c5fd95) Tj
+ET
+BT
+/F1 9 Tf
+50 224 Td
+(hmac=1173cb3ac9b4ec7bb52dd1c36b2f0f1c598d4967972077dabc05ff5b03189a05) Tj
+ET
+BT
+/F1 9 Tf
+50 212 Td
+(CIT-0042 2026-05-09T21:24:51.212249Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 200 Td
+(entry_hash=b927f5e511288490bb4e761c6538a6a5d51f1cf111311089f95acd0e0e04b135) Tj
+ET
+BT
+/F1 9 Tf
+50 188 Td
+(hmac=09c4436cb4f98209df2d2c1bcd3a2dca7d800fe7b0464adcb2e2f754dd034198) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 13 of 15) Tj
+ET
+endstream
+endobj
+31 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 30 0 R >>
+endobj
+32 0 obj
+<< /Length 4570 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(CIT-0043 2026-05-09T21:25:29.438061Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 740 Td
+(entry_hash=a4f744c5bc9db41cb7b91f83ff833f6e675b8b123cb6090d6a9367af34ffd7a1) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(hmac=2a104a722490e6a8ea09620d311855007bf17d49ff907173ef067fba1d4e8167) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(CIT-0044 2026-05-09T21:28:40.343902Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 704 Td
+(entry_hash=4ee71ebdba0adffcd64f12789272c914ee266488f24deae36367ba98def57928) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(hmac=557c035cdee16bfa6066bf48db752fc65449e5a7efb7c00325cda8c7b2a13f74) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(CIT-0045 2026-05-09T21:29:30.870217Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 668 Td
+(entry_hash=5eb119b98582edcda115bb64be9cf2c69b848a974ea68502c0c44cb134cd5d25) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(hmac=47c95eba888cb77402c4ecccc63b88d74f2e801c177eab539819a9ebf536bcb0) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(CIT-0046 2026-05-09T21:30:22.578400Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 632 Td
+(entry_hash=c178e3cc1fd25b7f639ca6c5875cc99f5eef6bbb00a7781d857b66d20e805572) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(hmac=51ccc4b6f46b536bf7dec873906b8831eb0894273b9503df29290666588a3a23) Tj
+ET
+BT
+/F1 9 Tf
+50 608 Td
+(CIT-0047 2026-05-09T21:32:28.427912Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 596 Td
+(entry_hash=c2c3bd45ead0b9ab2fc2230d3ad2e07e4bee9e255d387d2b23441b250966fdbb) Tj
+ET
+BT
+/F1 9 Tf
+50 584 Td
+(hmac=91686afead621a3997ed78eb64aef4f30f77c9586bbd4e6f4cf6fd4ed752a7f8) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(CIT-0048 2026-05-09T21:33:26.414210Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 560 Td
+(entry_hash=a60d8b5a8b998abfd25f88c4bb16edb3aa9753bee61cc2e867def3227b1a7745) Tj
+ET
+BT
+/F1 9 Tf
+50 548 Td
+(hmac=f94500f9d3755d07ddac8916e5c738955d0cbfadb4d808e68be1e2d042bad8ab) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(CIT-0049 2026-05-09T21:34:21.020075Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 524 Td
+(entry_hash=485b88ad305af7edb5b36f2674edc06124e4d5d9095202f199d33140eb249cf0) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(hmac=7640f7c83cf5e385f898c45762a76c50e07f96ab33de2daa6497349f19223361) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(CIT-0050 2026-05-09T21:35:23.677806Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 488 Td
+(entry_hash=2b4eaa6363d8ef106c74b077df856cd400f68b2ec31f226ab34e17038dd50ee8) Tj
+ET
+BT
+/F1 9 Tf
+50 476 Td
+(hmac=1215b3cba2a49711ab0d12dd2b4cbb746672a59166ff4b13c3e7962c1bdd7f88) Tj
+ET
+BT
+/F1 9 Tf
+50 464 Td
+(CIT-0051 2026-05-09T21:36:24.819511Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 452 Td
+(entry_hash=0ac03ed004402e3064065932c83c091a8f0ddb3706963e6ec4cc17395e2a5f0e) Tj
+ET
+BT
+/F1 9 Tf
+50 440 Td
+(hmac=12ca9913e5317efa3ee40701a68c870fc320e5a2b40b1c019529d3b6453d067c) Tj
+ET
+BT
+/F1 9 Tf
+50 428 Td
+(CIT-0052 2026-05-09T21:37:17.781820Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 416 Td
+(entry_hash=93886747c250a4e0a95b08ff8bf6f09e1e059e6e6a1cdd141d69f31a5eb3972f) Tj
+ET
+BT
+/F1 9 Tf
+50 404 Td
+(hmac=0efdab6f24df002ed70ec520fc0949392fbbb0b6236ff6062f4f3b26f99d641d) Tj
+ET
+BT
+/F1 9 Tf
+50 392 Td
+(CIT-0053 2026-05-09T21:38:13.611531Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 380 Td
+(entry_hash=64a46cc9190f2844cb6a6dcdf852c432878e57e749fbc11b7a9833c9389ab4a6) Tj
+ET
+BT
+/F1 9 Tf
+50 368 Td
+(hmac=b0c75bd7af078824be49c5f98fb64bb67a46a8e54b8157842484bd21a5c725c9) Tj
+ET
+BT
+/F1 9 Tf
+50 356 Td
+(CIT-0054 2026-05-09T21:39:16.306867Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 344 Td
+(entry_hash=a24bf909e457eac6a610137bc1b3d298f16651bf02e1696ccc045191c2a24186) Tj
+ET
+BT
+/F1 9 Tf
+50 332 Td
+(hmac=e9e4542606f0666869de782c96599d29ff078989499d228bafa75d2da3e64890) Tj
+ET
+BT
+/F1 9 Tf
+50 320 Td
+(CIT-0055 2026-05-09T21:40:15.917026Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 308 Td
+(entry_hash=8f91fb6ac29f60a4febf94250a854f3bb2e8d96c882a8f7df2d466d109b8383d) Tj
+ET
+BT
+/F1 9 Tf
+50 296 Td
+(hmac=60a15b4917c84150b9ddb3d1e99bfe7c90c82acc32ff9d5cbff37a8d167bf864) Tj
+ET
+BT
+/F1 9 Tf
+50 284 Td
+(CIT-0056 2026-05-09T21:41:07.752992Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 272 Td
+(entry_hash=93f1f2cc1058f0d46c056425fdae1e90f210b7b4f5538eb46d059183726dcac4) Tj
+ET
+BT
+/F1 9 Tf
+50 260 Td
+(hmac=4fd9e3d6ec7b619593fb8ade5a5782d46e5ec2e329a881425e93b51217e9b85f) Tj
+ET
+BT
+/F1 9 Tf
+50 248 Td
+(CIT-0057 2026-05-09T21:42:02.737561Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 236 Td
+(entry_hash=df6efb73effc4cab1483b2cd5218e184ea9d90c5507460f43613ec023893f9dc) Tj
+ET
+BT
+/F1 9 Tf
+50 224 Td
+(hmac=90ef284e17555620172fe3cef401530bd5fd65742126befb388e0507a838f74a) Tj
+ET
+BT
+/F1 9 Tf
+50 212 Td
+(CIT-0058 2026-05-09T21:42:32.120140Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 200 Td
+(entry_hash=4738d5bcee0702a9d60d1d9a744cb06ef9733b1a9fd6bc057a8303f8e2692865) Tj
+ET
+BT
+/F1 9 Tf
+50 188 Td
+(hmac=a867542e18ffdd6f9525274b2aa915d2255f82c51990d8fa4ad375aa4cded4f7) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 14 of 15) Tj
+ET
+endstream
+endobj
+33 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 32 0 R >>
+endobj
+34 0 obj
+<< /Length 897 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(CIT-0059 2026-05-09T21:42:59.845069Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 740 Td
+(entry_hash=5d7b47aed4ef75512b80b4956cd53522e8e3817ae42367abd22de03549cf7e82) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(hmac=855445243f2a1f96ecf027fcb92f4ca5dbcf48b668596dd7b199590beeb9cf68) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(CIT-0060 2026-05-09T21:45:05.968424Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 704 Td
+(entry_hash=956e18f555e01fb3b1588bb7290c10dbf9c7ac41ca1c6c1901427aaa1f982748) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(hmac=49ff35ead0d9a84b3a07c21e5f523e1e1103c8f8ea9a322c1172d976dbb361de) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(CIT-0061 2026-05-09T21:45:28.850986Z case_conclusion) Tj
+ET
+BT
+/F3 7 Tf
+50 668 Td
+(entry_hash=4922d9b48821d54af32f1c4aaa3a8dc862084ece6ad8f52104a678deb27e5805) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(hmac=c65ca99ffb2ea11dd4eeb43394cf0c475d9c793f591c818f7e9a8f13f66fb1cb) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 15 of 15) Tj
+ET
+endstream
+endobj
+35 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 34 0 R >>
+endobj
+xref
+0 36
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000213 00000 n 
+0000000283 00000 n 
+0000000358 00000 n 
+0000000426 00000 n 
+0000004306 00000 n 
+0000004452 00000 n 
+0000008878 00000 n 
+0000009024 00000 n 
+0000012888 00000 n 
+0000013036 00000 n 
+0000016817 00000 n 
+0000016965 00000 n 
+0000020902 00000 n 
+0000021050 00000 n 
+0000025023 00000 n 
+0000025171 00000 n 
+0000028842 00000 n 
+0000028990 00000 n 
+0000032919 00000 n 
+0000033067 00000 n 
+0000036811 00000 n 
+0000036959 00000 n 
+0000040938 00000 n 
+0000041086 00000 n 
+0000045427 00000 n 
+0000045575 00000 n 
+0000050204 00000 n 
+0000050352 00000 n 
+0000054975 00000 n 
+0000055123 00000 n 
+0000059746 00000 n 
+0000059894 00000 n 
+0000060843 00000 n 
+trailer
+<< /Root 1 0 R /Size 36 >>
+startxref
+60991
+%%EOF

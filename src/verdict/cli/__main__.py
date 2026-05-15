@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import getpass
-import html
 import json
 import os
 import platform
@@ -17,6 +16,11 @@ from typing import Any
 
 from verdict.ledger.hmac_key import load_or_create_hmac_key
 from verdict.ledger.writer import LedgerWriter, verify_ledger_chain
+from verdict.reporting.analyst_report import (
+    build_analyst_report_html,
+    build_analyst_report_pdf,
+)
+from verdict.runtime.env import load_dotenv_if_present
 from verdict.runtime.mode_detect import (
     Mode,
     ModeDetectionError,
@@ -26,13 +30,17 @@ from verdict.runtime.mode_detect import (
     parse_mode,
 )
 from verdict.sandboxes.microsandbox_provider import (
+    MicrosandboxMount,
     MicrosandboxStatus,
     microsandbox_status,
     run_in_microsandbox,
     run_microsandbox_command,
 )
+from verdict.schemas.artifact_class import ArtifactClass
 from verdict.schemas.case_conclusion import CaseConclusion
+from verdict.schemas.caveat_id import CaveatID
 from verdict.schemas.evidence import EvidenceItem, EvidenceManifest, EvidenceType
+from verdict.schemas.finding import Finding
 from verdict.schemas.tool_output import ToolOutput
 from verdict.tools.parsers import parse_tool_stdout
 from verdict.tools.registry import TOOL_SPECS, available_tools, microsandbox_command
@@ -41,6 +49,15 @@ from verdict.tools.sanitization import scan_tool_stdout
 
 class CliError(RuntimeError):
     """Command failed due to operator input or missing local prerequisites."""
+
+
+LOLBIN_MITRE_TECHNIQUES = {
+    "regsvr32.exe": "T1218.010",
+    "rundll32.exe": "T1218.011",
+}
+DISK_LOLBIN_TRANSCRIPT_LIMIT = 10
+VOLATILITY_SYMBOLS_GUEST_PATH = "/volatility-symbols"
+VOLATILITY_CACHE_GUEST_PATH = "/volatility-cache"
 
 
 DEVPOST_REQUIRED_PATHS = (
@@ -55,10 +72,14 @@ DEVPOST_REQUIRED_PATHS = (
     "submission/execution-logs/case_001.jsonl",
     "submission/execution-logs/case_002.jsonl",
     "submission/execution-logs/case_003.jsonl",
+    "submission/reports/case_001.pdf",
+    "submission/reports/case_002.pdf",
+    "submission/reports/case_003.pdf",
 )
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv_if_present()
     parser = _build_parser()
     args = parser.parse_args(argv)
     try:
@@ -79,12 +100,23 @@ def _build_parser() -> argparse.ArgumentParser:
     init_parser.add_argument("--mode", choices=["cloud", "airgap", "dual"])
     init_parser.set_defaults(func=_cmd_init)
 
+    investigate_parser = subparsers.add_parser(
+        "investigate",
+        help="Run an autonomous evidence-to-report DFIR investigation",
+    )
+    investigate_parser.add_argument("evidence_path", type=Path)
+    investigate_parser.add_argument("--case-id")
+    investigate_parser.add_argument("--cases-dir", default=Path("cases"), type=Path)
+    investigate_parser.add_argument("--mode", choices=["cloud", "airgap", "dual"])
+    investigate_parser.add_argument("--export-dir", type=Path)
+    investigate_parser.set_defaults(func=_cmd_investigate)
+
     export_parser = subparsers.add_parser("export", help="Export case ledger artifacts")
     export_parser.add_argument("case_id")
     export_parser.add_argument("--cases-dir", default=Path("cases"), type=Path)
     export_parser.add_argument(
         "--format",
-        choices=["jsonl", "execution-logs", "html"],
+        choices=["jsonl", "execution-logs", "html", "pdf"],
         default="jsonl",
     )
     export_parser.add_argument("--output", type=Path)
@@ -170,12 +202,81 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _cmd_init(args: argparse.Namespace) -> int:
-    mode = parse_mode(args.mode) if args.mode else detect_mode()
+    initialized = _initialize_case(
+        evidence_path=args.evidence_path,
+        cases_dir=args.cases_dir,
+        requested_mode=parse_mode(args.mode) if args.mode else None,
+        requested_case_id=args.case_id,
+    )
+    print(f"initialized case {initialized['case_id']} at {initialized['case_dir']}")
+    return 0
+
+
+def _cmd_investigate(args: argparse.Namespace) -> int:
+    initialized = _initialize_case(
+        evidence_path=args.evidence_path,
+        cases_dir=args.cases_dir,
+        requested_mode=parse_mode(args.mode) if args.mode else None,
+        requested_case_id=args.case_id,
+    )
+    case_id = initialized["case_id"]
+    case_dir = initialized["case_dir"]
+    autonomy_blocker = None
+    try:
+        conclusion = _run_case_sequence(args.cases_dir, case_id)
+    except CliError as exc:
+        if not _is_autonomous_local_tooling_blocker(exc):
+            raise
+        manifest = _read_manifest(args.cases_dir, case_id)
+        conclusion = _build_autonomous_blocker_conclusion(manifest, str(exc))
+        _write_case_conclusion(args.cases_dir, case_id, conclusion, supporting_outputs=[])
+        autonomy_blocker = "local_tooling"
+    entries = verify_ledger_chain(case_dir / "ledger.jsonl", hmac_key=_hmac_key())
+    exports = _write_autonomous_exports(
+        export_dir=args.export_dir or case_dir / "exports",
+        case_id=case_id,
+        ledger_path=case_dir / "ledger.jsonl",
+        entries=entries,
+    )
+    print(
+        json.dumps(
+            {
+                "case_id": case_id,
+                "case_dir": str(case_dir),
+                "mode": initialized["mode"].value,
+                "status": conclusion.status,
+                "ledger_valid": True,
+                "human_approval_required": True,
+                "approval_boundary": (
+                    "Finding approval remains a separate HMAC-signed human action."
+                ),
+                "approval_command": f"verdict approve {case_id} <finding_id> --approver <name>",
+                "autonomy_blocker": autonomy_blocker,
+                "exports": {name: str(path) for name, path in exports.items()},
+                "export_manifest": {
+                    "source_ledger_sha256": _sha256_file(case_dir / "ledger.jsonl"),
+                },
+                "export_sha256": {name: _sha256_file(path) for name, path in exports.items()},
+            },
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
+def _initialize_case(
+    *,
+    evidence_path: Path,
+    cases_dir: Path,
+    requested_mode: Mode | None,
+    requested_case_id: str | None,
+) -> dict[str, Any]:
+    mode = requested_mode or detect_mode()
     _ensure_mode_available(mode)
-    items = _evidence_items(args.evidence_path)
-    case_id = args.case_id or _default_case_id(items)
+    items = _evidence_items(evidence_path)
+    case_id = requested_case_id or _default_case_id(items)
     _validate_case_id(case_id)
-    case_dir = args.cases_dir / case_id
+    case_dir = cases_dir / case_id
     if case_dir.exists():
         raise CliError(f"case already exists: {case_id}")
 
@@ -212,15 +313,24 @@ def _cmd_init(args: argparse.Namespace) -> int:
             },
         }
     )
-    print(f"initialized case {case_id} at {case_dir}")
-    return 0
+    return {"case_id": case_id, "case_dir": case_dir, "manifest": manifest, "mode": mode}
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
+    _validate_case_id(args.case_id)
     entries = verify_ledger_chain(
         args.cases_dir / args.case_id / "ledger.jsonl",
         hmac_key=_hmac_key(),
     )
+    if args.format == "pdf":
+        payload_bytes = build_analyst_report_pdf(args.case_id, entries)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_bytes(payload_bytes)
+        else:
+            sys.stdout.buffer.write(payload_bytes)
+        return 0
+
     if args.format == "jsonl":
         payload = "\n".join(json.dumps(entry, sort_keys=True) for entry in entries) + "\n"
     elif args.format == "execution-logs":
@@ -229,7 +339,7 @@ def _cmd_export(args: argparse.Namespace) -> int:
         )
         payload += "\n"
     else:
-        payload = _html_export(args.case_id, entries)
+        payload = build_analyst_report_html(args.case_id, entries)
 
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -292,10 +402,17 @@ def _cmd_run_tool(args: argparse.Namespace) -> int:
 
 
 def _cmd_run_case(args: argparse.Namespace) -> int:
-    manifest = _read_manifest(args.cases_dir, args.case_id)
+    conclusion = _run_case_sequence(args.cases_dir, args.case_id)
+    print(conclusion.model_dump_json())
+    return 0
+
+
+def _run_case_sequence(cases_dir: Path, case_id: str) -> CaseConclusion:
+    _validate_case_id(case_id)
+    manifest = _read_manifest(cases_dir, case_id)
     items = manifest.get("items", [])
     if not items:
-        raise CliError(f"case has no evidence items: {args.case_id}")
+        raise CliError(f"case has no evidence items: {case_id}")
 
     outputs: list[ToolOutput] = []
     playbook_steps: list[str] = []
@@ -308,8 +425,8 @@ def _cmd_run_case(args: argparse.Namespace) -> int:
             continue
         if item.get("evidence_type") == "disk_image":
             disk_outputs, disk_steps, disk_failed = _run_disk_case_sequence(
-                cases_dir=args.cases_dir,
-                case_id=args.case_id,
+                cases_dir=cases_dir,
+                case_id=case_id,
                 evidence_index=evidence_index,
             )
             outputs.extend(disk_outputs)
@@ -317,11 +434,13 @@ def _cmd_run_case(args: argparse.Namespace) -> int:
             if disk_failed:
                 stop_after_failure = True
                 break
+            if _has_case_level_indicator(outputs):
+                break
             continue
         for tool_key in sequence:
             output = _run_registered_tool(
-                cases_dir=args.cases_dir,
-                case_id=args.case_id,
+                cases_dir=cases_dir,
+                case_id=case_id,
                 tool_key=tool_key,
                 evidence_index=evidence_index,
                 extra_args=(),
@@ -333,18 +452,22 @@ def _cmd_run_case(args: argparse.Namespace) -> int:
                 break
         if stop_after_failure:
             break
+        if _has_case_level_indicator(outputs):
+            break
 
     if not playbook_steps:
         playbook_steps.append("unsupported_evidence_type")
+    findings = _build_lolbin_findings(case_id=case_id, manifest=manifest, outputs=outputs)
     conclusion = _build_case_conclusion(
         manifest=manifest,
         outputs=outputs,
         playbook_steps=playbook_steps,
         unsupported_types=unsupported_types,
+        findings=findings,
     )
-    _write_case_conclusion(args.cases_dir, args.case_id, conclusion, supporting_outputs=outputs)
-    print(conclusion.model_dump_json())
-    return 0
+    _write_findings(cases_dir, case_id, findings, supporting_outputs=outputs)
+    _write_case_conclusion(cases_dir, case_id, conclusion, supporting_outputs=outputs)
+    return conclusion
 
 
 def _run_registered_tool(
@@ -355,6 +478,7 @@ def _run_registered_tool(
     evidence_index: int,
     extra_args: tuple[str, ...],
 ) -> ToolOutput:
+    _validate_case_id(case_id)
     sandbox = microsandbox_status()
     if not sandbox.available:
         raise CliError("microsandbox is required for forensic tool execution")
@@ -377,15 +501,33 @@ def _run_registered_tool(
 
     image = _pinned_microsandbox_image()
     spec = TOOL_SPECS[tool_key]
+    extra_mounts: tuple[MicrosandboxMount, ...] = ()
+    volatility_symbol_dir = None
+    volatility_cache_path = None
+    if tool_key.startswith("vol3."):
+        symbol_dir = _volatility_symbols_dir()
+        if symbol_dir is not None:
+            cache_dir = _volatility_cache_dir()
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            volatility_symbol_dir = VOLATILITY_SYMBOLS_GUEST_PATH
+            volatility_cache_path = VOLATILITY_CACHE_GUEST_PATH
+            extra_mounts = (
+                MicrosandboxMount(host_path=symbol_dir, guest_path=VOLATILITY_SYMBOLS_GUEST_PATH),
+                MicrosandboxMount(host_path=cache_dir, guest_path=VOLATILITY_CACHE_GUEST_PATH),
+            )
     command = microsandbox_command(
         tool_key,
         evidence_name=evidence_path.name,
         extra_args=extra_args,
+        volatility_symbol_dir=volatility_symbol_dir,
+        volatility_cache_path=volatility_cache_path,
     )
     sandbox_result = run_in_microsandbox(
         image=image,
         host_evidence_path=evidence_path,
         command=command,
+        extra_mounts=extra_mounts,
+        status=sandbox,
     )
     parsed = parse_tool_stdout(tool_key, evidence_path=evidence_path, stdout=sandbox_result.stdout)
     stdout_text = sandbox_result.stdout.decode(errors="replace")
@@ -457,6 +599,7 @@ def _run_registered_tool(
 
 
 def _cmd_resume(args: argparse.Namespace) -> int:
+    _validate_case_id(args.case_id)
     entries = verify_ledger_chain(
         args.cases_dir / args.case_id / "ledger.jsonl",
         hmac_key=_hmac_key(),
@@ -474,6 +617,7 @@ def _cmd_resume(args: argparse.Namespace) -> int:
 
 
 def _cmd_reverify(args: argparse.Namespace) -> int:
+    _validate_case_id(args.case_id)
     target_mode = parse_mode(args.mode)
     _ensure_mode_available(target_mode)
     source_manifest = _read_manifest(args.cases_dir, args.case_id)
@@ -517,10 +661,17 @@ def _cmd_reverify(args: argparse.Namespace) -> int:
 
 
 def _cmd_approve(args: argparse.Namespace) -> int:
+    _validate_case_id(args.case_id)
     case_dir = args.cases_dir / args.case_id
-    entries = verify_ledger_chain(case_dir / "ledger.jsonl", hmac_key=_hmac_key())
+    hmac_key = _hmac_key()
+    entries = verify_ledger_chain(case_dir / "ledger.jsonl", hmac_key=hmac_key)
+    finding_entry = _latest_approvable_finding_entry(entries, args.finding_id)
+    if finding_entry is None:
+        if _latest_finding_entry(entries, args.finding_id) is not None:
+            raise CliError(f"cannot approve superseded finding: {args.finding_id}")
+        raise CliError(f"cannot approve nonexistent finding: {args.finding_id}")
     timestamp = _utc_now()
-    LedgerWriter(case_dir / "ledger.jsonl", hmac_key=_hmac_key()).write(
+    LedgerWriter(case_dir / "ledger.jsonl", hmac_key=hmac_key).write(
         {
             "entry_id": f"{args.case_id}:approval:{args.finding_id}:{timestamp}",
             "case_id": args.case_id,
@@ -540,11 +691,51 @@ def _cmd_approve(args: argparse.Namespace) -> int:
             "tool_version": "verdict-cli",
             "kernel_version": platform.platform(),
             "output_files_sha256": {},
-            "payload": {"approver": args.approver, "finding_id": args.finding_id},
+            "payload": {
+                "approver": args.approver,
+                "finding_id": args.finding_id,
+                "finding_entry_hash": finding_entry["entry_hash"],
+                "finding_hmac_sig": finding_entry["hmac_sig"],
+                "finding_timestamp_utc": finding_entry["timestamp_utc"],
+            },
         }
     )
     print(json.dumps({"case_id": args.case_id, "finding_id": args.finding_id, "approved": True}))
     return 0
+
+
+def _latest_finding_entry(entries: list[dict[str, Any]], finding_id: str) -> dict[str, Any] | None:
+    for entry in reversed(entries):
+        if entry.get("event_type") == "finding" and entry.get("finding_id") == finding_id:
+            return entry
+    return None
+
+
+def _latest_approvable_finding_entry(
+    entries: list[dict[str, Any]],
+    finding_id: str,
+) -> dict[str, Any] | None:
+    return _latest_finding_entry(_latest_case_run_entries(entries), finding_id)
+
+
+def _latest_case_run_entries(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    latest_conclusion_index = _latest_case_conclusion_index(entries)
+    if latest_conclusion_index is None:
+        return entries
+    previous_conclusion_index = None
+    for index in range(latest_conclusion_index - 1, -1, -1):
+        if entries[index].get("event_type") == "case_conclusion":
+            previous_conclusion_index = index
+            break
+    start = 0 if previous_conclusion_index is None else previous_conclusion_index + 1
+    return entries[start : latest_conclusion_index + 1]
+
+
+def _latest_case_conclusion_index(entries: list[dict[str, Any]]) -> int | None:
+    for index in range(len(entries) - 1, -1, -1):
+        if entries[index].get("event_type") == "case_conclusion":
+            return index
+    return None
 
 
 def _cmd_gc(args: argparse.Namespace) -> int:
@@ -558,8 +749,17 @@ def _cmd_gc(args: argparse.Namespace) -> int:
 def _cmd_package_check(args: argparse.Namespace) -> int:
     root = args.root.resolve()
     missing = [path for path in DEVPOST_REQUIRED_PATHS if not (root / path).is_file()]
-    result = {"root": str(root), "missing": missing, "ok": not missing}
+    invalid = _submission_artifact_errors(root) if not missing else []
+    result = {
+        "root": str(root),
+        "missing": missing,
+        "invalid": invalid,
+        "ok": not missing and not invalid,
+    }
     if missing:
+        print(json.dumps(result, sort_keys=True))
+        return 1
+    if invalid:
         print(json.dumps(result, sort_keys=True))
         return 1
 
@@ -573,7 +773,43 @@ def _cmd_package_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def _submission_artifact_errors(root: Path) -> list[str]:
+    errors: list[str] = []
+    for rel_path in DEVPOST_REQUIRED_PATHS:
+        path = root / rel_path
+        if rel_path.endswith(".pdf"):
+            data = path.read_bytes()
+            if not _looks_like_pdf(data):
+                errors.append(f"invalid_pdf:{rel_path}")
+        elif rel_path.endswith(".jsonl"):
+            errors.extend(_execution_log_errors(path, rel_path))
+    return errors
+
+
+def _looks_like_pdf(data: bytes) -> bool:
+    return data.startswith(b"%PDF-") and b"xref" in data and data.rstrip().endswith(b"%%EOF")
+
+
+def _execution_log_errors(path: Path, rel_path: str) -> list[str]:
+    required = {"event_type", "langfuse_trace_id", "langgraph_checkpoint_id", "ts_utc"}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines:
+        return [f"empty_jsonl:{rel_path}"]
+    errors: list[str] = []
+    for line_number, line in enumerate(lines, start=1):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            errors.append(f"invalid_jsonl:{rel_path}:{line_number}")
+            continue
+        missing = sorted(required - set(payload))
+        if missing:
+            errors.append(f"invalid_jsonl:{rel_path}:{line_number}:missing:{','.join(missing)}")
+    return errors
+
+
 def _cmd_validate(args: argparse.Namespace) -> int:
+    _validate_case_id(args.case_id)
     verify_ledger_chain(args.cases_dir / args.case_id / "ledger.jsonl", hmac_key=_hmac_key())
     print(f"ledger valid for {args.case_id}")
     return 0
@@ -620,12 +856,32 @@ def _run_disk_case_sequence(
     outputs.append(mmls_output)
     steps.append("mmls")
     if mmls_output.exit_code != 0:
-        return outputs, steps, True
-
-    offsets = _filesystem_partition_offsets(mmls_output)
-    if not offsets:
-        steps.append("disk_partition_offset_not_found")
+        steps.append("mmls_partition_table_unavailable")
+        for tool_key in ("fsstat", "fls"):
+            output = _run_registered_tool(
+                cases_dir=cases_dir,
+                case_id=case_id,
+                tool_key=tool_key,
+                evidence_index=evidence_index,
+                extra_args=(),
+            )
+            outputs.append(output)
+            steps.append(tool_key)
+            if output.exit_code != 0:
+                return outputs, steps, True
+        lolbin_outputs, lolbin_steps = _run_disk_lolbin_sequence(
+            cases_dir=cases_dir,
+            case_id=case_id,
+            evidence_index=evidence_index,
+        )
+        outputs.extend(lolbin_outputs)
+        steps.extend(lolbin_steps)
         return outputs, steps, False
+
+    offsets, missing_step = _disk_partition_offsets_or_missing_step(mmls_output)
+    if missing_step is not None:
+        steps.append(missing_step)
+        return outputs, steps, True
 
     for offset in offsets:
         extra_args = ("-o", str(offset))
@@ -641,7 +897,49 @@ def _run_disk_case_sequence(
             steps.append(f"{tool_key}:-o:{offset}")
             if output.exit_code != 0:
                 return outputs, steps, True
+    lolbin_outputs, lolbin_steps = _run_disk_lolbin_sequence(
+        cases_dir=cases_dir,
+        case_id=case_id,
+        evidence_index=evidence_index,
+    )
+    outputs.extend(lolbin_outputs)
+    steps.extend(lolbin_steps)
     return outputs, steps, False
+
+
+def _run_disk_lolbin_sequence(
+    *,
+    cases_dir: Path,
+    case_id: str,
+    evidence_index: int,
+) -> tuple[list[ToolOutput], list[str]]:
+    outputs: list[ToolOutput] = []
+    steps: list[str] = []
+    discovery_output = _run_registered_tool(
+        cases_dir=cases_dir,
+        case_id=case_id,
+        tool_key="fls",
+        evidence_index=evidence_index,
+        extra_args=("-r",),
+    )
+    steps.append("fls:-r:lolbin_discovery")
+    if discovery_output.exit_code == 0:
+        outputs.append(discovery_output)
+
+    for metadata_address in _powershell_transcript_metadata_addresses(discovery_output):
+        output = _run_registered_tool(
+            cases_dir=cases_dir,
+            case_id=case_id,
+            tool_key="icat",
+            evidence_index=evidence_index,
+            extra_args=(metadata_address,),
+        )
+        steps.append(f"icat:powershell_transcript:{metadata_address}")
+        if output.parsed_artifacts and output.exit_code == 0:
+            outputs.append(output)
+        if _has_lolbin_corroboration(outputs):
+            break
+    return outputs, steps
 
 
 def _filesystem_partition_offsets(mmls_output: ToolOutput) -> list[int]:
@@ -658,13 +956,113 @@ def _filesystem_partition_offsets(mmls_output: ToolOutput) -> list[int]:
     return sorted(set(offsets))
 
 
+def _disk_partition_offsets_or_missing_step(
+    mmls_output: ToolOutput,
+) -> tuple[list[int], str | None]:
+    offsets = _filesystem_partition_offsets(mmls_output)
+    if offsets:
+        return offsets, None
+    return [], "disk_partition_offset_not_found"
+
+
+def _powershell_transcript_metadata_addresses(fls_output: ToolOutput) -> list[str]:
+    addresses: list[str] = []
+    for artifact in fls_output.parsed_artifacts:
+        if artifact.artifact_type != "filesystem_listing_entry":
+            continue
+        name = str(artifact.raw_fields.get("name", "")).lower()
+        if not (name.startswith("powershell_transcript.") and name.endswith(".txt")):
+            continue
+        metadata_address = artifact.raw_fields.get("metadata_address")
+        if isinstance(metadata_address, str) and metadata_address:
+            addresses.append(metadata_address)
+    return list(dict.fromkeys(addresses))[:DISK_LOLBIN_TRANSCRIPT_LIMIT]
+
+
+def _has_lolbin_corroboration(outputs: list[ToolOutput]) -> bool:
+    return bool(_lolbin_artifact_pairs(outputs))
+
+
+def _has_case_level_indicator(outputs: list[ToolOutput]) -> bool:
+    return _has_lolbin_corroboration(outputs) or bool(_process_scan_divergence(outputs))
+
+
+def _lolbin_artifact_pairs(outputs: list[ToolOutput]) -> list[tuple[str, Any, Any]]:
+    transcript_by_executable: dict[str, Any] = {}
+    prefetch_by_executable: dict[str, Any] = {}
+    for output in outputs:
+        if output.exit_code != 0:
+            continue
+        for artifact in output.parsed_artifacts:
+            executable = str(artifact.raw_fields.get("executable", "")).lower()
+            if executable not in LOLBIN_MITRE_TECHNIQUES:
+                continue
+            if artifact.artifact_type == "powershell_transcript_command":
+                transcript_by_executable.setdefault(executable, artifact)
+            elif artifact.artifact_type == "prefetch_listing_entry":
+                prefetch_by_executable.setdefault(executable, artifact)
+
+    pairs: list[tuple[str, Any, Any]] = []
+    for executable in sorted(set(transcript_by_executable) & set(prefetch_by_executable)):
+        pairs.append(
+            (
+                executable,
+                transcript_by_executable[executable],
+                prefetch_by_executable[executable],
+            )
+        )
+    return pairs
+
+
+def _build_lolbin_findings(
+    *,
+    case_id: str,
+    manifest: dict[str, Any],
+    outputs: list[ToolOutput],
+) -> list[Finding]:
+    evidence_hashes = {
+        Path(item["path"]): item["sha256_at_init"] for item in manifest.get("items", [])
+    }
+    findings: list[Finding] = []
+    for executable, transcript_artifact, prefetch_artifact in _lolbin_artifact_pairs(outputs):
+        technique = LOLBIN_MITRE_TECHNIQUES[executable]
+        executable_name = executable.removesuffix(".exe")
+        findings.append(
+            Finding(
+                finding_id=f"{case_id}:lolbin:{executable_name}",
+                case_id=case_id,
+                plan_id="disk-lolbin-corroboration",
+                hypothesis_ids=[f"h_lolbin_{executable_name}_transcript_prefetch"],
+                artifact_paths=[
+                    Path(str(transcript_artifact.raw_fields["artifact_path"])),
+                    Path(str(prefetch_artifact.raw_fields["artifact_path"])),
+                ],
+                artifact_classes=[ArtifactClass.POWERSHELL_TRANSCRIPT, ArtifactClass.PREFETCH],
+                caveats_acknowledged=[CaveatID.PREFETCH_SSD_DISABLED],
+                mitre_technique=technique,
+                evidence_hashes=evidence_hashes,
+                rationale=(
+                    f"Evidence consistent with {executable_name} LOLBin execution: "
+                    "PowerShell transcript invocation is corroborated by Prefetch listing evidence."
+                ),
+                status="CONTESTED",
+                contested_reasons=[
+                    "local CLI parser finding requires verifier quorum before VETTED_CLOUD"
+                ],
+            )
+        )
+    return findings
+
+
 def _build_case_conclusion(
     *,
     manifest: dict[str, Any],
     outputs: list[ToolOutput],
     playbook_steps: list[str],
     unsupported_types: set[str],
+    findings: list[Finding] | None = None,
 ) -> CaseConclusion:
+    findings = findings or []
     evidence_hashes = {
         Path(item["path"]): item["sha256_at_init"] for item in manifest.get("items", [])
     }
@@ -691,7 +1089,18 @@ def _build_case_conclusion(
             ),
         )
 
-    failed_output = next((output for output in outputs if output.exit_code != 0), None)
+    ignored_probe_failures = set()
+    if "mmls_partition_table_unavailable" in playbook_steps:
+        ignored_probe_failures.add("mmls")
+
+    failed_output = next(
+        (
+            output
+            for output in outputs
+            if output.exit_code != 0 and output.tool_name not in ignored_probe_failures
+        ),
+        None,
+    )
     if failed_output is not None:
         return CaseConclusion(
             status="UNVERIFIABLE",
@@ -703,7 +1112,11 @@ def _build_case_conclusion(
             ),
         )
 
-    unparsed_tools = sorted(output.tool_name for output in outputs if not output.parsed_artifacts)
+    unparsed_tools = sorted(
+        output.tool_name
+        for output in outputs
+        if not output.parsed_artifacts and output.tool_name not in ignored_probe_failures
+    )
     if unparsed_tools:
         return CaseConclusion(
             status="UNVERIFIABLE",
@@ -713,6 +1126,15 @@ def _build_case_conclusion(
                 "Parser produced no structured artifacts for required tool(s): "
                 f"{', '.join(unparsed_tools)}."
             ),
+        )
+
+    if findings:
+        first_finding = findings[0]
+        return CaseConclusion(
+            status="EVIL_FOUND",
+            playbook_steps_executed=playbook_steps,
+            evidence_hashes=evidence_hashes,
+            rationale=first_finding.rationale,
         )
 
     divergent_pids = _process_scan_divergence(outputs)
@@ -736,6 +1158,34 @@ def _build_case_conclusion(
             "indicator, but the verifier/finding workflow has not run enough negative "
             "criteria to support NO_EVIL_FOUND."
         ),
+    )
+
+
+def _build_autonomous_blocker_conclusion(
+    manifest: dict[str, Any],
+    reason: str,
+) -> CaseConclusion:
+    evidence_hashes = {
+        Path(item["path"]): item["sha256_at_init"] for item in manifest.get("items", [])
+    }
+    return CaseConclusion(
+        status="UNVERIFIABLE",
+        playbook_steps_executed=["autonomous_driver_blocked"],
+        evidence_hashes=evidence_hashes,
+        rationale=(
+            "Autonomous investigation could not complete local execution; "
+            f"operator action or environment repair is required before VETTED status: {reason}."
+        ),
+    )
+
+
+def _is_autonomous_local_tooling_blocker(error: CliError) -> bool:
+    message = str(error)
+    return message.startswith(
+        (
+            "microsandbox is required for forensic tool execution",
+            "VERDICT_MICROSANDBOX_IMAGE must be pinned",
+        )
     )
 
 
@@ -766,6 +1216,60 @@ def _artifact_pid(raw_fields: dict[str, Any]) -> int | None:
         except ValueError:
             return None
     return None
+
+
+def _write_findings(
+    cases_dir: Path,
+    case_id: str,
+    findings: list[Finding],
+    *,
+    supporting_outputs: list[ToolOutput],
+) -> None:
+    if not findings:
+        return
+    case_dir = cases_dir / case_id
+    hmac_key = _hmac_key()
+    entries = verify_ledger_chain(case_dir / "ledger.jsonl", hmac_key=hmac_key)
+    output_dir = case_dir / "outputs"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    writer = LedgerWriter(case_dir / "ledger.jsonl", hmac_key=hmac_key)
+    for finding in findings:
+        timestamp = _utc_now()
+        safe_finding_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", finding.finding_id)
+        output_path = output_dir / f"finding-{safe_finding_id}-{timestamp.replace(':', '')}.json"
+        output_path.write_text(finding.model_dump_json(indent=2), encoding="utf-8")
+        writer.write(
+            {
+                "entry_id": f"{case_id}:finding:{safe_finding_id}:{timestamp}",
+                "case_id": case_id,
+                "finding_id": finding.finding_id,
+                "event_type": "finding",
+                "timestamp_utc": timestamp,
+                "mode_at_case_init": entries[-1]["mode_at_case_init"],
+                "verifier_strategy_used": "local_parser_contested",
+                "langfuse_session_id": case_id,
+                "langfuse_trace_id": "local-cli",
+                "langfuse_root_span_id": "local-cli-root",
+                "langfuse_leaf_span_ids": [],
+                "langgraph_thread_id": case_id,
+                "langgraph_checkpoint_id": f"finding:{safe_finding_id}",
+                "microsandbox_version": "not_invoked",
+                "rootfs_sha256": "not_invoked",
+                "tool_version": "verdict-cli",
+                "kernel_version": platform.platform(),
+                "output_files_sha256": {
+                    str(output_path.relative_to(case_dir)): _sha256_file(output_path)
+                },
+                "payload": {
+                    **finding.model_dump(mode="json"),
+                    "finding_path": str(output_path),
+                    "supporting_tool_outputs": _supporting_tool_outputs(
+                        entries,
+                        supporting_outputs,
+                    ),
+                },
+            }
+        )
 
 
 def _write_case_conclusion(
@@ -815,6 +1319,49 @@ def _write_case_conclusion(
     )
 
 
+def _write_autonomous_exports(
+    *,
+    export_dir: Path,
+    case_id: str,
+    ledger_path: Path,
+    entries: list[dict[str, Any]],
+) -> dict[str, Path]:
+    export_dir.mkdir(parents=True, exist_ok=True)
+    execution_logs_path = export_dir / "execution-log.jsonl"
+    html_report_path = export_dir / "analyst-report.html"
+    manifest_path = export_dir / "manifest.json"
+    execution_logs_path.write_text(
+        "\n".join(json.dumps(_execution_log_entry(entry), sort_keys=True) for entry in entries)
+        + "\n",
+        encoding="utf-8",
+    )
+    html_report_path.write_text(build_analyst_report_html(case_id, entries), encoding="utf-8")
+    exported_artifacts = {
+        "execution_logs": execution_logs_path,
+        "html_report": html_report_path,
+    }
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "case_id": case_id,
+                "source_ledger": {
+                    "path": str(ledger_path),
+                    "sha256": _sha256_file(ledger_path),
+                },
+                "artifacts": {
+                    name: {"path": str(path), "sha256": _sha256_file(path)}
+                    for name, path in exported_artifacts.items()
+                },
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return {**exported_artifacts, "manifest": manifest_path}
+
+
 def _supporting_tool_outputs(
     entries: list[dict[str, Any]],
     outputs: list[ToolOutput],
@@ -843,7 +1390,22 @@ def _supporting_tool_outputs(
     return supporting
 
 
+def _volatility_symbols_dir() -> Path | None:
+    configured = os.environ.get("VERDICT_VOLATILITY_SYMBOLS_DIR")
+    path = Path(configured).expanduser() if configured else Path("downloads") / "volatility-symbols"
+    if not path.is_absolute():
+        path = Path.cwd() / path
+    return path if path.is_dir() else None
+
+
+def _volatility_cache_dir() -> Path:
+    configured = os.environ.get("VERDICT_VOLATILITY_CACHE_DIR")
+    path = Path(configured).expanduser() if configured else Path("build") / "volatility-cache"
+    return path if path.is_absolute() else Path.cwd() / path
+
+
 def _read_manifest(cases_dir: Path, case_id: str) -> dict[str, Any]:
+    _validate_case_id(case_id)
     manifest_path = cases_dir / case_id / "manifest.json"
     if not manifest_path.is_file():
         raise CliError(f"manifest not found for case: {case_id}")
@@ -1051,24 +1613,6 @@ def _execution_log_entry(entry: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _html_export(case_id: str, entries: list[dict[str, Any]]) -> str:
-    rows = "\n".join(
-        "<tr>"
-        f"<td>{html.escape(str(entry.get('timestamp_utc')))}</td>"
-        f"<td>{html.escape(str(entry.get('event_type')))}</td>"
-        f"<td>{html.escape(str(entry.get('langgraph_checkpoint_id')))}</td>"
-        "</tr>"
-        for entry in entries
-    )
-    return (
-        "<!doctype html>\n"
-        f"<title>VERDICT {html.escape(case_id)}</title>\n"
-        f"<h1>VERDICT case {html.escape(case_id)}</h1>\n"
-        "<table><thead><tr><th>UTC</th><th>Event</th><th>Checkpoint</th></tr></thead>"
-        f"<tbody>{rows}</tbody></table>\n"
-    )
-
-
 def _sha256_file(path: Path) -> str:
     digest = sha256()
     with path.open("rb") as handle:
@@ -1158,6 +1702,7 @@ def _sandbox_image_tools_available(image: str) -> dict[str, bool]:
             "check mmls mmls -V",
             "check fsstat fsstat -V",
             "check fls fls -V",
+            "check icat icat -V",
         ]
     )
     try:

@@ -7,6 +7,7 @@ class ArtifactClass(StrEnum):
     """Evidence artifact classes used for corroborating findings."""
 
     PREFETCH = "prefetch"
+    POWERSHELL_TRANSCRIPT = "powershell_transcript"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
     EVTX_4624 = "evtx_4624"

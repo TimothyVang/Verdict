@@ -1,0 +1,911 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R] /Count 4 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Length 3641 >>
+stream
+q 0.06 0.16 0.28 rg 0 772 612 20 re f Q
+BT
+/F2 18 Tf
+50 752 Td
+(VERDICT DFIR Analyst Report) Tj
+ET
+BT
+/F1 9 Tf
+50 740 Td
+(VERDICT Analyst Report) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(Case ID: case_001) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(Report purpose: professional writeup for final examiner review) Tj
+ET
+BT
+/F1 9 Tf
+50 704 Td
+(Review state: human approval required before external reliance) Tj
+ET
+q 0.90 0.94 0.98 rg 42 680 528 18 re f Q
+BT
+/F2 12 Tf
+50 684 Td
+(Executive Assessment) Tj
+ET
+BT
+/F1 9 Tf
+50 672 Td
+(Final case status: EVIL_FOUND) Tj
+ET
+BT
+/F1 9 Tf
+50 660 Td
+(Assessment: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript invocation) Tj
+ET
+BT
+/F1 9 Tf
+50 648 Td
+(is corroborated by Prefetch listing evidence.) Tj
+ET
+BT
+/F1 9 Tf
+50 636 Td
+(Scope note: this writeup summarizes the case ledger and cited evidence.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 612 528 18 re f Q
+BT
+/F2 12 Tf
+50 616 Td
+(Human Review Checklist) Tj
+ET
+BT
+/F1 9 Tf
+50 604 Td
+([ ] Every claim has a CIT-#### citation.) Tj
+ET
+BT
+/F1 9 Tf
+50 592 Td
+([ ] Evidence hashes match the case manifest.) Tj
+ET
+BT
+/F1 9 Tf
+50 580 Td
+([ ] Key Findings match the cited ledger evidence cards.) Tj
+ET
+BT
+/F1 9 Tf
+50 568 Td
+([ ] Caveats are acknowledged before approving findings.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 544 528 18 re f Q
+BT
+/F2 12 Tf
+50 548 Td
+(Key Findings) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(- CIT-0009 case_001:lolbin:rundll32) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Status: CONTESTED; case status: EVIL_FOUND) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  MITRE: T1218.011) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Artifact classes: powershell_transcript, prefetch) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Caveats: PREFETCH_SSD_DISABLED) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Rationale: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript) Tj
+ET
+BT
+/F1 9 Tf
+50 464 Td
+(invocation is corroborated by Prefetch listing evidence.) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Note: finding-level verifier state differs from the case-level conclusion; human review must) Tj
+ET
+BT
+/F1 9 Tf
+50 440 Td
+(resolve this before approval.) Tj
+ET
+q 0.90 0.94 0.98 rg 42 416 528 18 re f Q
+BT
+/F2 12 Tf
+50 420 Td
+(Evidence And Citation Summary) Tj
+ET
+BT
+/F1 9 Tf
+50 408 Td
+(Evidence inventory:) Tj
+ET
+BT
+/F1 9 Tf
+50 396 Td
+(- disk_image: base-wkstn-01-cdrive.E01;) Tj
+ET
+BT
+/F3 7 Tf
+50 384 Td
+(sha256=ede47a0733203134f92c8ae46df4f5106b78a2c357fdb1d3c84301261076429f; size=16923891211) Tj
+ET
+BT
+/F1 9 Tf
+50 372 Td
+(- memory: base-wkstn-01-memory.mem;) Tj
+ET
+BT
+/F3 7 Tf
+50 360 Td
+(sha256=e52f84eca8703c30903c754369476e4cd8fa781cbf1a7a7b42f5062535fa6956; size=3221225472) Tj
+ET
+BT
+/F1 9 Tf
+50 340 Td
+(Latest run evidence:) Tj
+ET
+BT
+/F1 9 Tf
+50 328 Td
+(- CIT-0002 2026-05-09T21:48:13.973158Z tool_call: mmls exit=1) Tj
+ET
+BT
+/F1 9 Tf
+50 316 Td
+(- CIT-0003 2026-05-09T21:48:48.182537Z tool_call: fsstat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 304 Td
+(- CIT-0004 2026-05-09T21:49:27.218526Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 292 Td
+(- CIT-0005 2026-05-09T21:51:45.129368Z tool_call: fls exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 280 Td
+(- CIT-0006 2026-05-09T21:52:31.988202Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 268 Td
+(- CIT-0007 2026-05-09T21:53:15.920084Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 256 Td
+(- CIT-0008 2026-05-09T21:54:02.500126Z tool_call: icat exit=0) Tj
+ET
+BT
+/F1 9 Tf
+50 244 Td
+(- CIT-0009 2026-05-09T21:54:08.590869Z finding: case_001:lolbin:rundll32) Tj
+ET
+BT
+/F1 9 Tf
+50 232 Td
+(- CIT-0010 2026-05-09T21:54:14.190204Z case_conclusion: case conclusion EVIL_FOUND) Tj
+ET
+q 0.90 0.94 0.98 rg 42 208 528 18 re f Q
+BT
+/F2 12 Tf
+50 212 Td
+(Ledger Evidence Appendix) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 1 of 4) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 3979 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(The cards below are concise ledger-derived evidence figures. Raw tool output paths and hashes) Tj
+ET
+BT
+/F1 9 Tf
+50 740 Td
+(remain available in the case output directory and JSONL ledger.) Tj
+ET
+q 0.93 0.95 0.98 rg 45 725 522 14 re f Q
+BT
+/F2 9 Tf
+50 728 Td
+(Evidence Figure CIT-0001: case_init) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  UTC: 2026-05-09T21:47:38.674912Z) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Checkpoint: case_init) Tj
+ET
+BT
+/F1 8 Tf
+62 692 Td
+(  Entry hash: cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5) Tj
+ET
+q 0.93 0.95 0.98 rg 45 677 522 14 re f Q
+BT
+/F2 9 Tf
+50 680 Td
+(Evidence Figure CIT-0002: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  UTC: 2026-05-09T21:48:13.973158Z) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Checkpoint: tool_call:mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Entry hash: 966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Tool: mmls) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Exit code: 1) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Output path: outputs/mmls-2026-05-09T214813.973158Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 584 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 569 522 14 re f Q
+BT
+/F2 9 Tf
+50 572 Td
+(Evidence Figure CIT-0003: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  UTC: 2026-05-09T21:48:48.182537Z) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Checkpoint: tool_call:fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Entry hash: aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Tool: fsstat) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Output path: outputs/fsstat-2026-05-09T214848.182537Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 476 Td
+(  Artifact IDs: fsstat:b532d60922d4f3547b93b3d104d511f300120ca1f5440df8ef0d221a5354f89f) Tj
+ET
+q 0.93 0.95 0.98 rg 45 461 522 14 re f Q
+BT
+/F2 9 Tf
+50 464 Td
+(Evidence Figure CIT-0004: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  UTC: 2026-05-09T21:49:27.218526Z) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Entry hash: ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Stdout SHA-256: 53042d5eab2b5f2027c7df62e8cf008387f5cb5bdb74977cbbfa22b7bfa7d452) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Output path: outputs/fls-2026-05-09T214927.218526Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 368 Td
+(  Artifact IDs: fls:5074c7db4dca507682c6612a5ad4d4912cc8e62ee1e3ee79d8f4fe8179df8ddb,) Tj
+ET
+BT
+/F1 9 Tf
+50 356 Td
+(fls:6812f6539510956886d63909efa3b2) Tj
+ET
+q 0.93 0.95 0.98 rg 45 341 522 14 re f Q
+BT
+/F2 9 Tf
+50 344 Td
+(Evidence Figure CIT-0005: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  UTC: 2026-05-09T21:51:45.129368Z) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Checkpoint: tool_call:fls) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Entry hash: 296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Tool: fls) Tj
+ET
+BT
+/F1 8 Tf
+62 284 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 272 Td
+(  Stdout SHA-256: 9f29d98aa6b3aea39cb5e791c2aa3180f7a2fbb43efc03e89c8d80a4d6464b2a) Tj
+ET
+BT
+/F1 8 Tf
+62 260 Td
+(  Output path: outputs/fls-2026-05-09T215145.129368Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 248 Td
+(  Artifact IDs: fls:5074c7db4dca507682c6612a5ad4d4912cc8e62ee1e3ee79d8f4fe8179df8ddb,) Tj
+ET
+BT
+/F1 9 Tf
+50 236 Td
+(fls:6812f6539510956886d63909efa3b2) Tj
+ET
+q 0.93 0.95 0.98 rg 45 221 522 14 re f Q
+BT
+/F2 9 Tf
+50 224 Td
+(Evidence Figure CIT-0006: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 212 Td
+(  UTC: 2026-05-09T21:52:31.988202Z) Tj
+ET
+BT
+/F1 8 Tf
+62 200 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 188 Td
+(  Entry hash: baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 2 of 4) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 3810 >>
+stream
+BT
+/F1 8 Tf
+62 752 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 740 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 728 Td
+(  Stdout SHA-256: 5fa92e889789db196882c7012bae8a7fd0bfe9f62c65d266c00ab43f52d34ffd) Tj
+ET
+BT
+/F1 8 Tf
+62 716 Td
+(  Output path: outputs/icat-2026-05-09T215231.988202Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 704 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 689 522 14 re f Q
+BT
+/F2 9 Tf
+50 692 Td
+(Evidence Figure CIT-0007: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 680 Td
+(  UTC: 2026-05-09T21:53:15.920084Z) Tj
+ET
+BT
+/F1 8 Tf
+62 668 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 656 Td
+(  Entry hash: e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc) Tj
+ET
+BT
+/F1 8 Tf
+62 644 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 632 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 620 Td
+(  Stdout SHA-256: f40cf7b58fd37966fc6cc7b921006fd9c3f55d79e0081d03ccb4455ca064669f) Tj
+ET
+BT
+/F1 8 Tf
+62 608 Td
+(  Output path: outputs/icat-2026-05-09T215315.920084Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 596 Td
+(  Artifact IDs:) Tj
+ET
+q 0.93 0.95 0.98 rg 45 581 522 14 re f Q
+BT
+/F2 9 Tf
+50 584 Td
+(Evidence Figure CIT-0008: tool_call) Tj
+ET
+BT
+/F1 8 Tf
+62 572 Td
+(  UTC: 2026-05-09T21:54:02.500126Z) Tj
+ET
+BT
+/F1 8 Tf
+62 560 Td
+(  Checkpoint: tool_call:icat) Tj
+ET
+BT
+/F1 8 Tf
+62 548 Td
+(  Entry hash: f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec) Tj
+ET
+BT
+/F1 8 Tf
+62 536 Td
+(  Tool: icat) Tj
+ET
+BT
+/F1 8 Tf
+62 524 Td
+(  Exit code: 0) Tj
+ET
+BT
+/F1 8 Tf
+62 512 Td
+(  Stdout SHA-256: 5d1408d166a427116e5c4e715ce3f67e14678e40565523cb4028e03d6013da4d) Tj
+ET
+BT
+/F1 8 Tf
+62 500 Td
+(  Output path: outputs/icat-2026-05-09T215402.500126Z.json) Tj
+ET
+BT
+/F1 8 Tf
+62 488 Td
+(  Artifact IDs: icat:b356e77b43d97c7072b19a6ba9cf76dcd1f5cee8e61a9446e55a8a4c9c7b0b78) Tj
+ET
+q 0.93 0.95 0.98 rg 45 473 522 14 re f Q
+BT
+/F2 9 Tf
+50 476 Td
+(Evidence Figure CIT-0009: finding) Tj
+ET
+BT
+/F1 8 Tf
+62 464 Td
+(  UTC: 2026-05-09T21:54:08.590869Z) Tj
+ET
+BT
+/F1 8 Tf
+62 452 Td
+(  Checkpoint: finding:case_001_lolbin_rundll32) Tj
+ET
+BT
+/F1 8 Tf
+62 440 Td
+(  Entry hash: 84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca) Tj
+ET
+BT
+/F1 8 Tf
+62 428 Td
+(  Finding: case_001:lolbin:rundll32) Tj
+ET
+BT
+/F1 8 Tf
+62 416 Td
+(  Status: CONTESTED) Tj
+ET
+BT
+/F1 8 Tf
+62 404 Td
+(  MITRE: T1218.011) Tj
+ET
+BT
+/F1 8 Tf
+62 392 Td
+(  Caveats: PREFETCH_SSD_DISABLED) Tj
+ET
+BT
+/F1 8 Tf
+62 380 Td
+(  Rationale: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript) Tj
+ET
+BT
+/F1 9 Tf
+50 368 Td
+(invocation is corroborated by Pre) Tj
+ET
+q 0.93 0.95 0.98 rg 45 353 522 14 re f Q
+BT
+/F2 9 Tf
+50 356 Td
+(Evidence Figure CIT-0010: case_conclusion) Tj
+ET
+BT
+/F1 8 Tf
+62 344 Td
+(  UTC: 2026-05-09T21:54:14.190204Z) Tj
+ET
+BT
+/F1 8 Tf
+62 332 Td
+(  Checkpoint: case_conclusion) Tj
+ET
+BT
+/F1 8 Tf
+62 320 Td
+(  Entry hash: 874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c) Tj
+ET
+BT
+/F1 8 Tf
+62 308 Td
+(  Conclusion: EVIL_FOUND) Tj
+ET
+BT
+/F1 8 Tf
+62 296 Td
+(  Rationale: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript) Tj
+ET
+BT
+/F1 9 Tf
+50 284 Td
+(invocation is corroborated by Pre) Tj
+ET
+q 0.90 0.94 0.98 rg 42 260 528 18 re f Q
+BT
+/F2 12 Tf
+50 264 Td
+(Chain Of Custody Appendix) Tj
+ET
+BT
+/F1 9 Tf
+50 252 Td
+(CIT-0001 2026-05-09T21:47:38.674912Z case_init) Tj
+ET
+BT
+/F3 7 Tf
+50 240 Td
+(entry_hash=cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5) Tj
+ET
+BT
+/F1 9 Tf
+50 228 Td
+(hmac=f2e7cdf3ffd87f2d876699bbeb18d8d188943e5278a66c363e2252505967a31f) Tj
+ET
+BT
+/F1 9 Tf
+50 216 Td
+(CIT-0002 2026-05-09T21:48:13.973158Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 204 Td
+(entry_hash=966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a) Tj
+ET
+BT
+/F1 9 Tf
+50 192 Td
+(hmac=b040d2423b0d6b956471954b1eb93f84b57374c89d2e70de6bcb4d74c839801c) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 3 of 4) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 2308 >>
+stream
+BT
+/F1 9 Tf
+50 752 Td
+(CIT-0003 2026-05-09T21:48:48.182537Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 740 Td
+(entry_hash=aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad) Tj
+ET
+BT
+/F1 9 Tf
+50 728 Td
+(hmac=a579ec27c3ac776693543c332ce2b578a8c9cfbdd4fc74f23b73ec4a83401053) Tj
+ET
+BT
+/F1 9 Tf
+50 716 Td
+(CIT-0004 2026-05-09T21:49:27.218526Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 704 Td
+(entry_hash=ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9) Tj
+ET
+BT
+/F1 9 Tf
+50 692 Td
+(hmac=abb7198c634181619d0c49e444f6d61e269d3c73d11842adb0de6f61fb9829da) Tj
+ET
+BT
+/F1 9 Tf
+50 680 Td
+(CIT-0005 2026-05-09T21:51:45.129368Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 668 Td
+(entry_hash=296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f) Tj
+ET
+BT
+/F1 9 Tf
+50 656 Td
+(hmac=25c42536ad979f185a8c061179b1c5ea11352ecf4efb58c8c1f3d89cc9f6c2c2) Tj
+ET
+BT
+/F1 9 Tf
+50 644 Td
+(CIT-0006 2026-05-09T21:52:31.988202Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 632 Td
+(entry_hash=baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde) Tj
+ET
+BT
+/F1 9 Tf
+50 620 Td
+(hmac=f96bc9174fb213c717615270d1784365fa043ccc8ebadcb3405723716e388c60) Tj
+ET
+BT
+/F1 9 Tf
+50 608 Td
+(CIT-0007 2026-05-09T21:53:15.920084Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 596 Td
+(entry_hash=e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc) Tj
+ET
+BT
+/F1 9 Tf
+50 584 Td
+(hmac=2fd75b929bc0bee3c10a7d4f3b33396cf2bf9a178ba20064896d94904a9d275d) Tj
+ET
+BT
+/F1 9 Tf
+50 572 Td
+(CIT-0008 2026-05-09T21:54:02.500126Z tool_call) Tj
+ET
+BT
+/F3 7 Tf
+50 560 Td
+(entry_hash=f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec) Tj
+ET
+BT
+/F1 9 Tf
+50 548 Td
+(hmac=54491bc2b5894112c2b59bd58a85ea67c669dc34e60470293d142d23dfacf880) Tj
+ET
+BT
+/F1 9 Tf
+50 536 Td
+(CIT-0009 2026-05-09T21:54:08.590869Z finding) Tj
+ET
+BT
+/F3 7 Tf
+50 524 Td
+(entry_hash=84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca) Tj
+ET
+BT
+/F1 9 Tf
+50 512 Td
+(hmac=c10ae9a19dd7264095eaef61c9135d23ac25dc0e3cff8d39eff47ae8bd9f61dd) Tj
+ET
+BT
+/F1 9 Tf
+50 500 Td
+(CIT-0010 2026-05-09T21:54:14.190204Z case_conclusion) Tj
+ET
+BT
+/F3 7 Tf
+50 488 Td
+(entry_hash=874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c) Tj
+ET
+BT
+/F1 9 Tf
+50 476 Td
+(hmac=98e58a7758c028d45a1ca07557e28d4fa0091aabc4ccb8fdc31391011c2163e4) Tj
+ET
+BT
+/F1 8 Tf
+50 34 Td
+(Page 4 of 4) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+xref
+0 14
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000135 00000 n 
+0000000205 00000 n 
+0000000280 00000 n 
+0000000348 00000 n 
+0000004041 00000 n 
+0000004187 00000 n 
+0000008218 00000 n 
+0000008364 00000 n 
+0000012227 00000 n 
+0000012375 00000 n 
+0000014736 00000 n 
+trailer
+<< /Root 1 0 R /Size 14 >>
+startxref
+14884
+%%EOF

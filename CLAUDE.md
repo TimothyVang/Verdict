@@ -45,11 +45,10 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 
 ### Engineering frameworks (scaffolding — *not* runtime authority)
 
-These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe how dev tooling is wired; they do not extend the runtime topology and never override §3.
+These sit **below `BUILD_PLAN.md` and this `CLAUDE.md`**. They describe local development guardrails; they do not extend the runtime topology and never override §3. VERDICT automation means the DFIR runtime agents, not a source-code PR swarm.
 
 | Doc | Role | When to consult |
 |-----|------|-----------------|
-| `docs/AGENT_SWARM.md` | Build-side LLM swarm spec — conductor / worker / reviewer / auditor agents that take `BUILD_PLAN.md` task IDs and open PRs. The `swarm/` source tree is its executable skeleton. | Before reading anything under `swarm/`; before reviewing a PR authored by a `swarm:*` worker. |
 | `docs/MCP_FRAMEWORK.md` | Mode-scoped MCP allowlists + credential-isolation discipline. Every entry in `.mcp*.json` traces here. License-gated by §3.8; egress-gated by §3.9. | Before adding/removing an MCP server, or when reviewing `.mcp*.json`. |
 | `docs/SKILLS_FRAMEWORK.md` | How vendored skills under `.claude/skills/` compose into a Plan → TDD → subagent-driven-dev → Review → Commit pipeline. `verdict-house-rules` overlays §3 on upstream skill defaults. | Before authoring a workflow; before vendoring a new skill. |
 | `docs/SKILLS_LICENSE_AUDIT.md` | Per-skill license audit log. Every artifact under `.claude/skills/` (and any future MCP, hook, vendored artifact) gets a row per §3.8. | Before vendoring anything new; when answering "is X license-clean?". |
@@ -106,7 +105,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 - `LedgerEntry.mode_at_case_init` is set once and immutable.
 - `verdict resume <case_id>` reads the original mode and refuses to advance if the current `detect_mode()` differs. On mismatch it raises `ModeLockedError`, exits 2, and prints to stderr: `Case {case_id} was initialized in mode={original_mode}; current environment is mode={detected_mode}. To re-run under the new mode, use: verdict reverify {case_id} --mode {detected_mode}`.
 - Mode change is via `verdict reverify --mode <m>` only — that creates a **parallel verdict chain**, never mutating the original.
-- Cloud-only mode requires a reachable cloud credential (`ANTHROPIC_API_KEY`, Claude Code OAuth, or optional host-side `OPENROUTER_API_KEY` fallback for build-side AI agents); air-gap requires `SGLANG_BASE_URL` reachable; dual requires cloud + local. `verdict doctor` is the pre-flight.
+- Cloud-only mode requires a reachable cloud credential (`ANTHROPIC_API_KEY`, Claude Code OAuth, or optional host-side `OPENROUTER_API_KEY` fallback for host-side runtime inference); air-gap requires `SGLANG_BASE_URL` reachable; dual requires cloud + local. `verdict doctor` is the pre-flight.
 
 ### 3.5 MITRE sub-technique precision
 
@@ -231,7 +230,7 @@ scripts/  .github/workflows/  packer/
 
 The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/playbooks/`, `verdict/knowledge/`, `verdict/prompts/` — never duplicated in narrative code comments. Full discipline (with rationale, validators, schema field references): **`docs/ARCHITECTURE.md` §4**.
 
-- **Canonical first moves.** Memory → `windows.info`. Disk → `image_hash_verify` → `mmls` → `fsstat`. Triage zip → registry hives first.
+- **Canonical first moves.** Memory → `windows.info`. Disk → `image_hash_verify` → `mmls` → `fsstat` only after a supported filesystem partition offset is known. Triage zip → registry hives first.
 - **DKOM / T1014.** `set(psscan_pids) - set(pslist_pids)` non-empty → emit T1014 hypothesis. First-class playbook rule (v4.6 F4), not a prompt suggestion.
 - **Hunt Evil 8.** Baselines for `svchost`, `lsass`, `csrss`, `winlogon`, `services`, `wininit`, `explorer`, `smss`. Deviation → `ProcessBaselineAnomaly` → **T1036.005**.
 - **LOLBins.** Cmdline-shape catalog (LOLBAS-sourced) maps each binary to its T1218.* sub-technique.
@@ -260,7 +259,7 @@ The SANS-canonical knowledge an agent must internalise. Encoded in `verdict/play
 - Three-tier IDs on every entry: `case_id` → `langfuse_trace_id` → `langgraph_checkpoint_id`.
 - Per-call examination metadata: `microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version` (NIST SP 800-86).
 - Per-output-file `output_files_sha256: dict[str, str]`.
-- HMAC-signed entries (TPM-backed or gpg-encrypted key); Findings additionally signed over `(Finding + approver + timestamp)`.
+- HMAC-signed entries (TPM-backed or gpg-encrypted key); human approval additionally binds the approver and timestamp to the latest non-superseded finding ledger entry.
 - Redaction strips auth fields **before** hashing/signing — order matters.
 - `write() + fsync() + verify-readback` in `LedgerEmitter`. No buffered writes.
 - Bidirectional cross-link with Langfuse trace tree via `trace_id`.
@@ -300,15 +299,20 @@ curl http://localhost:3000/api/public/health   # expect 200
 verdict doctor                                  # pre-flight: API, SGLang, microsandbox, Langfuse, HMAC key
 verdict mode                                    # show detected + locked mode
 verdict init  <evidence_path> [--mode {cloud,airgap,dual}]
+verdict investigate <evidence_path> [--mode {cloud,airgap,dual}] [--export-dir path]
+                                                  # autonomous case-to-report run with export manifest
+verdict run-case <case_id>                      # canonical local case workflow
+verdict run-tool <case_id> <tool>               # one registered real SIFT tool
 verdict resume   <case_id>
 verdict reverify <case_id> --mode dual          # parallel re-run; non-mutating
 verdict status
 verdict ls
 verdict show     <case_id>
-verdict export   <case_id> [--format {json,csv,sigtools_triage}]
+verdict export   <case_id> [--format {jsonl,execution-logs,html,pdf}]
 verdict validate <case_id>                      # ledger chain + HMAC integrity
-verdict approve  <finding_id>                   # HMAC-signed approval w/ timestamp
+verdict approve  <case_id> <finding_id> --approver <name>  # HMAC-signed latest-run approval
 verdict gc                                      # garbage-collect old cases
+verdict package-check                           # Devpost artifact gate
 verdict health
 ```
 
@@ -359,7 +363,7 @@ git tag v-submit && git push origin v-submit    # fires .github/workflows/devpos
 Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo recording:
 
 1. Image hash verified before opening evidence.
-2. SANS-canonical first move (`windows.info` for memory; `mmls` + `fsstat` for disk).
+2. SANS-canonical first move (`windows.info` for memory; `mmls` + offset-aware `fsstat` for disk).
 3. `pslist` and `psscan` both run; divergence checked.
 4. ≥2 artifact classes per execution claim, **named in rationale**.
 5. Amcache caveat acknowledged when Amcache cited.
@@ -404,7 +408,6 @@ Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo reco
 | Submission rule-to-artifact mapping, judge-facing checklist | `docs/DEVPOST_COMPLIANCE.md` |
 | Cross-doc consistency audit + critical-fix log | `docs/DOCS_ACCURACY_REPORT.md` |
 | Agentic-workflow audit (runtime + dev TDD loop) | `docs/AGENTIC_WORKFLOW_REVIEW.md` |
-| Build-side LLM swarm spec (consumer of `BUILD_PLAN.md` task IDs) | `docs/AGENT_SWARM.md` (executable in `swarm/`) |
 | MCP server allowlist + credential isolation | `docs/MCP_FRAMEWORK.md` (allowlist in `.mcp.json`) |
 | Vendored skill stack composition + house-rules overlay | `docs/SKILLS_FRAMEWORK.md` (stack in `.claude/skills/`) |
 | License audit for vendored skills/hooks/MCPs | `docs/SKILLS_LICENSE_AUDIT.md` |

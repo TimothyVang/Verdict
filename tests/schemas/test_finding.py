@@ -205,3 +205,25 @@ def test_evtx_4624_omitted_logon_type_requires_conservative_caveat() -> None:
             rationale="Omitted 4624 logon type data must not bypass caveat enforcement.",
             status="VETTED_AIRGAP",
         )
+
+
+def test_lolbin_finding_accepts_transcript_and_prefetch_corroboration() -> None:
+    finding = Finding(
+        finding_id="finding-lolbin-rundll32",
+        case_id="case-001",
+        plan_id="disk-lolbin-corroboration",
+        hypothesis_ids=["h_lolbin_rundll32_transcript_prefetch"],
+        artifact_paths=[
+            Path("/case/artifacts/transcript.json"),
+            Path("/case/artifacts/prefetch.json"),
+        ],
+        artifact_classes=[ArtifactClass.POWERSHELL_TRANSCRIPT, ArtifactClass.PREFETCH],
+        caveats_acknowledged=[CaveatID.PREFETCH_SSD_DISABLED],
+        mitre_technique="T1218.011",
+        evidence_hashes={Path("/evidence/disk.E01"): "d" * 64},
+        rationale="Evidence consistent with rundll32 LOLBin execution across transcript and Prefetch artifacts.",
+        status="CONTESTED",
+        contested_reasons=["local CLI parser finding requires verifier quorum before VETTED_CLOUD"],
+    )
+
+    assert finding.artifact_classes == [ArtifactClass.POWERSHELL_TRANSCRIPT, ArtifactClass.PREFETCH]

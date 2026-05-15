@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from shutil import which
 from typing import Literal
@@ -25,6 +26,12 @@ class MicrosandboxRunResult:
     exit_code: int
     microsandbox_version: str
     rootfs_sha256: str
+
+
+@dataclass(frozen=True)
+class MicrosandboxMount:
+    host_path: Path
+    guest_path: str
 
 
 @dataclass(frozen=True)
@@ -51,11 +58,25 @@ def run_in_microsandbox(
     image: str,
     host_evidence_path: Path,
     command: list[str],
+    extra_mounts: tuple[MicrosandboxMount, ...] = (),
     timeout_seconds: int = 600,
+    status: MicrosandboxStatus | None = None,
 ) -> MicrosandboxRunResult:
-    status = microsandbox_status()
+    status = microsandbox_status() if status is None else status
     if status.binary is None:
         raise RuntimeError("microsandbox binary is required for forensic tool execution")
+
+    volume_args = [
+        "-v",
+        f"{_volume_source(status, host_evidence_path.parent)}:/evidence",
+    ]
+    for mount in extra_mounts:
+        volume_args.extend(
+            [
+                "-v",
+                f"{_volume_source(status, mount.host_path)}:{mount.guest_path}",
+            ]
+        )
 
     result = _run_msb(
         status=status,
@@ -64,8 +85,7 @@ def run_in_microsandbox(
             "--no-net",
             "--pull",
             "never",
-            "-v",
-            f"{_volume_source(status, host_evidence_path.parent)}:/evidence:ro,noexec",
+            *volume_args,
             "--timeout",
             f"{timeout_seconds}s",
             image,
@@ -233,8 +253,34 @@ def _scrubbed_msb_env(source_env: os._Environ[str] | dict[str, str]) -> dict[str
 
 def _volume_source(status: MicrosandboxStatus, host_path: Path) -> str:
     if status.runner == "wsl":
-        return _windows_path_to_wsl(host_path)
+        return _wsl_mount_source(_windows_path_to_wsl(host_path))
     return str(host_path)
+
+
+def _wsl_mount_source(wsl_path: str) -> str:
+    if not any(char.isspace() for char in wsl_path):
+        return wsl_path
+    link_path = f"/tmp/verdict-msb-mounts/{sha256(wsl_path.encode()).hexdigest()[:16]}"
+    result = subprocess.run(
+        [
+            "wsl.exe",
+            "--exec",
+            "/bin/sh",
+            "-lc",
+            "mkdir -p /tmp/verdict-msb-mounts && ln -sfn -- \"$1\" \"$2\" && test -e \"$2\"",
+            "verdict-msb-mount",
+            wsl_path,
+            link_path,
+        ],
+        capture_output=True,
+        check=False,
+        env=_scrubbed_msb_env(os.environ),
+        text=True,
+        timeout=30,
+    )
+    if result.returncode != 0:
+        raise RuntimeError((result.stderr or result.stdout).strip() or "WSL mount symlink failed")
+    return link_path
 
 
 def _windows_path_to_wsl(path: Path) -> str:
@@ -254,32 +300,32 @@ def _windows_path_to_wsl(path: Path) -> str:
 def _wsl_microsandbox_binary() -> str | None:
     if which("wsl.exe") is None:
         return None
-    try:
-        result = subprocess.run(
-            [
-                "wsl.exe",
-                "--exec",
-                "/bin/sh",
-                "-lc",
-                (
-                    "if [ -x \"$HOME/.microsandbox/bin/msb\" ]; then "
-                    "printf '%s\\n' \"$HOME/.microsandbox/bin/msb\"; "
-                    "elif command -v msb >/dev/null 2>&1; then command -v msb; "
-                    "else command -v microsandbox; fi"
-                ),
-            ],
-            capture_output=True,
-            check=False,
-            env=_scrubbed_msb_env(os.environ),
-            text=True,
-            timeout=30,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if result.returncode != 0:
-        return None
-    binary = result.stdout.strip().splitlines()[0] if result.stdout.strip() else None
-    return binary or None
+    for _attempt in range(2):
+        try:
+            result = subprocess.run(
+                [
+                    "wsl.exe",
+                    "--exec",
+                    "/bin/sh",
+                    "-lc",
+                    (
+                        "if [ -x \"$HOME/.microsandbox/bin/msb\" ]; then "
+                        "printf '%s\\n' \"$HOME/.microsandbox/bin/msb\"; "
+                        "elif command -v msb >/dev/null 2>&1; then command -v msb; "
+                        "else command -v microsandbox; fi"
+                    ),
+                ],
+                capture_output=True,
+                check=False,
+                env=_scrubbed_msb_env(os.environ),
+                text=True,
+                timeout=30,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip().splitlines()[0]
+    return None
 
 
 def _image_sha256(image: str) -> str:

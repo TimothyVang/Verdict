@@ -233,8 +233,10 @@ Loaded into every executor system prompt via `verdict/planning/prompts/examiner_
 ```python
 class ArtifactClass(str, Enum):
     PREFETCH = "prefetch"
+    POWERSHELL_TRANSCRIPT = "powershell_transcript"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
+    EVTX_4624 = "evtx_4624"
     EVTX_4688 = "evtx_4688"
     SYSMON_1 = "sysmon_1"
     NETWORK = "network"
@@ -242,6 +244,7 @@ class ArtifactClass(str, Enum):
     TASK_SCHEDULER = "task_scheduler"
     WMI_SUBSCRIPTION = "wmi_subscription"
     MFT = "mft"
+    USNJRNL = "usnjrnl"
     PROCESS_MEMORY = "process_memory"
     YARA_HIT = "yara_hit"
     SIGMA_HIT = "sigma_hit"
@@ -339,6 +342,8 @@ Every 10 super-steps, re-hash all `EvidenceItem` files against the manifest. Mis
 | Sleuth Kit | `mmls`, `fls`, `fsstat` |
 | EZ Tools | `MFTECmd`, `RECmd`, `PECmd` |
 | Other | `bulk_extractor`, `exiftool`, `capa` |
+
+Disk-image runs treat `mmls` as the partition-boundary source of truth. If `mmls` succeeds but does not yield a supported filesystem partition offset, the case records `disk_partition_offset_not_found` and stops before running offsetless `fsstat`/`fls`; offsetless fallback remains reserved for images where `mmls` itself is unavailable as a partition-table probe.
 
 Every wrapper extends `ToolWrapper` base; emits typed `ToolOutput` with `parsed_artifacts: list[Artifact]`. `parsed_artifacts` is the discriminator surface for cross-engine quorum's Jaccard comparison.
 

@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Fail closed until hallucination scorer lands
+      - name: Verify evaluator and scorer files exist
         run: |
           for task in inspect_ai/tasks/verdict_eval_cloud.py inspect_ai/tasks/verdict_eval_airgap.py inspect_ai/tasks/verdict_eval_dual.py; do
             if [ ! -f "$task" ]; then

@@ -7,7 +7,7 @@ description: Re-states the load-bearing CLAUDE.md §3 hard rules so they apply i
 
 This skill is the project-specific overlay on top of the vendored Superpowers and mattpocock skills under `.claude/skills/`. **When this skill conflicts with anything in a vendored skill, this skill wins.** That is the entire point of having it — upstream skills are general-purpose; Verdict has hard forensic and licensing constraints they can't know about.
 
-The full charter lives in `CLAUDE.md` (project root). Read it end-to-end before touching code. The seven rules below are the ones most likely to be violated by a generic agent acting on instinct.
+The full charter lives in `CLAUDE.md` (project root). Read it end-to-end before touching code. The eight rules below are the ones most likely to be violated by a generic agent acting on instinct.
 
 ## 1. No mocks, ever — §3.10
 
@@ -46,6 +46,14 @@ Verdict statuses are exactly: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `C
 Every new dependency, every vendored skill, every MCP server, must be **MIT or Apache-2.0**. The hard-NO list (Daytona AGPL, REMnux MCP GPL-3.0, Llama 4 / Gemma 3 community, Modal / LangSmith / Braintrust / Phoenix / AutoGen / MS Agent Framework) is final. CC-BY-SA, GPL, and AGPL are share-alike incompatible with this repo's MIT distribution.
 
 When in doubt, audit the LICENSE file directly before adding the artifact. Record the audit in `docs/SKILLS_LICENSE_AUDIT.md` (skills) or `docs/RELEASE.md` (runtime deps).
+
+## 8. Autopilot 8h means no early final response
+
+For `/autopilot 8h`, the timebox is the contract. Do not stop before `stop_timebox_expired` unless the user explicitly says stop. A completed goal, a green test run, a written final-report checkpoint, a parked hard blocker, or an empty-looking queue is not a stop condition.
+
+Treat `continue_required=true` or `stop_allowed=false` as a hard ban on final responses. Rerun the Autopilot driver, create or select the next safe local follow-up, and continue. Safe Verdict follow-ups include docs drift, stale verification, TODOs, residual risks, proof/report artifacts, policy gaps, tests, packaging/readiness checks, and reversible cleanup.
+
+If safe work appears exhausted before the deadline, prove it with a logged discovery sweep across docs, TODOs, stale checks, `.omx` reports, failure logs, tests, policy gaps, and residual risks. If anything safe remains, continue. If nothing remains, keep doing safe maintenance and verification loops until `stop_timebox_expired`.
 
 ## How this skill composes with the vendored stack
 

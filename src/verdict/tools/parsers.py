@@ -9,11 +9,19 @@ from typing import Any
 
 from verdict.schemas.tool_output import Artifact
 
+LOLBIN_EXECUTABLES = {"regsvr32.exe", "rundll32.exe"}
+
 
 @dataclass(frozen=True)
 class ParsedToolOutput:
     artifacts: list[Artifact]
     warnings: list[str]
+
+
+@dataclass(frozen=True)
+class ParsedTable:
+    headers: list[str]
+    rows: list[dict[str, str]]
 
 
 def parse_tool_stdout(tool_key: str, *, evidence_path: Path, stdout: bytes) -> ParsedToolOutput:
@@ -46,6 +54,8 @@ def parse_tool_stdout(tool_key: str, *, evidence_path: Path, stdout: bytes) -> P
         return _with_empty_warning(tool_key, _parse_fsstat(evidence_path, text))
     if tool_key == "fls":
         return _with_empty_warning(tool_key, _parse_fls(evidence_path, text))
+    if tool_key == "icat":
+        return _with_empty_warning(tool_key, _parse_icat(evidence_path, text))
     return ParsedToolOutput(artifacts=[], warnings=[f"no parser registered for {tool_key}"])
 
 
@@ -62,6 +72,11 @@ def _parse_vol3_info(evidence_path: Path, text: str) -> ParsedToolOutput:
     table = _parse_table(text, required_headers=("Variable", "Value"))
     fields: dict[str, Any] = {}
     warnings: list[str] = []
+    if not table and "Unsatisfied requirement" in text:
+        return ParsedToolOutput(
+            artifacts=[],
+            warnings=["vol3 reported unsatisfied requirements"],
+        )
     for row in table:
         variable = row.get("Variable")
         if variable:
@@ -76,8 +91,6 @@ def _parse_vol3_info(evidence_path: Path, text: str) -> ParsedToolOutput:
             if key:
                 fields[_safe_key(key)] = value.strip()
 
-    if not fields and "Unsatisfied requirement" in text:
-        warnings.append("vol3 reported unsatisfied requirements")
     if not fields:
         return ParsedToolOutput(artifacts=[], warnings=warnings)
     return ParsedToolOutput(
@@ -101,9 +114,9 @@ def _parse_vol3_process_table(
     text: str,
     artifact_type: str,
 ) -> ParsedToolOutput:
-    rows = _parse_table(text, required_headers=("PID", "ImageFileName"))
+    table = _parse_table_result(text, required_headers=("PID", "ImageFileName"))
     artifacts: list[Artifact] = []
-    for index, row in enumerate(rows):
+    for index, row in enumerate(table.rows):
         pid = _parse_int(row.get("PID"))
         if pid is None:
             continue
@@ -124,8 +137,22 @@ def _parse_vol3_process_table(
                 index=index,
             )
         )
-    warnings = [] if rows else ["vol3 process table header not found"]
-    return ParsedToolOutput(artifacts=artifacts, warnings=warnings)
+    if artifacts:
+        return ParsedToolOutput(artifacts=artifacts, warnings=[])
+    if table.headers:
+        return ParsedToolOutput(
+            artifacts=[
+                _artifact(
+                    tool_key=tool_key,
+                    evidence_path=evidence_path,
+                    artifact_type=f"{artifact_type}_summary",
+                    raw_fields={"headers": table.headers, "row_count": 0},
+                    index=0,
+                )
+            ],
+            warnings=[],
+        )
+    return ParsedToolOutput(artifacts=[], warnings=["vol3 process table header not found"])
 
 
 def _parse_mmls(evidence_path: Path, text: str) -> ParsedToolOutput:
@@ -186,7 +213,8 @@ def _parse_fsstat(evidence_path: Path, text: str) -> ParsedToolOutput:
 def _parse_fls(evidence_path: Path, text: str) -> ParsedToolOutput:
     artifacts: list[Artifact] = []
     pattern = re.compile(
-        r"^(?P<file_type>[-A-Za-z]/[-A-Za-z])\s+"
+        r"^(?P<depth>\+*)\s*"
+        r"(?P<file_type>[-A-Za-z]/[-A-Za-z])\s+"
         r"(?P<deleted>\*)?\s*"
         r"(?P<metadata_address>[^:]+):\s*"
         r"(?P<name>.+)$"
@@ -210,10 +238,97 @@ def _parse_fls(evidence_path: Path, text: str) -> ParsedToolOutput:
                 index=index,
             )
         )
+        prefetch_match = re.fullmatch(
+            r"(?P<executable>[A-Za-z0-9_.-]+?\.EXE)-[A-Fa-f0-9]+\.pf",
+            raw_fields["name"],
+            re.IGNORECASE,
+        )
+        if prefetch_match is None:
+            continue
+        executable = prefetch_match.group("executable").lower()
+        if executable not in LOLBIN_EXECUTABLES:
+            continue
+        metadata_address = raw_fields["metadata_address"]
+        artifacts.append(
+            _artifact(
+                tool_key="fls",
+                evidence_path=evidence_path,
+                artifact_type="prefetch_listing_entry",
+                raw_fields={
+                    "executable": executable,
+                    "prefetch_name": raw_fields["name"],
+                    "metadata_address": metadata_address,
+                    "artifact_path": f"{evidence_path}#fls_prefetch:{metadata_address}",
+                },
+                index=len(artifacts),
+            )
+        )
+    return ParsedToolOutput(artifacts=artifacts, warnings=[])
+
+
+def _parse_icat(evidence_path: Path, text: str) -> ParsedToolOutput:
+    artifacts: list[Artifact] = []
+    start_time = _line_value(text, "Start time")
+    username = _line_value(text, "Username")
+    command_pattern = re.compile(r"CommandInvocation\((?P<executable>[^)]+\.exe)\)", re.IGNORECASE)
+    for index, match in enumerate(command_pattern.finditer(text)):
+        executable = match.group("executable").lower()
+        if executable not in LOLBIN_EXECUTABLES:
+            continue
+        raw_fields: dict[str, Any] = {
+            "executable": executable,
+            "artifact_path": f"{evidence_path}#powershell_transcript_command:{index}",
+        }
+        if start_time:
+            raw_fields["start_time"] = start_time
+        if username:
+            raw_fields["username"] = username
+        artifacts.append(
+            _artifact(
+                tool_key="icat",
+                evidence_path=evidence_path,
+                artifact_type="powershell_transcript_command",
+                raw_fields=raw_fields,
+                index=len(artifacts),
+            )
+        )
+
+    prefetch_pattern = re.compile(
+        r"(?P<prefetch_path>[A-Za-z]:\\WINDOWS\\Prefetch\\"
+        r"(?P<executable>[A-Za-z0-9_.-]+?\.EXE)-[A-Fa-f0-9]+\.pf)\s+"
+        r"(?P<creation_time_utc>\d{4}-\d{2}-\d{2}T\S+Z)\s+"
+        r"(?P<last_access_time_utc>\d{4}-\d{2}-\d{2}T\S+Z)",
+        re.IGNORECASE,
+    )
+    for index, match in enumerate(prefetch_pattern.finditer(text)):
+        executable = match.group("executable").lower()
+        if executable not in LOLBIN_EXECUTABLES:
+            continue
+        raw_fields = {
+            "executable": executable,
+            "prefetch_path": match.group("prefetch_path"),
+            "creation_time_utc": match.group("creation_time_utc"),
+            "last_access_time_utc": match.group("last_access_time_utc"),
+            "artifact_path": f"{evidence_path}#prefetch_listing_entry:{index}",
+        }
+        artifacts.append(
+            _artifact(
+                tool_key="icat",
+                evidence_path=evidence_path,
+                artifact_type="prefetch_listing_entry",
+                raw_fields=raw_fields,
+                index=len(artifacts),
+            )
+        )
+
     return ParsedToolOutput(artifacts=artifacts, warnings=[])
 
 
 def _parse_table(text: str, *, required_headers: tuple[str, ...]) -> list[dict[str, str]]:
+    return _parse_table_result(text, required_headers=required_headers).rows
+
+
+def _parse_table_result(text: str, *, required_headers: tuple[str, ...]) -> ParsedTable:
     lines = _content_lines(text)
     header_index = next(
         (
@@ -224,7 +339,7 @@ def _parse_table(text: str, *, required_headers: tuple[str, ...]) -> list[dict[s
         None,
     )
     if header_index is None:
-        return []
+        return ParsedTable(headers=[], rows=[])
     headers = _split_row(lines[header_index])
     rows: list[dict[str, str]] = []
     for line in lines[header_index + 1 :]:
@@ -234,7 +349,7 @@ def _parse_table(text: str, *, required_headers: tuple[str, ...]) -> list[dict[s
         if len(values) < len(headers):
             continue
         rows.append(dict(zip(headers, values, strict=False)))
-    return rows
+    return ParsedTable(headers=headers, rows=rows)
 
 
 def _split_row(line: str, *, maxsplit: int = -1) -> list[str]:
@@ -254,6 +369,15 @@ def _content_lines(text: str) -> list[str]:
 
 def _safe_key(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
+
+
+def _line_value(text: str, label: str) -> str | None:
+    prefix = f"{label}:"
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(prefix):
+            return stripped.split(":", 1)[1].strip()
+    return None
 
 
 def _parse_int(value: str | None) -> int | None:

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VERDICT Analyst Report - case_001</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.45; margin: 2rem; color: #172033; }
+h1, h2, h3 { color: #0f2742; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+th, td { border: 1px solid #bac4d1; padding: 0.45rem; vertical-align: top; }
+th { background: #eef3f8; text-align: left; }
+.finding, figure { border: 1px solid #9fb1c5; padding: 1rem; margin: 1rem 0; }
+.citation { font-family: Consolas, monospace; color: #143d66; }
+.review li { margin: 0.35rem 0; }
+svg { width: 100%; max-width: 980px; height: auto; border: 1px solid #cbd5df; }
+</style>
+</head>
+<body>
+<h1>VERDICT Analyst Report</h1>
+<p><strong>Case:</strong> case_001</p>
+<section>
+<h2>Executive Summary</h2>
+<p><strong>Case conclusion:</strong> EVIL_FOUND</p>
+<p>Evidence consistent with rundll32 LOLBin execution: PowerShell transcript invocation is corroborated by Prefetch listing evidence.</p>
+</section>
+<section class="review">
+<h2>Human Review Checklist</h2>
+<ul>
+<li>Confirm every narrative claim cites a <span class="citation">CIT-####</span> item.</li>
+<li>Verify evidence hashes against the case manifest before relying on findings.</li>
+<li>Review rendered evidence figures and linked tool-output hashes for each finding.</li>
+<li>Confirm caveats are acknowledged before approving execution claims.</li>
+<li>Approve or reject findings only after the cited artifacts prove the claim.</li>
+</ul>
+</section>
+<section>
+<h2>Evidence Inventory</h2>
+<table><thead><tr><th>Type</th><th>Path</th><th>SHA-256</th><th>Size</th></tr></thead>
+<tbody><tr><td>disk_image</td><td>base-wkstn-01-cdrive.E01</td><td class="citation">ede47a0733203134f92c8ae46df4f5106b78a2c357fdb1d3c84301261076429f</td><td>16923891211</td></tr>
+<tr><td>memory</td><td>base-wkstn-01-memory.mem</td><td class="citation">e52f84eca8703c30903c754369476e4cd8fa781cbf1a7a7b42f5062535fa6956</td><td>3221225472</td></tr></tbody></table>
+</section>
+<section>
+<h2>Investigation Timeline</h2>
+<table><thead><tr><th>UTC</th><th>Event</th><th>Checkpoint</th><th>Citation</th></tr></thead>
+<tbody><tr><td>2026-05-09T21:47:38.674912Z</td><td>case_init</td><td>case_init</td><td><a class="citation" href="#fig-cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5">CIT-0001</a></td></tr>
+<tr><td>2026-05-09T21:48:13.973158Z</td><td>tool_call</td><td>tool_call:mmls</td><td><a class="citation" href="#fig-966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a">CIT-0002</a></td></tr>
+<tr><td>2026-05-09T21:48:48.182537Z</td><td>tool_call</td><td>tool_call:fsstat</td><td><a class="citation" href="#fig-aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad">CIT-0003</a></td></tr>
+<tr><td>2026-05-09T21:49:27.218526Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9">CIT-0004</a></td></tr>
+<tr><td>2026-05-09T21:51:45.129368Z</td><td>tool_call</td><td>tool_call:fls</td><td><a class="citation" href="#fig-296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f">CIT-0005</a></td></tr>
+<tr><td>2026-05-09T21:52:31.988202Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde">CIT-0006</a></td></tr>
+<tr><td>2026-05-09T21:53:15.920084Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc">CIT-0007</a></td></tr>
+<tr><td>2026-05-09T21:54:02.500126Z</td><td>tool_call</td><td>tool_call:icat</td><td><a class="citation" href="#fig-f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec">CIT-0008</a></td></tr>
+<tr><td>2026-05-09T21:54:08.590869Z</td><td>finding</td><td>finding:case_001_lolbin_rundll32</td><td><a class="citation" href="#fig-84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca">CIT-0009</a></td></tr>
+<tr><td>2026-05-09T21:54:14.190204Z</td><td>case_conclusion</td><td>case_conclusion</td><td><a class="citation" href="#fig-874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c">CIT-0010</a></td></tr></tbody></table>
+</section>
+<section>
+<h2>Findings And Citations</h2>
+<article class="finding">
+<h3>case_001:lolbin:rundll32</h3>
+<p><strong>Citation:</strong> <span class="citation">CIT-0009</span></p>
+<p><strong>Status:</strong> CONTESTED; <strong>Review:</strong> DRAFT</p>
+<p><strong>MITRE:</strong> T1218.011</p>
+<p>Evidence consistent with rundll32 LOLBin execution: PowerShell transcript invocation is corroborated by Prefetch listing evidence.</p>
+<p><strong>Artifact paths:</strong></p><ul><li>base-wkstn-01-cdrive.E01#powershell_transcript_command:0</li><li>base-wkstn-01-cdrive.E01#fls_prefetch:18653-128-4</li></ul>
+<p><strong>Caveats acknowledged:</strong></p><ul><li>PREFETCH_SSD_DISABLED</li></ul>
+<p><strong>Supporting tool outputs:</strong></p><ul><li>mmls</li><li>fsstat</li><li>fls</li><li>fls</li><li>icat</li></ul>
+</article>
+</section>
+<section>
+<h2>Evidence Figures</h2>
+<figure id="fig-cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5">
+<figcaption><span class="citation">CIT-0001</span> Evidence Figure CIT-0001: case_init</figcaption>
+<svg viewBox="0 0 1000 154" role="img" aria-label="Evidence Figure CIT-0001: case_init">
+<rect x="8" y="8" width="984" height="138" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0001: case_init</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:47:38.674912Z</text><text x="24" y="78">Checkpoint: case_init</text><text x="24" y="100">Entry hash: cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5</text></g>
+</svg>
+</figure>
+<figure id="fig-966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a">
+<figcaption><span class="citation">CIT-0002</span> Evidence Figure CIT-0002: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0002: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0002: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:48:13.973158Z</text><text x="24" y="78">Checkpoint: tool_call:mmls</text><text x="24" y="100">Entry hash: 966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a</text><text x="24" y="122">Tool: mmls</text><text x="24" y="144">Exit code: 1</text><text x="24" y="166">Stdout SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</text><text x="24" y="188">Output path: outputs/mmls-2026-05-09T214813.973158Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad">
+<figcaption><span class="citation">CIT-0003</span> Evidence Figure CIT-0003: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0003: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0003: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:48:48.182537Z</text><text x="24" y="78">Checkpoint: tool_call:fsstat</text><text x="24" y="100">Entry hash: aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad</text><text x="24" y="122">Tool: fsstat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: f956e62146683c2fb865157c2607f2bb513a752ba7ce0a7c4f60909706a6a400</text><text x="24" y="188">Output path: outputs/fsstat-2026-05-09T214848.182537Z.json</text><text x="24" y="210">Artifact IDs: fsstat:b532d60922d4f3547b93b3d104d511f300120ca1f5440df8ef0d221a5354f89f</text></g>
+</svg>
+</figure>
+<figure id="fig-ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9">
+<figcaption><span class="citation">CIT-0004</span> Evidence Figure CIT-0004: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0004: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0004: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:49:27.218526Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 53042d5eab2b5f2027c7df62e8cf008387f5cb5bdb74977cbbfa22b7bfa7d452</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T214927.218526Z.json</text><text x="24" y="210">Artifact IDs: fls:5074c7db4dca507682c6612a5ad4d4912cc8e62ee1e3ee79d8f4fe8179df8ddb, fls:6812f6539510956886d63909efa3b2</text></g>
+</svg>
+</figure>
+<figure id="fig-296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f">
+<figcaption><span class="citation">CIT-0005</span> Evidence Figure CIT-0005: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0005: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0005: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:51:45.129368Z</text><text x="24" y="78">Checkpoint: tool_call:fls</text><text x="24" y="100">Entry hash: 296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f</text><text x="24" y="122">Tool: fls</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 9f29d98aa6b3aea39cb5e791c2aa3180f7a2fbb43efc03e89c8d80a4d6464b2a</text><text x="24" y="188">Output path: outputs/fls-2026-05-09T215145.129368Z.json</text><text x="24" y="210">Artifact IDs: fls:5074c7db4dca507682c6612a5ad4d4912cc8e62ee1e3ee79d8f4fe8179df8ddb, fls:6812f6539510956886d63909efa3b2</text></g>
+</svg>
+</figure>
+<figure id="fig-baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde">
+<figcaption><span class="citation">CIT-0006</span> Evidence Figure CIT-0006: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0006: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0006: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:52:31.988202Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 5fa92e889789db196882c7012bae8a7fd0bfe9f62c65d266c00ab43f52d34ffd</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T215231.988202Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc">
+<figcaption><span class="citation">CIT-0007</span> Evidence Figure CIT-0007: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0007: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0007: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:53:15.920084Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: f40cf7b58fd37966fc6cc7b921006fd9c3f55d79e0081d03ccb4455ca064669f</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T215315.920084Z.json</text><text x="24" y="210">Artifact IDs: </text></g>
+</svg>
+</figure>
+<figure id="fig-f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec">
+<figcaption><span class="citation">CIT-0008</span> Evidence Figure CIT-0008: tool_call</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0008: tool_call">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0008: tool_call</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:54:02.500126Z</text><text x="24" y="78">Checkpoint: tool_call:icat</text><text x="24" y="100">Entry hash: f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec</text><text x="24" y="122">Tool: icat</text><text x="24" y="144">Exit code: 0</text><text x="24" y="166">Stdout SHA-256: 5d1408d166a427116e5c4e715ce3f67e14678e40565523cb4028e03d6013da4d</text><text x="24" y="188">Output path: outputs/icat-2026-05-09T215402.500126Z.json</text><text x="24" y="210">Artifact IDs: icat:b356e77b43d97c7072b19a6ba9cf76dcd1f5cee8e61a9446e55a8a4c9c7b0b78</text></g>
+</svg>
+</figure>
+<figure id="fig-84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca">
+<figcaption><span class="citation">CIT-0009</span> Evidence Figure CIT-0009: finding</figcaption>
+<svg viewBox="0 0 1000 264" role="img" aria-label="Evidence Figure CIT-0009: finding">
+<rect x="8" y="8" width="984" height="248" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0009: finding</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:54:08.590869Z</text><text x="24" y="78">Checkpoint: finding:case_001_lolbin_rundll32</text><text x="24" y="100">Entry hash: 84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca</text><text x="24" y="122">Finding: case_001:lolbin:rundll32</text><text x="24" y="144">Status: CONTESTED</text><text x="24" y="166">MITRE: T1218.011</text><text x="24" y="188">Caveats: PREFETCH_SSD_DISABLED</text><text x="24" y="210">Rationale: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript invocation is corroborated by Pre</text></g>
+</svg>
+</figure>
+<figure id="fig-874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c">
+<figcaption><span class="citation">CIT-0010</span> Evidence Figure CIT-0010: case_conclusion</figcaption>
+<svg viewBox="0 0 1000 198" role="img" aria-label="Evidence Figure CIT-0010: case_conclusion">
+<rect x="8" y="8" width="984" height="182" fill="#f7fafc" stroke="#46617a"/>
+<text x="24" y="32" font-family="Consolas, monospace" font-size="18" fill="#0f2742">Evidence Figure CIT-0010: case_conclusion</text>
+<g font-family="Consolas, monospace" font-size="16" fill="#172033"><text x="24" y="56">UTC: 2026-05-09T21:54:14.190204Z</text><text x="24" y="78">Checkpoint: case_conclusion</text><text x="24" y="100">Entry hash: 874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c</text><text x="24" y="122">Conclusion: EVIL_FOUND</text><text x="24" y="144">Rationale: Evidence consistent with rundll32 LOLBin execution: PowerShell transcript invocation is corroborated by Pre</text></g>
+</svg>
+</figure>
+</section>
+<section>
+<h2>Chain Of Custody Appendix</h2>
+<table><thead><tr><th>UTC</th><th>Event</th><th>Entry Hash</th><th>HMAC</th></tr></thead>
+<tbody><tr><td>2026-05-09T21:47:38.674912Z</td><td>case_init</td><td class="citation">cda5ecca694fab93440ad758bd84cda4ca41f7f3d1f5375d830b8c607d35cbf5</td><td class="citation">f2e7cdf3ffd87f2d876699bbeb18d8d188943e5278a66c363e2252505967a31f</td></tr>
+<tr><td>2026-05-09T21:48:13.973158Z</td><td>tool_call</td><td class="citation">966d3f1f5250dda00f92aeb9588b22e0b410faf418e89aea6b39362316e80a6a</td><td class="citation">b040d2423b0d6b956471954b1eb93f84b57374c89d2e70de6bcb4d74c839801c</td></tr>
+<tr><td>2026-05-09T21:48:48.182537Z</td><td>tool_call</td><td class="citation">aeb5e16dbaaad3e2635969eff7b8561b0870d6980f374fe5a10b134e781a13ad</td><td class="citation">a579ec27c3ac776693543c332ce2b578a8c9cfbdd4fc74f23b73ec4a83401053</td></tr>
+<tr><td>2026-05-09T21:49:27.218526Z</td><td>tool_call</td><td class="citation">ce6b2eb2da4a02c31e98c4fd3a681c05b0249f9f70a675691b67aa159c48c0b9</td><td class="citation">abb7198c634181619d0c49e444f6d61e269d3c73d11842adb0de6f61fb9829da</td></tr>
+<tr><td>2026-05-09T21:51:45.129368Z</td><td>tool_call</td><td class="citation">296b071797c23fffe7ad692152d5f4286e3e6ebbb23f36f8db7c4b4b59325e4f</td><td class="citation">25c42536ad979f185a8c061179b1c5ea11352ecf4efb58c8c1f3d89cc9f6c2c2</td></tr>
+<tr><td>2026-05-09T21:52:31.988202Z</td><td>tool_call</td><td class="citation">baf032b48138eaabbc06083a189275149d71fb3f2310c5e25e794a724bc25dde</td><td class="citation">f96bc9174fb213c717615270d1784365fa043ccc8ebadcb3405723716e388c60</td></tr>
+<tr><td>2026-05-09T21:53:15.920084Z</td><td>tool_call</td><td class="citation">e9d6d9ac874d87815a6f974750eae78e28acd557a374da4b38b1103050ca7ddc</td><td class="citation">2fd75b929bc0bee3c10a7d4f3b33396cf2bf9a178ba20064896d94904a9d275d</td></tr>
+<tr><td>2026-05-09T21:54:02.500126Z</td><td>tool_call</td><td class="citation">f678baffb13517df615a2a2ef8435a3d808663f4f4c0dda58f1bf67617186eec</td><td class="citation">54491bc2b5894112c2b59bd58a85ea67c669dc34e60470293d142d23dfacf880</td></tr>
+<tr><td>2026-05-09T21:54:08.590869Z</td><td>finding</td><td class="citation">84162bf236346aeb4dc6738c90d6cec30835d3582702dcb336cd2081e24b35ca</td><td class="citation">c10ae9a19dd7264095eaef61c9135d23ac25dc0e3cff8d39eff47ae8bd9f61dd</td></tr>
+<tr><td>2026-05-09T21:54:14.190204Z</td><td>case_conclusion</td><td class="citation">874b4d8279c2efb63196b66993dfc80d7a7631cba9fc7ca3ee1379ffa995995c</td><td class="citation">98e58a7758c028d45a1ca07557e28d4fa0091aabc4ccb8fdc31391011c2163e4</td></tr></tbody></table>
+</section>
+</body>
+</html>

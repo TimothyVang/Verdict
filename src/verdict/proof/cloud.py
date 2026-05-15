@@ -10,6 +10,7 @@ from pathlib import Path
 
 from verdict.ledger.writer import LedgerWriter
 from verdict.planning.planner import CloudPlanner, PlannerInput, parse_investigation_plan
+from verdict.runtime.env import load_dotenv_if_present
 
 
 @dataclass(frozen=True)
@@ -19,8 +20,14 @@ class ProofRun:
 
 
 def create_proof_run(root: Path, *, timestamp: str | None = None) -> ProofRun:
-    timestamp = timestamp or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    base_timestamp = timestamp or datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = base_timestamp
     run_path = root / "runs" / timestamp
+    suffix = 2
+    while run_path.exists():
+        timestamp = f"{base_timestamp}-{suffix}"
+        run_path = root / "runs" / timestamp
+        suffix += 1
     (run_path / "screenshots").mkdir(parents=True, exist_ok=True)
     (run_path / "video").mkdir(parents=True, exist_ok=True)
     _write_if_missing(root / "README.md", _proof_readme())
@@ -28,14 +35,24 @@ def create_proof_run(root: Path, *, timestamp: str | None = None) -> ProofRun:
     return ProofRun(path=run_path, timestamp=timestamp)
 
 
-def write_blocker_run(run: ProofRun, *, reason: str) -> None:
+def write_blocker_run(run: ProofRun, *, reason: str, case_id: str = "cloud-v0-proof") -> None:
     _write_environment(run)
-    (run.path / "service-checks.log").write_text(f"BLOCKED: {reason}\n", encoding="utf-8")
-    (run.path / "run-summary.md").write_text(
-        f"# Cloud Proof Run {run.timestamp}\n\nStatus: BLOCKED\n\nReason: {reason}\n",
+    (run.path / "service-checks.log").write_text(
+        f"case_id={case_id}\nstatus=BLOCKED\nreason={reason}\n",
         encoding="utf-8",
     )
-    _write_ledger(run, event_type="cloud_proof_blocked", payload={"reason": reason})
+    (run.path / "run-summary.md").write_text(
+        f"# Cloud Proof Run {run.timestamp}\n\n"
+        "Status: BLOCKED\n\n"
+        f"Case ID: {case_id}\n\n"
+        f"Reason: {reason}\n",
+        encoding="utf-8",
+    )
+    _write_ledger(
+        run,
+        event_type="cloud_proof_blocked",
+        payload={"case_id": case_id, "reason": reason},
+    )
 
 
 def run_cloud_proof(
@@ -44,13 +61,13 @@ def run_cloud_proof(
     evidence_summary_file: Path | None,
     case_id: str,
 ) -> int:
-    _load_dotenv_if_present()
+    load_dotenv_if_present()
     run = create_proof_run(proof_root)
     _write_environment(run)
 
     readiness_error = _cloud_readiness_error(evidence_summary_file)
     if readiness_error is not None:
-        write_blocker_run(run, reason=readiness_error)
+        write_blocker_run(run, reason=readiness_error, case_id=case_id)
         print(f"Cloud proof blocked. Artifacts: {run.path}")
         print(readiness_error)
         return 2
@@ -157,17 +174,6 @@ def _write_if_missing(path: Path, text: str) -> None:
         path.write_text(text, encoding="utf-8")
 
 
-def _load_dotenv_if_present(path: Path = Path(".env")) -> None:
-    if not path.is_file():
-        return
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
-
-
 def _proof_readme() -> str:
     return """# VERDICT Proof Runs
 
@@ -191,3 +197,7 @@ Confirm screenshots or video show:
 - `ledger.jsonl`, `run-summary.md`, and proof folders visible.
 - SGLang/GPU marked as postponed, not required for this v0 run.
 """
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

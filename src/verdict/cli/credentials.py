@@ -6,6 +6,8 @@ import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from verdict.runtime.env import load_dotenv_if_present
+
 
 @dataclass(frozen=True)
 class CloudCredentialStatus:
@@ -41,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true", help="Print machine-readable status.")
     args = parser.parse_args(argv)
 
+    load_dotenv_if_present()
     status = detect_cloud_credential()
     if args.json:
         print(json.dumps(asdict(status), sort_keys=True))
