@@ -204,7 +204,7 @@ gh pr create \
   --draft \
   --title "feat(scope): summary [W1.B.1]" \
   --body "$(cat <<'EOF'
-**Task:** [docs/BUILD_PLAN.md W1.B.1](../blob/main/docs/BUILD_PLAN.md)
+**Task:** [docs/BUILD_PLAN.md W1.B.1](docs/BUILD_PLAN.md)
 **Mode(s):** all   <!-- cloud / airgap / dual / all -->
 **Test evidence:**
 \`\`\`
