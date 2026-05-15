@@ -351,7 +351,7 @@ CI hard gate: hallucination rate ≤10% in every mode by end of week 4, else fre
 ### 10.4 Package + submit
 
 ```bash
-bash scripts/package-devpost.sh                 # → dist/verdict-devpost-v1.zip
+bash scripts/package-devpost.sh --output dist/verdict-devpost-v1.zip
 git tag v-submit && git push origin v-submit    # fires .github/workflows/devpost-submit.yml
 ```
 
