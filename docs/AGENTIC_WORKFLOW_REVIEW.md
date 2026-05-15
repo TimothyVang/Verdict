@@ -133,7 +133,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Claim:** "PIVOT (cheap, `pivot_max=15`): single Hypothesis added on basis of an executor's output. Re-enters `executor_work` only."
 
-**Reality:** When `pivot_node` adds one hypothesis to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`, does the fanout run on (a) all hypotheses including the previous round's, or (b) only the newly added one? Reducer dedup behavior on `case.findings` isn't defined either — same hypothesis run twice could yield two near-identical Finding rows.
+**Reality:** When `pivot_node` adds one hypothesis to `InvestigationPlan.positive_hypotheses` and re-enters `executor_fanout`, does the fanout run on (a) all hypotheses including the previous round's, or (b) only the newly added one? Reducer dedup behavior on `case.findings` isn't defined either — same hypothesis run twice could yield two near-identical Finding rows.
 
 **Fix:** Spec in ARCH §2 Pivot subsection: pivot re-runs the 4 executor branches against the **single new hypothesis only** (not the full hypothesis list). The fanout reducer **appends** results to `case.findings` without deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant: after N pivots, `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts.
 
