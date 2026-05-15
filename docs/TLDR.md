@@ -568,7 +568,7 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 
 ### Skills — `.claude/skills/` (auto-loaded by Claude Code)
 
-17 vendored skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). Skill and MCP licenses are tracked in `docs/SKILLS_LICENSE_AUDIT.md`.
+18 skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). Skill and MCP licenses are tracked in `docs/SKILLS_LICENSE_AUDIT.md`.
 
 ```
 verdict-house-rules        ← Verdict (custom). Re-states CLAUDE.md §3 hard rules
