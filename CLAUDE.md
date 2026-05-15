@@ -35,6 +35,9 @@ VERDICT extends — but does not vendor — the upstream `protocol-sift/` Claude
 | `docs/ARCHITECTURE.md` | **Current authoritative architecture.** Supersedes everything in `docs/spec/`. Single source of truth for components, data flow, schemas, verifier strategies, threat model. | Default reference for any code or design question. |
 | `docs/BUILD_PLAN.md` | **Execution sequencing.** 6-week / 75-teammate-day TDD plan with task IDs (W1.A.3.a, W1.B.7, …), ownership, hours, acceptance gates. | Pick your next task; use task IDs in commits; use weekly gates as the definition of done. |
 | `docs/DEVPOST_COMPLIANCE.md` | **Submission rule-to-artifact mapping.** Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging. |
+| `docs/FAILURE_MODES.md` | Runtime failure matrix: sandbox spawn, tool errors, fanout timeout, TSI failure, ledger write failures, and UNVERIFIABLE semantics. | Before implementing error paths or explaining graceful degradation to judges. |
+| `docs/CASE_ISOLATION.md` | Case, chain, checkpoint, reverify, export, approval, and mode-lock boundaries. | Before implementing `verdict reverify`, `resume`, `export`, `approve`, or `validate`. |
+| `docs/DFIR_MEMORY.md` | VERDICT's self-evolving memory model — evidence-first mutation rules, memory layers (case / technique / pattern / meta), and governance constraints. | Before implementing anything under `src/verdict/memory/`. |
 
 ### Audits (cross-doc consistency)
 
@@ -210,6 +213,9 @@ Verdict/
 ├── CLAUDE.md  README.md  CONTRIBUTING.md  SECURITY.md  LICENSE  .env.example
 ├── docs/
 │   ├── ARCHITECTURE.md  BUILD_PLAN.md  DEVPOST_COMPLIANCE.md  DOCS_ACCURACY_REPORT.md
+│   ├── FAILURE_MODES.md  CASE_ISOLATION.md  DFIR_MEMORY.md  RELEASE.md  TLDR.md
+│   ├── AGENT_SWARM.md  MCP_FRAMEWORK.md  SKILLS_FRAMEWORK.md  SKILLS_LICENSE_AUDIT.md
+│   ├── AGENTIC_WORKFLOW_REVIEW.md  README.md  (+ ARCHITECTURE_DIAGRAM.svg/.mmd)
 │   └── spec/           ← frozen audit archive (01..04 + README)
 ├── downloads/          ← SIFT OVA, evidence samples (gitignored)
 └── protocol-sift/      ← upstream submodule
@@ -323,19 +329,19 @@ uv run pytest tests/schemas/    -v
 uv run pytest tests/playbooks/  -v
 uv run pytest tests/knowledge/  -v
 
-# Tool wrapper tests
+# Tool wrapper tests (lands at W1.E.1.a)
 uv run pytest tests/tools/test_vol_psscan.py -v
 
 # Smoke tests (xfail markers expected)
 pytest tests/smoke/
 
-# Chaos (kill-9 resume — must be 100/100 zero-loss)
+# Chaos (kill-9 resume — must be 100/100 zero-loss; lands at W3.E.6.a)
 pytest tests/chaos/test_kill_9_resume.py -v
 
-# Inference smoke (tool-call parse rate ≥ 98%)
+# Inference smoke (tool-call parse rate ≥ 98%; lands at W3.A)
 python scripts/inference-smoke.py
 
-# Full per-service run
+# Full per-service run (lands with scripts/run-all-tests.sh)
 bash scripts/run-all-tests.sh
 
 # Per-mode end-to-end evals (THIS IS THE TEST SURFACE — see §3.10).
