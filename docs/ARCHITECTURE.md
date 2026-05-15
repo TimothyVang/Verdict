@@ -437,7 +437,7 @@ class CaseConclusion(BaseModel):
 | Local Model A | Qwen3-30B-A3B-Thinking-2507 | Apache-2.0 |
 | Local Model B (verifier) | GLM-4.5-Air | MIT |
 | Orchestration | LangGraph | MIT |
-| Schema layer | Pydantic v2 + Pydantic-AI | MIT |
+| Schema layer | Pydantic v2 | MIT |
 | MCP gateway | FastMCP 3.x | Apache-2.0 |
 | Sandbox primary | Microsandbox (libkrun microVM; beta, verified per release) | Apache-2.0 |
 | Sandbox secondary | bubblewrap | LGPL-2.0 (linking-clean) |

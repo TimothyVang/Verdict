@@ -200,7 +200,7 @@ Three-layer immutability defense: (1) Claude `PreToolUse` hook (best-effort, per
 
 ## 5. Tech stack (one line each)
 
-Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2 + Pydantic-AI. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
+Python 3.11 (`uv` / `pytest` / `ruff`); Rust 1.88 for FastMCP 3.x; Node 20 (pnpm, deferred v2). Inference: SGLang primary, vLLM fallback; models Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) + GLM-4.5-Air (MIT, verifier only). Orchestration: LangGraph + SqliteSaver (WAL+fsync). Schemas: Pydantic v2. Sandbox: Microsandbox (libkrun, ~200 ms cold). Hashing: blake3. Observability: Langfuse v2 self-host + OpenLLMetry. Eval: Inspect AI. CI: GitHub Actions.
 
 → Full version pins, license notes, hard-NO list: **`docs/ARCHITECTURE.md` §7** (and §3.8 above for forbidden deps).
 
