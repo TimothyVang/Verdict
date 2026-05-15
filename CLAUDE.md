@@ -417,6 +417,9 @@ Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo reco
 | MCP server allowlist + credential isolation | `docs/MCP_FRAMEWORK.md` (allowlist in `.mcp.json`) |
 | Vendored skill stack composition + house-rules overlay | `docs/SKILLS_FRAMEWORK.md` (stack in `.claude/skills/`) |
 | License audit for vendored skills/hooks/MCPs | `docs/SKILLS_LICENSE_AUDIT.md` |
+| Runtime failure modes, graceful degradation, UNVERIFIABLE semantics | `docs/FAILURE_MODES.md` |
+| Case/chain/checkpoint isolation, reverify, export, approve contracts | `docs/CASE_ISOLATION.md` |
+| Evidence-first memory model, mutation rules, memory layers | `docs/DFIR_MEMORY.md` |
 | Audit-history rationale ("why was X decided?") | `docs/spec/` (`01..04` + `README.md`) |
 | Official hackathon rules (scraped) | `docs/hackathon/RULES.md` |
 | Hackathon overview + resource links | `docs/hackathon/OVERVIEW.md` + https://findevil.devpost.com/ + `downloads/README.md` |
