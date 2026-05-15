@@ -275,7 +275,7 @@ Event types: `case_init`, `tool_call`, `finding`, `approval`, `rejection`, `mode
 
 ```bash
 # Microsandbox
-curl -sSL https://get.microsandbox.dev | sh
+curl -fsSL https://install.microsandbox.dev | sh
 
 # Bootstrap (three-credential-path detection)
 bash scripts/install.sh
