@@ -12,7 +12,7 @@
 
 ## 1. Why a tandem framework
 
-Sixteen skills under `.claude/skills/` is more than any single task should pull on. Without composition discipline, a generic agent will skip planning, jump to code, and skip the review/commit gate. The framework below pins down **which skill fires when**, **which Verdict hard rule each skill enforces**, and **which subagent_type runs it**, so a session opened against the Verdict charter executes the same loop every time.
+Eighteen skills under `.claude/skills/` is more than any single task should pull on. Without composition discipline, a generic agent will skip planning, jump to code, and skip the review/commit gate. The framework below pins down **which skill fires when**, **which Verdict hard rule each skill enforces**, and **which subagent_type runs it**, so a session opened against the Verdict charter executes the same loop every time.
 
 The composition is a single-pass pipeline. Each phase has a defined input, output, the skill that runs it, and the gate that admits it to the next phase. Iteration happens **inside** a phase (e.g. RED → GREEN → REFACTOR inside test-driven-development), not by jumping back across the pipeline.
 
