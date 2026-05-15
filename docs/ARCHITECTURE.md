@@ -31,18 +31,12 @@ Same seed + same temperature + same prompt = three identical outputs. Wang et al
 ```python
 from blake3 import blake3
 
+_SEED_DERIVATION_KEY = b"VERDICT self-consistency seeds\0\0"
+
 def derive_seeds(case_id: str) -> tuple[int, int, int]:
-    """Three reproducible-but-diverse seeds per case via blake3 derive_key contexts."""
-    return tuple(
-        int.from_bytes(
-            blake3(
-                case_id.encode(),
-                derive_key_context=f"verdict.seeds.v1.{label}",
-            ).digest(length=4),
-            "big",
-        )
-        for label in ("a", "b", "c")
-    )
+    """Three reproducible-but-diverse seeds per case via keyed blake3."""
+    digest = blake3(case_id.encode(), key=_SEED_DERIVATION_KEY).digest(length=12)
+    return tuple(int.from_bytes(digest[i : i + 4], "big") for i in range(0, 12, 4))
 ```
 
 Reproducibility-with-diversity: re-running the case yields the same three samples (audit-friendly), but the three samples differ from each other (verifier-friendly).
