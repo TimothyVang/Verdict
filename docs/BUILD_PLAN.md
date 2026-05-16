@@ -72,7 +72,7 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 - **Local Model A:** Qwen3-30B-A3B-Thinking-2507 (Apache-2.0). Air-gap planner/executor; dual-mode local executor/verifier lane. Cloud-only remains Claude Code/Agent SDK only because the mode trigger is GPU absent.
 - **Local Model B (verifier):** GLM-4.5-Air (MIT). Verifier only; never planner. Cross-family verification partner for air-gap and dual modes.
 - **Orchestration:** LangGraph (MIT) state machine. Five core nodes per Plan-then-Execute, plus comprehension_gate (v4.3), planner_critique (v4.4 SHOULD-FIX), pivot_node (v4.4 SHOULD-FIX), unverifiable_finalize (v4.4 SHOULD-FIX).
-- **Schema layer:** Pydantic v2 + Pydantic-AI (MIT) for typed tool args + `ModelRetry` flow.
+- **Schema layer:** Pydantic v2 (MIT) for typed tool args + `ModelRetry` flow via `ArgsValidator`.
 - **MCP gateway:** FastMCP 3.x (Apache-2.0).
 - **Sandbox primary:** Microsandbox (Apache-2.0, beta). libkrun microVM, sub-200ms cold start, built-in MCP server, TSI for credential injection.
 - **Sandbox secondary:** bubblewrap (LGPL-2.0, linking-clean) for non-microVM tools.
@@ -156,7 +156,7 @@ By June 14 the repo will have this shape:
 │   │   └── interrupt.py                    # interrupt() helpers + unverifiable_finalize wiring (W3.D.4)
 │   ├── tools/
 │   │   ├── base.py                         # ToolWrapper abstract
-│   │   ├── args_validators.py              # Pydantic-AI args_validator framework (W2.E.1)
+│   │   ├── args_validators.py              # ArgsValidator (Pydantic v2; W2.E.1)
 │   │   ├── vol3/                           # 10 Volatility plugin wrappers
 │   │   │   ├── pslist.py
 │   │   │   ├── psscan.py                   # NEW (W1.E.1)
