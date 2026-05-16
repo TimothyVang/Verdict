@@ -80,7 +80,6 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 - **Eval harness:** Inspect AI (MIT) — UKGovernmentBEIS/inspect_ai.
 - **Tracing:** Langfuse self-hosted (core MIT) + OpenLLMetry (Apache-2.0). Cross-linked to JSONL ledger.
 - **Durable execution:** LangGraph SqliteSaver (MIT). Single-writer; reducer pattern handles fanout.
-- **Rails:** NeMo Guardrails (Apache-2.0) for input/output rails.
 - **Skills:** agentskills.io standard (open standard) — portable across Claude Code, Hermes, Cursor, Codex.
 
 **Hard nos:** Daytona (AGPL-3.0), REMnux MCP for vendoring (GPL-3.0; network-call only allowed), Llama 4 / Gemma 3 (community licenses, not OSI), Modal (closed), LangSmith / Braintrust (closed), Arize Phoenix (ELv2). AutoGen v0.4 migration (maintenance mode Oct 2025; succeeded by Microsoft Agent Framework which is Azure-coupled and late). Microsoft Agent Framework. AGPL clean-room rewrites.
@@ -1417,7 +1416,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 | Examiner Portal | v4.5 line 802 | CLI + JSONL + Langfuse UI is sufficient |
 | Multi-tenant deployment | this doc | Single-host v1 |
 | OpenSearch evidence indexing | (Valhuntir comparison) | Not needed for 3 demo cases |
-| Anthropic Constitutional Classifiers integration | (research consideration) | NeMo Guardrails sufficient v1 |
+| Anthropic Constitutional Classifiers integration | (research consideration) | DenyRuleWrapper + sanitization.py sufficient v1 |
 
 ---
 
