@@ -112,6 +112,6 @@ The framework is intentionally Phase 0 — skills are vendored and documented, b
 ## 7. Anti-patterns (what NOT to do)
 
 - **Don't edit vendored skill files in place.** All Verdict-specific behavior goes in `verdict-house-rules` so `git pull upstream main` re-vendoring stays mechanical.
-- **Don't pile on more skills.** The Reddit consensus is "2–3 plugins max + a precise CLAUDE.md beats 50 generic plugins". We have 16; that is already at the upper end. New skills require the §3.8 audit gate **and** a clear pipeline-phase justification.
+- **Don't pile on more skills.** The Reddit consensus is "2–3 plugins max + a precise CLAUDE.md beats 50 generic plugins". We have 18; that is already at the upper end. New skills require the §3.8 audit gate **and** a clear pipeline-phase justification.
 - **Don't skip phases.** The pipeline is single-pass on purpose. If you find yourself jumping from phase 1 to phase 7, you're rationalizing vibe-coding.
 - **Don't mock to satisfy a skill.** `test-driven-development` will pass with mocked tests; `verdict-house-rules` will fail the commit. The mock is the bug.
