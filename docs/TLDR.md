@@ -638,7 +638,7 @@ export GITHUB_TOKEN="ghp_..."
 
 # Required for air-gap / dual mode (after SGLang is up)
 export SGLANG_BASE_URL="http://localhost:30000"
-export SGLANG_VERIFIER_BASE_URL="http://localhost:30001"
+export SGLANG_GLM_BASE_URL="http://localhost:30001"
 
 # Required: microsandbox network closed by default
 export MICROSANDBOX_NETWORK_DEFAULT=false
