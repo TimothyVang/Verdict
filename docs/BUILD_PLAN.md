@@ -110,11 +110,10 @@ By June 14 the repo will have this shape:
 ├── src/verdict/                           # Python application source package
 │   ├── __init__.py
 │   ├── runtime/
-│   │   ├── mode_detect.py                  # detect_mode() (W5.A.1)
+│   │   ├── mode_detect.py                  # detect_mode() + Mode enum (W5.A.1)
 │   │   └── gateway.py                      # FastMCP gateway init
 │   ├── schemas/
 │   │   ├── __init__.py
-│   │   ├── mode.py                         # Mode enum
 │   │   ├── artifact_class.py               # ArtifactClass enum (W1.B.1)
 │   │   ├── caveat_id.py                    # CaveatID enum (W1.B.2)
 │   │   ├── evidence.py                     # EvidenceItem + EvidenceManifest (W1.B.3)
