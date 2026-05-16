@@ -552,7 +552,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | All schema tests pass | `uv run pytest tests/schemas/ -v` |
 | All playbook tests pass | `uv run pytest tests/playbooks/ -v` |
 | All knowledge tests pass | `uv run pytest tests/knowledge/ -v` |
-| Microsandbox spawns + runs vol3 -h on a sample image | `bash scripts/healthcheck.sh microsandbox` |
+| Microsandbox spawns + runs vol3 -h on a sample image | `python -c "import microsandbox; print('ok')"` (full check lands at W3.F.1 `scripts/healthcheck.sh`) |
 | SGLang serves both Qwen3 + GLM with ≥98% tool-call parse rate | Output of `python scripts/inference-smoke.py` |
 | Langfuse UI loads + smoke trace renders | `curl http://localhost:3000/api/public/health` returns 200 |
 | Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
