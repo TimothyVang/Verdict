@@ -237,7 +237,6 @@ Pre-existing open source used:
 | Inspect AI | Evaluation harness | TODO |
 | Pydantic v2 | Schemas and typed retries | TODO |
 | FastMCP | MCP gateway | TODO |
-| NeMo Guardrails | Rails | TODO |
 | Claude Agent SDK / Claude Code | Cloud execution lane | TODO |
 | blake3 | Invocation/ledger hashing | TODO |
 
