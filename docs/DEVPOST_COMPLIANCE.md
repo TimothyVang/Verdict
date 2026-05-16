@@ -66,7 +66,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - Plan-then-Execute LangGraph with 8 registered nodes (planner, planner_critique, comprehension_gate, executor_fanout, pivot, quorum, replan, finalize); `unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node
 - Self-correction via cross-engine quorum CONTESTED → replan loop
 - Bounded recovery: pivot_max=15 (cheap), replan_max=3 (expensive), then explicit UNVERIFIABLE + interrupt()
-- Tool-call argument hallucination caught by Pydantic-AI args_validator before sandbox spawn (W2.E.1)
+- Tool-call argument hallucination caught by args_validator (Pydantic v2) before sandbox spawn (W2.E.1)
 
 **Demo segment:** air-gap hero beat ⓹ (Qwen3-vs-GLM disagreement → replan → re-converge).
 
@@ -115,7 +115,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - Mode lock at case_init: refuses to advance if resume detects mode mismatch
 - chattr +i on evidence vault at case_init
 - Sanitization scanner on tool output for prompt-injection patterns (IGNORE PREVIOUS, SYSTEM:, etc.)
-- Pydantic-AI args_validator rejects unknown flags before sandbox spawn
+- args_validator (Pydantic v2) rejects unknown flags before sandbox spawn
 - Periodic evidence re-hash check (every 10 super-steps) catches anything that bypasses the three-layer gate
 - HMAC key TPM-backed if /dev/tpmrm0 present, else gpg-encrypted with passphrase
 
