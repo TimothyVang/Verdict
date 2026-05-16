@@ -87,7 +87,7 @@ Planned v1 command surface. Commands remain documentation-only until their imple
 | `verdict export <case_id>` | Export report, JSONL, or execution logs | Implemented |
 | `verdict validate <case_id>` | Verify ledger HMAC/chain and hashes | Implemented |
 | `verdict mode` | Explain detected mode and prerequisites | Implemented |
-| `verdict gc` | Rotate local logs and old traces | Implemented |
+| `verdict gc` | List local cases eligible for manual cleanup | Implemented |
 | `verdict health` | Machine-readable health endpoint/check | Implemented |
 | `verdict doctor` | Human pre-flight for dependencies/secrets/services | Implemented |
 | `verdict approve <case_id> <finding_id> --approver <approver>` | HMAC-sign human approval | Implemented |
