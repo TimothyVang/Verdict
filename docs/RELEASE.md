@@ -235,7 +235,7 @@ Pre-existing open source used:
 | Langfuse | Trace UI | TODO |
 | OpenLLMetry | OTel instrumentation | TODO |
 | Inspect AI | Evaluation harness | TODO |
-| Pydantic / Pydantic-AI | Schemas and typed retries | TODO |
+| Pydantic v2 | Schemas and typed retries | TODO |
 | FastMCP | MCP gateway | TODO |
 | NeMo Guardrails | Rails | TODO |
 | Claude Agent SDK / Claude Code | Cloud execution lane | TODO |
