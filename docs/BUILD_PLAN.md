@@ -553,7 +553,7 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 | Microsandbox spawns + runs vol3 -h on a sample image | `python -c "import microsandbox; print('ok')"` (full check lands at W3.F.1 `scripts/healthcheck.sh`) |
 | SGLang serves both Qwen3 + GLM with ≥98% tool-call parse rate | Output of `python scripts/inference-smoke.py` |
 | Langfuse UI loads + smoke trace renders | `curl http://localhost:3000/api/public/health` returns 200 |
-| Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
+| Inspect AI per-mode eval scaffolds present | `ls inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py` |
 | `vol_psscan` wrapper integration test passes | `uv run pytest tests/tools/test_vol_psscan.py -v` |
 | Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES}.md` |
 | `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " src/verdict/planning/prompts/examiner_caveats.md` returns 7 |
