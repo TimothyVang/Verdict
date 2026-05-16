@@ -167,7 +167,7 @@ These were checked and hold up.
 - **Judging window** Jun 19 – Jul 3 2026, winners ~Jul 8 — ✓ matches.
 - **SANS Institute** as sponsor — ✓ matches.
 - **6 equally weighted judging criteria** — ✓ matches Devpost rules; the prior "5 of 6" framing is correctly called out as wrong (DEVPOST_COMPLIANCE Part 3 intro).
-- **License attributions** for the stack table (`ARCHITECTURE.md` §7) — spot-checked SGLang Apache-2.0, LangGraph MIT, Pydantic MIT, FastMCP Apache-2.0, NeMo Guardrails Apache-2.0, Inspect AI MIT — all match upstream.
+- **License attributions** for the stack table (`ARCHITECTURE.md` §7) — spot-checked SGLang Apache-2.0, LangGraph MIT, Pydantic MIT, FastMCP Apache-2.0, Inspect AI MIT — all match upstream.
 - **License "hard nos"** — Daytona AGPL-3.0, REMnux GPL-3.0 — match upstream.
 - **6-week window math** — May 2 → Jun 14 EOD against a Jun 15 23:45 EDT deadline = ~28h buffer. ✓ correct.
 
