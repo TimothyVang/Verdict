@@ -678,7 +678,7 @@ For each tool:
 
 ### W2.E.1 — `args_validators` framework
 - [ ] **W2.E.1.a** — Failing test `tests/tools/test_args_validator.py::test_unknown_flag_raises_modelretry`. Plus `test_invalid_pid_type_raises`.
-- [ ] **W2.E.1.b** — Implement `src/verdict/tools/args_validators.py` with Pydantic-AI `args_validator` framework. `tool_arg_retry_max=2`, then UNVERIFIABLE.
+- [ ] **W2.E.1.b** — Implement `src/verdict/tools/args_validators.py` with Pydantic v2 `ArgsValidator`. `tool_arg_retry_max=2`, then UNVERIFIABLE.
 - [ ] **W2.E.1.c** — Commit: `feat(tools): args_validator framework with retry budget 2 [W2.E.1]`
 
 ### W2.E.2 — `vol3` validators (parse `vol3 --help` once at startup; allow-list of 26 plugins)
@@ -1207,7 +1207,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
 ### W6.C.10 — `docs/RELEASE.md` novel contribution section (Devpost-required)
-- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, FastMCP, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README + Devpost form.
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 
