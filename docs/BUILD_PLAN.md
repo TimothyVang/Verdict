@@ -182,8 +182,7 @@ By June 14 the repo will have this shape:
 │   │   ├── tsi_provider.py                 # Pattern 2 TSI enrichment (W3.B.1)
 │   │   └── rootfs_pin.py                   # SHA-256 pin verification
 │   ├── ledger/
-│   │   ├── writer.py                       # write + fsync + verify-readback (W2.G.1)
-│   │   ├── chain.py                        # prev_entry_hash chain verification
+│   │   ├── writer.py                       # write + fsync + verify-readback + verify_ledger_chain (W2.G.1)
 │   │   ├── hmac_key.py                     # TPM-backed or gpg-encrypted (W1.G.6)
 │   │   └── redaction.py                    # Auth-field stripping (W3.B.3)
 │   ├── observability/
