@@ -57,7 +57,7 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 | Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `src/verdict/planning/prompts/examiner_caveats.md` |
 | Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `src/verdict/playbooks/*.yml` |
 | Tool surface | `src/verdict/tools/` |
-| Decision history | `CHANGELOG.md` + `git log --oneline` |
+| Decision history | `git log --oneline` |
 | Why we picked X over Y | v4.5 §"Lock-In Decisions" + v4.5 §"Per-Tool Deep Dives" |
 
 If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md` §"Spec/code divergences"). Update the doc rather than rolling back the code, unless the code is wrong.
@@ -96,13 +96,13 @@ By June 14 the repo will have this shape:
 ├── LICENSE                                 # MIT
 ├── README.md
 ├── CONTRIBUTING.md
-├── CHANGELOG.md
 ├── CLAUDE.md                               # Project conventions
 ├── pyproject.toml                          # Workspace root (uv)
 ├── uv.lock
 ├── package.json                            # Root for pnpm workspaces (mcp-widgets deferred V2)
-├── docker-compose.yml                      # Langfuse v2 self-host (default)
-├── docker-compose.langfuse-v3.yml          # ClickHouse-backed alt for >=16GB RAM hosts
+├── infra/
+│   └── langfuse/
+│       └── docker-compose.yml              # Langfuse v2 self-host
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── RELEASE.md                          # build, scope, CLI, demo, accuracy, dataset, novelty
@@ -320,7 +320,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
 
 ### W1.A.7 — Langfuse self-host (Tim)
-- [ ] **W1.A.7.a** — Stand up `docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
+- [ ] **W1.A.7.a** — Stand up `infra/langfuse/docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
 - [ ] **W1.A.7.b** — Write smoke test `tests/observability/test_langfuse_smoke.py::test_one_trace_renders`. Send one synthetic trace via SDK; assert `/api/public/traces/{id}` returns 200.
 - [ ] **W1.A.7.c** — Commit: `feat(observability): Langfuse v2 self-host + smoke trace [W1.A.7]`
 
