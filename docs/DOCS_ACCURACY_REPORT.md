@@ -206,7 +206,7 @@ All 11 punchlist items closed in two passes:
 | H4 | "12 documentation files" → "16 documentation files" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` line 146 |
 | H5 | Old checklist-count wording → "every checklist item ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a + `docs/BUILD_PLAN.md` W6.D.3 |
 | H6 | README W2 roadmap "9 vol3 wrappers" reference removed during 2026-05-02 doc refactor | ✅ closed | `README.md` (no current occurrence) |
-| M1 | `blake3` API: `blake3(enc, derive_key_context=...)` constructor pattern (not `instance.derive_key`) | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet |
+| M1 | `blake3` API: keyed-hash mode `blake3(data, key=_SEED_DERIVATION_KEY)` (not `instance.derive_key()`); 32-byte key held in module constant | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet; `src/verdict/verification/derive_seeds.py` |
 | M3 | Pattern 2 TSI vs Pattern 1 `network=False`: explicit one-paragraph clarification added | ✅ closed | `docs/ARCHITECTURE.md` Pattern 2 |
 | M4 | `verdict reverify` surfaced in README CLI block with parallel-chain note | ✅ closed | `README.md` Quick reference |
 
