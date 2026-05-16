@@ -445,7 +445,6 @@ class CaseConclusion(BaseModel):
 | Eval harness | Inspect AI | MIT |
 | Tracing | Langfuse self-hosted (core) + OpenLLMetry | MIT + Apache-2.0 |
 | Durable execution | LangGraph SqliteSaver | MIT |
-| Rails | NeMo Guardrails | Apache-2.0 |
 | Skills | agentskills.io standard | open standard |
 
 **Hard nos** (license-incompatible or architecturally rejected): Daytona (AGPL-3.0), REMnux MCP for vendoring (GPL-3.0; network-call only allowed), Llama 4 / Gemma 3 (community licenses, not OSI), Modal (closed), LangSmith / Braintrust (closed), Arize Phoenix (ELv2), AutoGen v0.4 migration (maintenance mode Oct 2025), Microsoft Agent Framework (Azure-coupled, late). AGPL clean-room rewrites do not strip copyright.
