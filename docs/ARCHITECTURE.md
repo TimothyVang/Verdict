@@ -398,7 +398,7 @@ Pattern 2 intentionally allows TSI-mediated egress to a single allowlisted origi
 
 ### Tool-call argument validation
 
-Pydantic-AI `args_validator` runs *before* `microsandbox.spawn`:
+`ArgsValidator` (Pydantic v2, `src/verdict/tools/args_validators.py`) runs *before* `microsandbox.spawn`:
 - vol3: validate plugin against allow-list (parse `vol3 --help` once at startup, hash-pin); `--pid` is positive int; reject unknown flags.
 - plaso: pre-validate filter expression with `psteal --validate-filter` in ephemeral sandbox.
 - Hayabusa: validate timeline-flag combinations against playbook matrix.
