@@ -287,7 +287,7 @@ This is one of the architecture's clearest moats — DKOM/T1014 detection auto-f
 
 ```python
 class LedgerEntry(BaseModel):
-    entry_id: str                              # ULID
+    entry_id: str                              # "{case_id}:{event_type}:{timestamp_utc}"
     case_id: str                               # ROOT — eternal
     finding_id: str | None
     event_type: Literal[
@@ -522,7 +522,7 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 
 2. **Schema strictness vs recall tradeoff.** `Finding` validators reject sloppy findings — good for credibility, but each invariant is a place a *legitimate* finding gets rejected for the wrong reason. Mitigation: have `executor_work` *infer* `artifact_classes` deterministically from `artifact_paths` (e.g. paths matching `\Prefetch\*.pf` → `PREFETCH`) so the LLM never has to know the enum exists. Validator-as-projection rather than validator-as-gate.
 
-3. **"No evil found" verdict is unmodeled.** `Finding.artifact_paths min_length=2` rejects null findings. Some engineered cases will be benign-with-red-herrings. Need a `NegativeFinding` schema variant citing playbook *steps executed* rather than artifact paths. Currently a v1 gap.
+3. **"No evil found" verdict — resolved by `CaseConclusion` (see §6).** `Finding.artifact_paths min_length=2` still rejects empty-artifact findings; benign/red-herring cases instead produce `CaseConclusion(status="NO_EVIL_FOUND")` citing completed playbook steps and evidence hashes. No `NegativeFinding` variant is needed.
 
 4. **Plan-then-Execute is fundamentally batch; DFIR is fundamentally adaptive.** `pivot_max=15` recreates ReAct in a more constrained form. If demo runs show 90% sequential pivots, the topology pays overhead for a parallelism that doesn't materialize. Lean the demo narrative on the *audit-trail review story* (sequential is fine; structure is what reviewability needs) rather than runtime parallelism.
 
