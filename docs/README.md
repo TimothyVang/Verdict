@@ -78,6 +78,12 @@ Each of these explicitly subordinates itself to `BUILD_PLAN.md` and `../CLAUDE.m
 | [`hackathon/RULES.md`](hackathon/RULES.md) | Official SANS *FIND EVIL!* 2026 rules, scraped from Devpost on 2026-05-02. | Before any submission decision — these are the upstream of `DEVPOST_COMPLIANCE.md`. |
 | [`hackathon/OVERVIEW.md`](hackathon/OVERVIEW.md) | Hackathon overview + resource links (judge bios, prize structure, timeline). | Context-setting; not load-bearing. |
 
+### Internal working plans
+
+| File | Role | When to read |
+|------|------|--------------|
+| [`superpowers/plans/2026-05-04-cloud-proof-harness.md`](superpowers/plans/2026-05-04-cloud-proof-harness.md) | Implementation plan for the cloud-only Claude Agent SDK v0 proof path. Agentic worker task checklist with acceptance gates. | Before implementing anything under `src/verdict/planning/` or `src/verdict/proof/`. |
+
 ### Frozen archive (audit history)
 
 [`spec/`](spec/) — point-in-time decision records. **Do not edit.** Cite from `ARCHITECTURE.md` instead. See [`spec/README.md`](spec/README.md) for what each numbered audit captured. Files: `01-audit-v4.3.md`, `02-audit-v4.4.md`, `03-audit-v4.5.md`, `04-spec-plan-v4.6.md`. (The original v4.6 TL;DR was promoted to `TLDR.md` and removed from the archive on 2026-05-02 to avoid drift.)
