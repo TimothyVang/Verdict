@@ -18,7 +18,7 @@ or build directly with `docker build -f .devcontainer/Dockerfile .`.
 
 Every component is MIT, Apache-2.0, or BSD — passes CLAUDE.md §3.8.
 
-The 17 skills under `.claude/skills/` and the 6 MCPs in `.mcp.json` come
+The 18 skills under `.claude/skills/` and the 6 MCPs in `.mcp.json` come
 along for free (they're just files in the repo + `npx`/`uvx` commands the
 container can run).
 
