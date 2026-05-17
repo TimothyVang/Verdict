@@ -275,16 +275,16 @@ The following workflow claims were checked and hold up:
 ## Summary punchlist (priority order)
 
 1. **R1 — RESOLVED** — `VerdictStatus` enum cascade across 4 files now uses CLAUDE.md's six-value list as canonical; engine-quorum-vs-case-verdict distinction lives in CLAUDE.md §3.6.
-2. **R2 + R3** — Add a quorum dispatch table to ARCH §1 covering all three strategies; add empty-set-is-DISAGREEMENT rule.
-3. **R4** — Spec `ModeLockedError` exit-code + stderr in CLAUDE.md §3.4.
-4. **R5** — Add `max_clarify_iterations=2` to ARCH §2 comprehension_gate.
-5. **R7** — Spec pivot state-merge: 4 branches × 1 new hypothesis, append to `case.findings`, no dedup.
-6. **R9** — Add `_unverifiable_relaxes_corroboration` validator branch + `failure_reason` field; cite from ARCH §6.
-7. **D1 + D3** — Pull `.pre-commit-config.yaml` into W1.A.7 acceptance; add `scripts/check_no_mocks.py` AST hook task.
-8. **D2** — BUILD_PLAN sweep: every `*.a` "Failing test" subtask names the literal RED assertion; add RED-line policy to BUILD_PLAN intro.
-9. **R12** — Caveat-trigger-keying note at top of CLAUDE.md §3.3 table.
-10. **R13** — Sub-technique-applies-to-negatives sentence appended to CLAUDE.md §3.5.
+2. **R2 + R3 — RESOLVED** — Quorum dispatch table added to `ARCHITECTURE.md` §1; empty-set-is-DISAGREEMENT rule added at the bottom of the dispatch table.
+3. **R4 — RESOLVED** — `ModeLockedError` exit-code + stderr message specced in `CLAUDE.md` §3.4.
+4. **R5 — RESOLVED** — `max_clarify_iterations=2` and exhaustion-to-CONTESTED path added to `ARCHITECTURE.md` §2 comprehension-gate clarify budget subsection.
+5. **R7 — RESOLVED** — Pivot state-merge contract (4 branches × 1 new hypothesis, append to `case.findings`, no dedup, state invariant) added to `ARCHITECTURE.md` §2.
+6. **R9 — RESOLVED** — `_unverifiable_relaxes_corroboration` validator branch + `failure_reason` field added to `ARCHITECTURE.md` §6 tool-call argument validation subsection.
+7. **D1 + D3 — RESOLVED** — `scripts/check_no_mocks.py` exists and is wired as `check-no-mocks` hook in `.pre-commit-config.yaml`; `CONTRIBUTING.md` no longer guards `pre-commit install` with `test -f`.
+8. **D2 — RESOLVED** — RED-line policy added to `BUILD_PLAN.md` intro; every `*.a` subtask now names a test path and the literal failing assertion.
+9. **R12 — RESOLVED** — Caveat-trigger-keying note (artifact_classes membership; `LOGON_TYPE_3_VS_10` named exception) added at top of `CLAUDE.md` §3.3 table.
+10. **R13 — RESOLVED** — Sub-technique-precision-applies-to-negatives sentence added to `CLAUDE.md` §3.5.
 11. **D4 — RESOLVED** — `.github/workflows/eval-hallucination-gate.yml` now exists (W1.A.9); see Fix status note above.
 12. **R6, R10, R11, R8 — RESOLVED** — `docs/FAILURE_MODES.md` covers branch timeout, sandbox spawn failure, and TSI proxy failure; `docs/CASE_ISOLATION.md` covers reverify chain semantics.
 
-**Estimated fix effort:** ~75 minutes for items 1–11 (in-place edits to 5 existing docs); items 12 are next-turn doc creation already scoped.
+All punchlist items are resolved. No open items remain from this audit pass.
