@@ -92,7 +92,7 @@ These are non-negotiable. Each ties back to a schema validator, a wrapper, or a 
 
 ### 3.3 Tier-1 caveat acknowledgment
 
-`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. Caveat triggers are keyed by `Finding.artifact_classes` membership unless otherwise noted; `LOGON_TYPE_3_VS_10` is the named exception (triggered by `EVTX_4624` artifact_class AND the `EvtxRecord.LogonType` field equaling 3 or 10). The seven Tier-1 caveats (encoded in `src/verdict/schemas/caveat_id.py` and `src/verdict/planning/prompts/examiner_caveats.md`):
+`Finding.caveats_acknowledged: list[CaveatID]` is enforced at the schema layer. Cite the artifact, acknowledge the caveat. Caveat triggers are keyed by `Finding.artifact_classes` membership unless otherwise noted; `LOGON_TYPE_3_VS_10` is the named exception (triggered by `EVTX_4624` artifact_class AND `Finding.evtx_4624_logon_types` containing 3 or 10). The seven Tier-1 caveats (encoded in `src/verdict/schemas/caveat_id.py` and `src/verdict/planning/prompts/examiner_caveats.md`):
 
 | CaveatID | Trigger |
 |----------|---------|
