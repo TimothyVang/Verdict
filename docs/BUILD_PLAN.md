@@ -606,7 +606,7 @@ For each tool:
 ## Phase W2.B — Plan-then-Execute LangGraph refactor (Beaver, ~2 days)
 
 ### W2.B.1 — Five core nodes
-- [ ] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_five_nodes_present`. Assert nodes `planner`, `executor_fanout`, `quorum`, `replan`, `finalize` exist on the compiled graph.
+- [ ] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_planner_critique_is_wired_before_comprehension_gate`. Assert all 8 registered nodes (`planner`, `planner_critique`, `comprehension_gate`, `executor_fanout`, `pivot`, `quorum`, `replan`, `finalize`) and entrypoint/edge wiring exist on the compiled graph.
 - [ ] **W2.B.1.b** — Implement `src/verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `src/verdict/graph/nodes.py` with real minimal node bodies for all five. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
 - [ ] **W2.B.1.c** — Commit: `feat(graph): five-node Plan-then-Execute topology [W2.B.1]`
 
