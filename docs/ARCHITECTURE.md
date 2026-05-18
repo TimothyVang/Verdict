@@ -405,7 +405,7 @@ Pattern 2 intentionally allows TSI-mediated egress to a single allowlisted origi
 
 On validation failure: raise `ModelRetry`, bounded by `tool_arg_retry_max=2`, then UNVERIFIABLE.
 
-When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIABLE, artifact_paths=[], caveats_acknowledged=[], failure_reason="tool_args_failed_validation_after_2_retries")`. This would normally fail the `Finding._artifact_paths_min_length=2` and execution-class corroboration validators; the schema exempts UNVERIFIABLE findings via the `_unverifiable_relaxes_corroboration` validator branch — when `Finding.status == UNVERIFIABLE` AND `Finding.failure_reason` is set, `artifact_paths` and `caveats_acknowledged` may be empty. The same exemption covers `failure_reason ∈ {sandbox_spawn_failed, tsi_proxy_unreachable, branch_timeout}` (see `FAILURE_MODES.md`).
+When `tool_arg_retry_max` exhausts, the executor routes the hypothesis to `UNVERIFIABLE`. The current `Finding` schema enforces `min_length=2` on `artifact_paths` and `artifact_classes` for **all** findings; there is no current exemption for UNVERIFIABLE status. **Planned:** add `failure_reason: str | None` field to `Finding` and a `_unverifiable_relaxes_corroboration` model validator that allows empty `artifact_paths`/`caveats_acknowledged` when `status == UNVERIFIABLE` and `failure_reason` is set (values: `tool_args_failed_validation_after_2_retries`, `sandbox_spawn_failed`, `tool_execution_failed`, `tsi_proxy_unreachable`, `branch_timeout`). Until that field lands, UNVERIFIABLE findings from tool/sandbox failures must populate `artifact_paths` with whatever paths were available (see `FAILURE_MODES.md`).
 
 ### No-evil case conclusion
 
