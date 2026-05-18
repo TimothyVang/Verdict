@@ -43,7 +43,7 @@ The image carries **no secrets**. `devcontainer.json` uses `${localEnv:VAR}` ref
 |---|---|---|
 | `ANTHROPIC_API_KEY` | host shell or `.env` | preferred cloud credential; container env only — never written to disk inside the image |
 | `OPENROUTER_API_KEY` | host shell or `.env` | optional host-side AI-agent fallback; never passed into microsandboxes |
-| `GITHUB_TOKEN` | host shell | passed to the `github` MCP via `.mcp.json` (already env-var-ref only) |
+| `GITHUB_TOKEN` | host shell | passed to the `github` MCP via `.mcp.cloud.json` / `.mcp.dual.json` (env-var-ref only) |
 | `LANGFUSE_*` | host shell or `.env` | pointed at `host.docker.internal:3000` |
 | `SGLANG_*` | hard-coded to `host.docker.internal:{30000,30001}` | overrides the `.env` defaults of `localhost:*` so the container reaches the host |
 
