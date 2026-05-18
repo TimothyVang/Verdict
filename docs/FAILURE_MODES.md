@@ -35,7 +35,9 @@
 
 ## UNVERIFIABLE Schema Exemption
 
-`Finding.artifact_paths` and `Finding.artifact_classes` keep `min_length=2` for positive findings. A finding may omit artifacts only when `status == UNVERIFIABLE` and `failure_reason` is set to one of:
+`Finding.artifact_paths` and `Finding.artifact_classes` currently enforce `min_length=2` for **all** findings, including those with `status == UNVERIFIABLE`. The `Finding` schema does not yet have a `failure_reason` field or a `_unverifiable_relaxes_corroboration` validator.
+
+**Planned:** add `failure_reason: str | None` to `Finding` with a validator that relaxes the `min_length=2` constraint when `status == UNVERIFIABLE` and `failure_reason` is one of:
 
 - `tool_args_failed_validation_after_2_retries`
 - `sandbox_spawn_failed`
@@ -43,4 +45,4 @@
 - `tsi_proxy_unreachable`
 - `branch_timeout`
 
-This is an explicit failure claim, not evidence of absence.
+Until that field is implemented, UNVERIFIABLE findings from tool or sandbox failures must cite whatever artifact paths were collected before the failure, and case-level terminal failures should use `CaseConclusion(status="UNVERIFIABLE")` instead.
