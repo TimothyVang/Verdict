@@ -56,7 +56,7 @@ Reproducibility-with-diversity: re-running the case yields the same three sample
 | `DualLaneCrossEngine` | cloud disagrees with both locals | `CONTESTED` | `replan_node` |
 | `DualLaneCrossEngine` | cloud agrees with 1 local, locals disagree with each other | `CONTESTED` | `replan_node` |
 | any | After `replan_max=3` exhaustion | `EXHAUSTED_REPLAN` | `unverifiable_finalize_node` |
-| any | Tool / sandbox / args exhaustion (see §6 + `FAILURE_MODES.md`) | `UNVERIFIABLE` | `finalize_node` (with `failure_reason` set) |
+| any | Tool / sandbox / args exhaustion (see §6 + `FAILURE_MODES.md`) | `UNVERIFIABLE` | `finalize_node` (`failure_reason` field planned — see §6) |
 
 **Empty-set rule:** if any quorum participant returns `parsed_artifacts=[]` (zero findings — e.g., GLM crashed silently, executor branch timed out per R6), it is treated as DISAGREEMENT for Jaccard / pair-agreement purposes. Empty-set is **never** a null vote that lets the non-empty engine win by default. Otherwise an executor that crashes silently becomes a free pass for the other lane and destroys the cross-engine guarantee.
 
