@@ -340,7 +340,7 @@ Pulls forward what `CONTRIBUTING.md` already promises and what `CLAUDE.md` §3.7
 This is the contract every teammate will code against. **Lock by Sunday May 4.** All schema work must reconcile against `docs/ARCHITECTURE.md` §4.
 
 ### W1.B.1 — `ArtifactClass` enum
-- [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_13_required_members`. Run → RED.
+- [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_required_members_for_tier_1_caveat_triggers`. Assert all 15 `ArtifactClass` members are present. Run → RED.
 - [ ] **W1.B.1.b** — Implement `src/verdict/schemas/artifact_class.py` per Appendix A.1.
 - [ ] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
 
@@ -384,9 +384,9 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.B.9.b** — Implement.
 - [ ] **W1.B.9.c** — Commit: `feat(schema): Finding.caveats_acknowledged field [W1.B.9]`
 
-### W1.B.10 — Execution-claim validator + Amcache-caveat validator + 6 other caveat validators
-- [ ] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_amcache_requires_caveat`, plus one test per remaining CaveatID (`test_shimcache_caveat_required_when_shimcache_cited`, etc.). Run → RED.
-- [ ] **W1.B.10.b** — Implement `_execution_claims_need_two_classes` + `_amcache_caveat_required` + 6 sibling validators (one per CaveatID where the artifact_class triggers the caveat).
+### W1.B.10 — Unified forensic-corroboration validator
+- [ ] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_available_caveat_required_when_artifact_class_cited` (parametrised over all ArtifactClass caveat triggers). Run → RED.
+- [ ] **W1.B.10.b** — Implement a single `_forensic_corroboration` `@model_validator(mode="after")` that covers both the execution-class two-class requirement and all Tier-1 caveat acknowledgments (including the EVTX_4624 logon-type named exception).
 - [ ] **W1.B.10.c** — Commit: `feat(schema): Finding validators enforce caveat acknowledgment [W1.B.10]`
 
 ### W1.B.11 — `LedgerEntry` schema
