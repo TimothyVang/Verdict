@@ -56,7 +56,7 @@
 - [ ] Run `uv run pytest tests/proof tests/planning/test_cloud_planner.py -v`.
 - [ ] Run `uv run pytest tests -v`.
 - [ ] Run `uv run ruff check src tests scripts`.
-- [ ] Run `uv run python scripts/run-cloud-proof.py` if cloud credentials are configured; otherwise confirm it writes a blocker proof run without leaking secrets.
+- [ ] Run `uv run python scripts/run_cloud_proof.py` if cloud credentials are configured; otherwise confirm it writes a blocker proof run without leaking secrets.
 
 ---
 
