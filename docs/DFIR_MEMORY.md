@@ -1,5 +1,7 @@
 # DFIR Self-Evolving Memory (SANS-Aligned)
 
+> **Wiki:** [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Failure Modes](FAILURE_MODES.md) · [Case Isolation](CASE_ISOLATION.md) · root [CLAUDE.md](../CLAUDE.md)
+
 This document defines VERDICT's memory model for **evidence-first** incident response. It is intentionally conservative: memory is allowed to evolve, but only through governed, auditable mutations.
 
 ## Goals
