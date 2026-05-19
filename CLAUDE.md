@@ -304,7 +304,7 @@ curl http://localhost:3000/api/public/health   # expect 200
 ### 10.2 CLI surface
 
 ```bash
-verdict doctor                                  # pre-flight: API, SGLang, microsandbox, Langfuse, HMAC key
+verdict doctor                                  # pre-flight: API, SGLang, microsandbox, HMAC key
 verdict mode                                    # show detected + locked mode
 verdict init  <evidence_path> [--mode {cloud,airgap,dual}]
 verdict run-tool <case_id> <tool>               # run a single registered SIFT tool
@@ -359,7 +359,7 @@ CI hard gate: hallucination rate ≤10% in every mode by end of week 4, else fre
 
 ```bash
 bash scripts/package-devpost.sh --output dist/verdict-devpost-v1.zip
-git tag v-submit && git push origin v-submit    # fires .github/workflows/devpost-submit.yml
+git tag v-submit && git push origin v-submit
 ```
 
 ## 11. Submission deliverables
