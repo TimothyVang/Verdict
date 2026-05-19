@@ -26,7 +26,7 @@
 | Branch timeout | One executor branch hangs | Branch wall-clock reaches `branch_timeout=900s` | Reducer proceeds with timeout output | `sandbox_failure` or `tool_call` with timeout detail | Timed-out branch emits `ToolOutput(status=TIMEOUT, parsed_artifacts=[])`; quorum treats as disagreement |
 | TSI proxy | Proxy origin unavailable or credential injection fails | `NetworkProxyError`, connection refused, DNS fail | Counts against `tool_arg_retry_max=2` only for TSI-enabled tools | `tool_call` with `error_detail` | Retry exhaustion produces `UNVERIFIABLE`, `failure_reason="tsi_proxy_unreachable"` |
 | Verifier disagreement | Engines disagree on artifact set or MITRE technique | Quorum dispatch table | Route to `replan_node`, max 3 | `finding` with `status=CONTESTED` or `exhausted_replan` | Iteration 4 routes to `unverifiable_finalize_node` |
-| Langfuse unavailable | Health check or span write fails | Exception / non-200 health | Fail open for investigation; write local ledger anyway | `tool_call` payload notes `langfuse_write_failed=true` | Case continues; `verdict doctor` fails before new case if still down |
+| Langfuse unavailable | Health check or span write fails | Exception / non-200 health | Fail open for investigation; write local ledger anyway | `tool_call` payload notes `langfuse_write_failed=true` | Case continues; local ledger written; Langfuse traces unavailable until service restored |
 | Ledger write | Write, fsync, or verify-readback fails | `LedgerEmitter` post-write readback | None; preserving chain integrity wins | Best-effort stderr only if write failed before event persisted | Halt case; operator must repair filesystem or start a new case |
 
 ## Fanout Reducer Rule
