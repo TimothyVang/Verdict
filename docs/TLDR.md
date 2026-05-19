@@ -564,7 +564,7 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 | **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose -f infra/langfuse/docker-compose.yml up -d` |
 | **HMAC signing key** | Ledger integrity (CLAUDE.md §3.9) | TPM (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` |
 
-`verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, Langfuse healthy, HMAC key resolvable. CI fails closed if it fails.
+`verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, HMAC key resolvable. CI fails closed if it fails.
 
 ### Skills — `.claude/skills/` (auto-loaded by Claude Code)
 
