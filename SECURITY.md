@@ -47,14 +47,14 @@ Issues discovered by internal review and disclosed here so contributors and judg
 ### VERDICT-2026-001 — Layer-2 deny rule bypassable by `..`-traversal and `//`-prefix
 
 * **Severity:** High
-* **Affected:** `src/verdict/graph/wrappers/deny_rule.py:221-248` (`_to_path_str`, `_is_under_evidence`)
+* **Affected:** `src/verdict/graph/wrappers/deny_rule.py:41-43` (`_deny_evidence_output`)
 * **Discovered:** 2026-05-02 (internal security review of `feat/W2.C.4-compose-executor-work`)
 * **Status:** Open — fix tracked under W2.C.1.b (deny-rule normalization hardening)
 * **Scope mapping:** "Bypass of the three-layer immutability defense" (in-scope §)
 
-`_to_path_str` uses `pathlib.PurePosixPath(value)`, which deliberately does **not** resolve `..` segments or collapse leading `//`. The deny check then compares the un-normalized string against `"/evidence/"` via prefix match. Inputs like `/work/../evidence/out.txt`, `/tmp/../evidence/out.txt`, and `//evidence/out.txt` slip past Layer 2 even though the kernel resolves them to `/evidence/out.txt` at syscall time. Layer 3 (read-only mount + `noexec` + host `chattr +i`) is the actual write blocker in correctly-configured deployments, but `CLAUDE.md` §3.1 designates Layer 2 as the architectural guarantee that fires in all three modes — defense-in-depth must hold even if Layer 3 is degraded.
+`_deny_evidence_output` checks `path == "/evidence" or path.startswith("/evidence/")` using a plain string prefix match without normalising `..` segments or collapsing leading `//`. Inputs like `/work/../evidence/out.txt`, `/tmp/../evidence/out.txt`, and `//evidence/out.txt` slip past Layer 2 even though the kernel resolves them to `/evidence/out.txt` at syscall time. Layer 3 (read-only mount + `noexec` + host `chattr +i`) is the actual write blocker in correctly-configured deployments, but `CLAUDE.md` §3.1 designates Layer 2 as the architectural guarantee that fires in all three modes — defense-in-depth must hold even if Layer 3 is degraded.
 
-**Remediation:** replace `PurePosixPath` with `os.path.normpath` (lexical `..` collapse) plus an explicit double-slash strip, then compare via `pathlib.PurePosixPath` parents rather than string prefix. Add RED tests for `..` traversal, `//`-prefix, NUL injection, and symlink-style siblings of `/evidence`.
+**Remediation:** replace the plain `startswith` check with `os.path.normpath` (lexical `..` collapse) plus an explicit double-slash strip, then compare via `pathlib.PurePosixPath` parents rather than string prefix. Add RED tests for `..` traversal, `//`-prefix, NUL injection, and symlink-style siblings of `/evidence`.
 
 ### VERDICT-2026-002 — TPM HMAC silently truncates ledger message to 1024 bytes
 
