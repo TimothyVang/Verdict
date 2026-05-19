@@ -228,6 +228,7 @@ src/verdict/
 ├── runtime/        schemas/        verification/    planning/
 ├── playbooks/      knowledge/      graph/wrappers/  tools/vol3/
 ├── sandboxes/      ledger/         observability/   cli/         adapters/
+├── memory/         proof/
 tests/{schemas,graph,tools,chaos,smoke,e2e,…}
 inspect_ai/{tasks,scorers,ground_truth/case_00{1..3}_*}
 scripts/  .github/workflows/  packer/
