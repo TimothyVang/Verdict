@@ -260,7 +260,7 @@ claude         # interactive Claude Code session if you're on cloud/dual mode
 
 Air-gap operators: ask PUG for the bridged + Tesla-mode entry point.
 
-Expected output: structured Findings citing tool-call IDs, a quorum verdict, an HMAC-signed ledger entry, and a Langfuse trace (if Langfuse is up — see `ARCHITECTURE.md` §Observability).
+Expected output: structured Findings citing tool-call IDs, a quorum verdict, an HMAC-signed ledger entry, and a Langfuse trace (if Langfuse is up — see `ARCHITECTURE.md` §5).
 
 If the run fails before producing a Finding, you have a P0 environment problem. Post the trace ID + `verdict doctor` output in team chat before opening a code PR.
 

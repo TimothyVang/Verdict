@@ -8,12 +8,12 @@ Include:
 
 - Affected version / commit SHA
 - Repro steps (minimal evidence + commands)
-- Threat surface (see `docs/spec/VERDICT_AUDIT_v4.4.md` — insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker)
+- Threat surface (see `docs/spec/02-audit-v4.4.md` — insider, prompt-injection-from-evidence, malicious-tool-output, external-attacker)
 - Suggested mitigation if you have one
 
 ## Scope
 
-VERDICT is a forensic agent that touches **evidence** — disk images, memory captures, packet captures, registry hives, event logs. Even though all tool execution happens inside read-only microsandboxes (`CLAUDE.md` §4.2), evidence integrity is the highest-value asset; we treat **any** path that lets a writer reach `/evidence/` as critical.
+VERDICT is a forensic agent that touches **evidence** — disk images, memory captures, packet captures, registry hives, event logs. Even though all tool execution happens inside read-only microsandboxes (`CLAUDE.md` §4), evidence integrity is the highest-value asset; we treat **any** path that lets a writer reach `/evidence/` as critical.
 
 In scope:
 
@@ -47,7 +47,7 @@ Issues discovered by internal review and disclosed here so contributors and judg
 ### VERDICT-2026-001 — Layer-2 deny rule bypassable by `..`-traversal and `//`-prefix
 
 * **Severity:** High
-* **Affected:** `verdict/graph/wrappers/deny_rule.py:221-248` (`_to_path_str`, `_is_under_evidence`)
+* **Affected:** `src/verdict/graph/wrappers/deny_rule.py:221-248` (`_to_path_str`, `_is_under_evidence`)
 * **Discovered:** 2026-05-02 (internal security review of `feat/W2.C.4-compose-executor-work`)
 * **Status:** Open — fix tracked under W2.C.1.b (deny-rule normalization hardening)
 * **Scope mapping:** "Bypass of the three-layer immutability defense" (in-scope §)
@@ -59,7 +59,7 @@ Issues discovered by internal review and disclosed here so contributors and judg
 ### VERDICT-2026-002 — TPM HMAC silently truncates ledger message to 1024 bytes
 
 * **Severity:** High
-* **Affected:** `verdict/ledger/hmac_key.py:134` (`_TPMHMACProvider.sign` and the symmetric `verify`)
+* **Affected:** `src/verdict/ledger/hmac_key.py:134` (`_TPMHMACProvider.sign` and the symmetric `verify`)
 * **Discovered:** 2026-05-02 (internal security review of `feat/W2.C.4-compose-executor-work`)
 * **Status:** Open — fix tracked under W2.C.3.b (TPM HMAC sequencing)
 * **Scope mapping:** "HMAC ledger forgery / chain-of-custody breakage" (in-scope §)
