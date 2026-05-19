@@ -114,7 +114,7 @@ openssl rand -base64 32 | gpg --symmetric --output ~/.verdict/key.gpg
 chmod 600 ~/.verdict/key.gpg
 ```
 
-After this, `verdict doctor` (when the CLI lands per `BUILD_PLAN.md` W6) will report green on whatever the host can actually provide.
+After this, `verdict doctor` will report green on whatever the host can actually provide.
 
 ## Rebuilding
 
