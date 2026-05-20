@@ -21,7 +21,7 @@ VERDICT detects available infrastructure at startup and selects one of three mod
 | Mode | Trigger | Engines | Verifier strategy | Use case |
 |---|---|---|---|---|
 | **cloud-only** | Internet ✓ + GPU ✗ | Claude Code (Agent SDK) | n=3 self-consistency at temperature=0.7 with three case_id-derived blake3 seeds. ≥2-of-3 → `VETTED_CLOUD`; below → `CONTESTED` (escalates to `replan_node`). **Best-effort vetting, not true verification** — same model shares failure modes. | SOC analyst on corporate laptop |
-| **air-gap-only** | Internet ✗ + GPU ✓ | SGLang serving Qwen3-30B-A3B-Thinking + GLM-4.5-Air | Cross-family quorum: both engines must independently agree on artifact set (Jaccard ≥0.80) and identical MITRE technique. Independence is **partial-not-absolute** (overlapping web pretraining); empirical disagreement-correlation measured in W4.G.1. | DCO operator on classified network |
+| **air-gap-only** | Internet ✗ + GPU ✓ | SGLang serving Qwen3-30B-A3B-Thinking-2507 + GLM-4.5-Air | Cross-family quorum: both engines must independently agree on artifact set (Jaccard ≥0.80) and identical MITRE technique. Independence is **partial-not-absolute** (overlapping web pretraining); empirical disagreement-correlation measured in W4.G.1. | DCO operator on classified network |
 | **dual** | Internet ✓ + GPU ✓ | Claude + Qwen3 + GLM-4.5-Air | Three-way: cloud agrees with at least one local + locals agree with each other. Strongest verification. | Forensic lab |
 
 ### Why diverse seeds matter (cloud-only)

@@ -399,7 +399,7 @@ Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo reco
 3. `docs/RELEASE.md` — exact build steps from a fresh SIFT VM, verified on a second VM, plus scope, CLI, demo, judge checklist, dataset, accuracy, production-audit, and novelty sections.
 4. `CONTRIBUTING.md` + `LICENSE` (MIT)
 5. `docs/DEVPOST_COMPLIANCE.md` — rule-to-artifact mapping and submission checklist.
-6. `docs/RELEASE.md` — v4 triage, judge checklist, per-mode hallucination rate, executor agreement, findings precision/recall, sub-technique precision, negative-hypothesis quality, step efficiency, contested-resolution rate, Qwen3-vs-GLM disagreement-correlation across 50 findings, and 5-min sequence with timing per beat.
+6. `docs/FAILURE_MODES.md` + `docs/CASE_ISOLATION.md` — runtime failure matrix and case/chain/checkpoint isolation boundaries (both required by `verdict package-check`).
 
 ## 12. Pointers (read directly, do not summarise from memory)
 
