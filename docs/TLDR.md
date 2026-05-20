@@ -593,6 +593,10 @@ using-superpowers          ← obra/superpowers — index of the framework
 
 grill-me                   ← mattpocock/skills — relentless interview on a plan
 grill-with-docs            ← mattpocock/skills — same, but cross-checks ARCH.md
+
+qc                         ← Verdict (custom). Quick-commit + docs-sweep + push.
+                              Drafts Conventional Commit per §3.7, commits, sweeps
+                              docs/ for drift triggered by the diff, then pushes.
 ```
 
 ### MCPs — mode-scoped configs (MIT/Apache-2.0 only)
