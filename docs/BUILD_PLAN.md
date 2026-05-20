@@ -321,9 +321,13 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.7.b** — Write smoke test `tests/observability/test_langfuse_smoke.py::test_one_trace_renders`. Send one synthetic trace via SDK; assert `/api/public/traces/{id}` returns 200.
 - [ ] **W1.A.7.c** — Commit: `feat(observability): Langfuse v2 self-host + smoke trace [W1.A.7]`
 
-### W1.A.8 — Inspect AI hello-world
-- [ ] **W1.A.8.a** — `pip install inspect-ai` per CLAUDE.md. Author `inspect_ai/tasks/hello_world.py` minimal task. Run `inspect eval inspect_ai/tasks/hello_world.py`. Assert pass.
-- [ ] **W1.A.8.b** — Commit: `feat(eval): Inspect AI hello-world task [W1.A.8]`
+### W1.A.8 — Inspect AI eval scaffolds
+**Superseded by W4.D.1.** The original hello-world task was replaced by the three
+per-mode eval scaffolds (`inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py`)
+already landed at main. No further action needed for W1.A.8.
+
+- [x] **W1.A.8.a** — Per-mode eval scaffolds present at `inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py`. Gate: `ls inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py` passes. *(Done via W4.D.1)*
+- [x] **W1.A.8.b** — Commits: `feat(eval): add fail-closed per-mode scaffolds [W4.D.1]`
 
 ### W1.A.9 — Mechanical hard-rule enforcement (Tim, ~3 hours)
 Pulls forward what `CONTRIBUTING.md` already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only.
