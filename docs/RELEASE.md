@@ -249,8 +249,10 @@ Required release paths:
 - `README.md`
 - `LICENSE`
 - `docs/ARCHITECTURE.md`
-- `docs/ARCHITECTURE.md`
+- `docs/ARCHITECTURE_DIAGRAM.svg`
 - `docs/DEVPOST_COMPLIANCE.md`
+- `docs/FAILURE_MODES.md`
+- `docs/CASE_ISOLATION.md`
 - `docs/RELEASE.md`
 - `submission/execution-logs/case_001.jsonl`
 - `submission/execution-logs/case_002.jsonl`
