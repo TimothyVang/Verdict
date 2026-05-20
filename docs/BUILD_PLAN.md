@@ -349,9 +349,9 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
 
 ### W1.B.2 — `CaveatID` enum
-- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_covers_tier1_examiner_caveats`. Assert all 7 from the current planned caveat source `src/verdict/planning/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
+- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_has_seven_tier_1_caveats`. Assert all 7 from the current planned caveat source `src/verdict/planning/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
 - [ ] **W1.B.2.b** — Implement `src/verdict/schemas/caveat_id.py` per Appendix A.2.
-- [ ] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from project MEMORY.md Tier-1 [W1.B.2]`
+- [ ] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from CLAUDE.md §3.3 Tier-1 caveats [W1.B.2]`
 
 ### W1.B.3 — `EvidenceItem` + `EvidenceManifest`
 - [ ] **W1.B.3.a** — Write failing test `tests/schemas/test_evidence.py::test_manifest_hash_is_blake3_of_sorted_pairs`. Run → RED.
@@ -364,7 +364,7 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.B.4.c** — Commit: `feat(schema): Artifact + ToolOutput base for tool wrapper contract [W1.B.4]`
 
 ### W1.B.5 — `Hypothesis` + `InvestigationPlan` + `PlanComprehensionEcho` + `PlannerCritiqueVerdict`
-- [ ] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_T1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
+- [ ] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_t1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
 - [ ] **W1.B.5.b** — Implement `src/verdict/schemas/plan.py` with all four classes + the `mitre_technique` regex validator (`^T\d{4}(\.\d{3})?$`) + `_negative_hypothesis_quality` validator (deny-list: cosmic/alien/nothing/not-relevant/n-a; require non-None mitre_technique; require non-empty artifact_families).
 - [ ] **W1.B.5.c** — Commit: `feat(schema): Hypothesis + InvestigationPlan + comprehension/critique schemas [W1.B.5]`
 
