@@ -307,17 +307,17 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.4.e** — Commit: `feat(inference): SGLang + Qwen3 + GLM-4.5-Air serving with tool-call parsers [W1.A.4]`
 
 ### W1.A.5 — FastMCP gateway skeleton (Tim)
-- [ ] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway_case_init.py::test_case_init_returns_handle`. Start the real FastMCP gateway process and call the real `case_init` tool against a temporary case directory and read-only sample evidence path; assert it returns `{case_id, mode}` and writes a `case_init` ledger entry. Run → RED.
-- [ ] **W1.A.5.b** — Implement `src/verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire the real `detect_mode()` contract from day one: cloud requires Anthropic reachability, air-gap requires SGLang reachability, dual requires both. If neither prerequisite is reachable, fail closed with a diagnostic rather than returning a default mode.
-- [ ] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
+- [x] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway_case_init.py::test_case_init_returns_handle`. Start the real FastMCP gateway process and call the real `case_init` tool against a temporary case directory and read-only sample evidence path; assert it returns `{case_id, mode}` and writes a `case_init` ledger entry. Run → RED.
+- [x] **W1.A.5.b** — Implement `src/verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire the real `detect_mode()` contract from day one: cloud requires Anthropic reachability, air-gap requires SGLang reachability, dual requires both. If neither prerequisite is reachable, fail closed with a diagnostic rather than returning a default mode.
+- [x] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
 
 ### W1.A.6 — Microsandbox provider Pattern 1 (per-tool ephemeral microVM)
-- [ ] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_per_call_ephemeral_microvm`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
-- [ ] **W1.A.6.b** — Implement `src/verdict/sandboxes/microsandbox_provider.py` per v4.5 line 461 sketch. Network=False default; `mounts=[ReadOnly(...)]`; SHA-256 stdout.
-- [ ] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
+- [x] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_per_call_ephemeral_microvm`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
+- [x] **W1.A.6.b** — Implement `src/verdict/sandboxes/microsandbox_provider.py` per v4.5 line 461 sketch. Network=False default; `mounts=[ReadOnly(...)]`; SHA-256 stdout.
+- [x] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
 
 ### W1.A.7 — Langfuse self-host (Tim)
-- [ ] **W1.A.7.a** — Stand up `infra/langfuse/docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
+- [x] **W1.A.7.a** — Stand up `infra/langfuse/docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
 - [ ] **W1.A.7.b** — Write smoke test `tests/observability/test_langfuse_smoke.py::test_one_trace_renders`. Send one synthetic trace via SDK; assert `/api/public/traces/{id}` returns 200.
 - [ ] **W1.A.7.c** — Commit: `feat(observability): Langfuse v2 self-host + smoke trace [W1.A.7]`
 
@@ -451,9 +451,9 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [ ] **W1.E.1.c** — Commit: `feat(tools): vol_psscan wrapper for DKOM/T1014 cross-validation [W1.E.1]`
 
 ### W1.E.2 — Tool wrapper base class
-- [ ] **W1.E.2.a** — Failing test `tests/tools/test_tool_base.py::test_base_records_invocation_hash`. Assert any wrapper extending `ToolWrapper` records `invocation_hash = blake3(tool_name + tool_version + args + evidence_hash)`.
-- [ ] **W1.E.2.b** — Implement `src/verdict/tools/base.py` abstract `ToolWrapper` with `pre_run` (compute invocation hash) + `run` (subclass impl) + `post_run` (sandbox destroy + ledger write hooks).
-- [ ] **W1.E.2.c** — Commit: `feat(tools): ToolWrapper abstract base with invocation hashing [W1.E.2]`
+- [x] **W1.E.2.a** — Failing test `tests/tools/test_tool_base.py::test_base_records_invocation_hash`. Assert any wrapper extending `ToolWrapper` records `invocation_hash = blake3(tool_name + tool_version + args + evidence_hash)`.
+- [x] **W1.E.2.b** — Implement `src/verdict/tools/base.py` abstract `ToolWrapper` with `pre_run` (compute invocation hash) + `run` (subclass impl) + `post_run` (sandbox destroy + ledger write hooks).
+- [x] **W1.E.2.c** — Commit: `feat(tools): ToolWrapper abstract base with invocation hashing [W1.E.2]`
 
 ### W1.E.3 — Apply v4.6 P3 + P4 to v4.5 audit doc
 - [ ] **W1.E.3.a** — Update v4.5 line 796 tool list to include 10 vol3 plugins.
@@ -531,9 +531,9 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [ ] **W1.G.4** — Author migration policy: `schema_version` field on all top-level schemas; breaking changes ship a `migrations/v{N}_to_v{N+1}.py` script. Commit: `docs(release): document schema migration policy [W1.G.4]`
 
 ### W1.G.5 — `Planner` Protocol + `CloudPlanner` + `LocalPlanner` (Beaver collaborates)
-- [ ] **W1.G.5.a** — Failing test `tests/planning/test_planner_protocol.py::test_protocol_returns_investigation_plan`. Plus `test_planner_bound_at_gateway_init` — assert mode-switching code lives in `runtime/mode_detect.py`, not in `planner_node`.
-- [ ] **W1.G.5.b** — Implement `src/verdict/planning/planner.py` with the Protocol + two impls.
-- [ ] **W1.G.5.c** — Commit: `feat(planning): Planner Protocol + CloudPlanner + LocalPlanner [W1.G.5]`
+- [x] **W1.G.5.a** — Failing test `tests/planning/test_planner_protocol.py::test_protocol_returns_investigation_plan`. Plus `test_planner_bound_at_gateway_init` — assert mode-switching code lives in `runtime/mode_detect.py`, not in `planner_node`.
+- [x] **W1.G.5.b** — Implement `src/verdict/planning/planner.py` with the Protocol + two impls.
+- [x] **W1.G.5.c** — Commit: `feat(planning): Planner Protocol + CloudPlanner + LocalPlanner [W1.G.5]`
 
 ### W1.G.6 — HMAC key handling (TPM-backed if present, else gpg-encrypted)
 - [ ] **W1.G.6.a** — Failing integration tests: `tests/ledger/test_hmac_key.py::test_tpm_path_when_dev_tpmrm0_present` runs only on hosts with `/dev/tpmrm0` and verifies the TPM-backed path; `test_gpg_path_when_dev_tpmrm0_absent` runs in the CI environment that lacks `/dev/tpmrm0` and verifies the gpg-encrypted fallback. If the host does not match a test prerequisite, fail with a prerequisite diagnostic rather than simulating the device.
@@ -635,24 +635,24 @@ For each tool:
 ## Phase W2.C — `executor_work` split into 3 wrappers (v4.5 fix from architecture review)
 
 ### W2.C.1 — `DenyRuleWrapper` (Layer 2 of three-layer immutability)
-- [ ] **W2.C.1.a** — Failing test `tests/graph/test_deny_rule_wrapper.py::test_blocks_evidence_writes_in_all_modes`. Test args denied for cloud, airgap, dual.
-- [ ] **W2.C.1.b** — Implement `src/verdict/graph/wrappers/deny_rule.py`. Layer 2 of three-layer defense — fires regardless of model. Owns deny-rule list (Tim).
-- [ ] **W2.C.1.c** — Commit: `feat(graph): DenyRuleWrapper Layer 2 immutability [W2.C.1]`
+- [x] **W2.C.1.a** — Failing test `tests/graph/test_deny_rule_wrapper.py::test_blocks_evidence_writes_in_all_modes`. Test args denied for cloud, airgap, dual.
+- [x] **W2.C.1.b** — Implement `src/verdict/graph/wrappers/deny_rule.py`. Layer 2 of three-layer defense — fires regardless of model. Owns deny-rule list (Tim).
+- [x] **W2.C.1.c** — Commit: `feat(graph): DenyRuleWrapper Layer 2 immutability [W2.C.1]`
 
 ### W2.C.2 — `ToolExecutor` (Beaver owns)
-- [ ] **W2.C.2.a** — Failing test for typed dispatch + microsandbox spawn + result parsing into ToolOutput.
-- [ ] **W2.C.2.b** — Implement.
-- [ ] **W2.C.2.c** — Commit: `feat(graph): ToolExecutor wrapper [W2.C.2]`
+- [x] **W2.C.2.a** — Failing test for typed dispatch + microsandbox spawn + result parsing into ToolOutput.
+- [x] **W2.C.2.b** — Implement.
+- [x] **W2.C.2.c** — Commit: `feat(graph): ToolExecutor wrapper [W2.C.2]`
 
 ### W2.C.3 — `LedgerEmitter` (Tim owns)
-- [ ] **W2.C.3.a** — Failing test for write+fsync+verify-readback. Plus chain-integrity assertion.
-- [ ] **W2.C.3.b** — Implement `src/verdict/graph/wrappers/ledger_emitter.py` + `src/verdict/ledger/writer.py` with the durability discipline.
-- [ ] **W2.C.3.c** — Commit: `feat(ledger): LedgerEmitter wrapper with write+fsync+verify-readback [W2.C.3]`
+- [x] **W2.C.3.a** — Failing test for write+fsync+verify-readback. Plus chain-integrity assertion.
+- [x] **W2.C.3.b** — Implement `src/verdict/graph/wrappers/ledger_emitter.py` + `src/verdict/ledger/writer.py` with the durability discipline.
+- [x] **W2.C.3.c** — Commit: `feat(ledger): LedgerEmitter wrapper with write+fsync+verify-readback [W2.C.3]`
 
 ### W2.C.4 — Compose three wrappers + replace executor_work
-- [ ] **W2.C.4.a** — Failing test: end-to-end through composed `DenyRuleWrapper → ToolExecutor → LedgerEmitter`.
-- [ ] **W2.C.4.b** — Wire composition in `src/verdict/graph/topology.py`.
-- [ ] **W2.C.4.c** — Commit: `feat(graph): compose 3-wrapper executor_work [W2.C.4]`
+- [x] **W2.C.4.a** — Failing test: end-to-end through composed `DenyRuleWrapper → ToolExecutor → LedgerEmitter`.
+- [x] **W2.C.4.b** — Wire composition in `src/verdict/graph/topology.py`.
+- [x] **W2.C.4.c** — Commit: `feat(graph): compose 3-wrapper executor_work [W2.C.4]`
 
 ## Phase W2.D — `planner_critique_node` (Beaver, ~1 day)
 
