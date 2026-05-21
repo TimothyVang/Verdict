@@ -416,9 +416,9 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 ## Phase W1.C — Verifier strategy seed-derivation fix (Beaver, ~1 hour)
 
 ### W1.C.1 — `derive_seeds(case_id)` helper
-- [ ] **W1.C.1.a** — Failing test `tests/verification/test_derive_seeds.py::test_three_distinct_deterministic_per_case`. Run → RED.
-- [ ] **W1.C.1.b** — Implement `src/verdict/verification/derive_seeds.py` using blake3 keyed-hash pattern.
-- [ ] **W1.C.1.c** — Commit: `feat(verification): derive_seeds(case_id) for n=3 self-consistency [W1.C.1]`
+- [x] **W1.C.1.a** — Failing test `tests/verification/test_derive_seeds.py::test_three_distinct_deterministic_per_case`. Run → RED.
+- [x] **W1.C.1.b** — Implement `src/verdict/verification/derive_seeds.py` using blake3 keyed-hash pattern.
+- [x] **W1.C.1.c** — Commit: `feat(verification): derive_seeds(case_id) for n=3 self-consistency [W1.C.1]`
 
 ### W1.C.2 — `CloudSelfConsistency` impl
 - [ ] **W1.C.2.a** — Failing integration test `tests/verification/test_cloud_self_consistency.py::test_three_distinct_seeds_in_api_calls`. Require `verdict doctor --mode cloud` first; execute the real Anthropic/Claude client in a bounded smoke request and assert 3 calls, 3 distinct seeds, `temperature=0.7`, and non-empty verifier outputs. Run → RED.
@@ -426,16 +426,16 @@ This is the contract every teammate will code against. **Lock by Sunday May 4.**
 - [ ] **W1.C.2.c** — Commit: `fix(verification): CloudSelfConsistency samples 3 diverse paths (Wang 2022) [W1.C.2]`
 
 ### W1.C.3 — `VerifierStrategy` Protocol + Universal Self-Consistency baseline
-- [ ] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Define a tiny in-test concrete strategy that computes its result from supplied verifier outputs; assert it conforms to the `VerifierStrategy` Protocol without any hardcoded production verdict. Run → RED.
-- [ ] **W1.C.3.b** — Implement `src/verdict/verification/strategy.py` (Protocol) + a real `universal_self_consistency.py` fallback that takes already-produced verifier candidates, groups by `(artifact_paths, mitre_technique)`, and returns `CONTESTED` or the matching `VETTED_*`/`UNVERIFIABLE` result according to the documented quorum rule. No placeholder implementation lands.
-- [ ] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC baseline [W1.C.3]`
+- [x] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Define a tiny in-test concrete strategy that computes its result from supplied verifier outputs; assert it conforms to the `VerifierStrategy` Protocol without any hardcoded production verdict. Run → RED.
+- [x] **W1.C.3.b** — Implement `src/verdict/verification/strategy.py` (Protocol) + a real `universal_self_consistency.py` fallback that takes already-produced verifier candidates, groups by `(artifact_paths, mitre_technique)`, and returns `CONTESTED` or the matching `VETTED_*`/`UNVERIFIABLE` result according to the documented quorum rule. No placeholder implementation lands.
+- [x] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC baseline [W1.C.3]`
 
 ## Phase W1.D — PreToolUse caveat + smoke scaffold (Tim, ~30 min)
 
 ### W1.D.1 — CI smoke-test scaffold (xfail-marked)
-- [ ] **W1.D.1.a** — Author `tests/smoke/test_pretooluse_deny.py` marked `pytest.mark.xfail(reason="anthropics/claude-code#33106 + #37210")`. Test invokes `claude` subprocess with a PreToolUse hook returning `permissionDecision: "deny"` for an MCP write; asserts the call is blocked.
-- [ ] **W1.D.1.b** — Add `[smoke]` marker to `pyproject.toml` so `pytest -m smoke` finds it.
-- [ ] **W1.D.1.c** — Commit: `test(smoke): PreToolUse deny scaffold (xfail per #33106 #37210) [W1.D.1]`
+- [x] **W1.D.1.a** — Author `tests/smoke/test_pretooluse_deny.py` marked `pytest.mark.xfail(reason="anthropics/claude-code#33106 + #37210")`. Test invokes `claude` subprocess with a PreToolUse hook returning `permissionDecision: "deny"` for an MCP write; asserts the call is blocked.
+- [x] **W1.D.1.b** — Add `[smoke]` marker to `pyproject.toml` so `pytest -m smoke` finds it.
+- [x] **W1.D.1.c** — Commit: `test(smoke): PreToolUse deny scaffold (xfail per #33106 #37210) [W1.D.1]`
 
 ### W1.D.2 — Apply v4.6 P2 to v4.5 audit doc
 - [ ] **W1.D.2.a** — Append the Layer-1 caveat paragraph to v4.5 architecture caption (line 144).
@@ -463,52 +463,52 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 ## Phase W1.F — KP content authoring (KP, ~1.5 days)
 
 ### W1.F.1 — `Playbook` Pydantic schema
-- [ ] **W1.F.1.a** — Failing test `tests/schemas/test_playbook.py::test_playbook_loads_yaml`. Run → RED.
-- [ ] **W1.F.1.b** — Implement `src/verdict/schemas/playbook.py` with `Step` + `Playbook` classes per v4.6.
-- [ ] **W1.F.1.c** — Commit: `feat(schema): Playbook + Step for planner methodology injection [W1.F.1]`
+- [x] **W1.F.1.a** — Failing test `tests/schemas/test_playbook.py::test_playbook_loads_yaml`. Run → RED.
+- [x] **W1.F.1.b** — Implement `src/verdict/schemas/playbook.py` with `Step` + `Playbook` classes per v4.6.
+- [x] **W1.F.1.c** — Commit: `feat(schema): Playbook + Step for planner methodology injection [W1.F.1]`
 
 ### W1.F.2 — Author `src/verdict/playbooks/memory.yml`
-- [ ] **W1.F.2.a** — Failing test `tests/playbooks/test_memory_yml.py::test_memory_playbook_has_dkom_rule`. Run → RED.
-- [ ] **W1.F.2.b** — Author per Appendix C.1.
-- [ ] **W1.F.2.c** — Commit: `feat(playbooks): memory.yml — Volatility 3 sequence + DKOM rule [W1.F.2]`
+- [x] **W1.F.2.a** — Failing test `tests/playbooks/test_memory_yml.py::test_memory_playbook_has_dkom_rule`. Run → RED.
+- [x] **W1.F.2.b** — Author per Appendix C.1.
+- [x] **W1.F.2.c** — Commit: `feat(playbooks): memory.yml — Volatility 3 sequence + DKOM rule [W1.F.2]`
 
 ### W1.F.3 — Author `src/verdict/playbooks/disk.yml`
-- [ ] **W1.F.3.a** — Failing test `tests/playbooks/test_disk_yml.py::test_plaso_after_lighter_tools`. Run → RED.
-- [ ] **W1.F.3.b** — Author per Appendix C.2.
-- [ ] **W1.F.3.c** — Commit: `feat(playbooks): disk.yml [W1.F.3]`
+- [x] **W1.F.3.a** — Failing test `tests/playbooks/test_disk_yml.py::test_plaso_after_lighter_tools`. Run → RED.
+- [x] **W1.F.3.b** — Author per Appendix C.2.
+- [x] **W1.F.3.c** — Commit: `feat(playbooks): disk.yml [W1.F.3]`
 
 ### W1.F.4 — Author `src/verdict/playbooks/triage.yml`
-- [ ] **W1.F.4.a** — Failing test `tests/playbooks/test_triage_yml.py::test_registry_first`. Run → RED.
-- [ ] **W1.F.4.b** — Author per Appendix C.3.
-- [ ] **W1.F.4.c** — Commit: `feat(playbooks): triage.yml [W1.F.4]`
+- [x] **W1.F.4.a** — Failing test `tests/playbooks/test_triage_yml.py::test_registry_first`. Run → RED.
+- [x] **W1.F.4.b** — Author per Appendix C.3.
+- [x] **W1.F.4.c** — Commit: `feat(playbooks): triage.yml [W1.F.4]`
 
 ### W1.F.5 — Apply v4.6 P5 to v4.5 audit doc
 - [ ] **W1.F.5** — Append multi-artifact corroboration caveat. Commit: `docs(audit): v4.6 P5 — multi-artifact corroboration [W1.F.5]`
 
 ### W1.F.6 — `playbook_loader` injects into planner prompt
-- [ ] **W1.F.6.a** — Failing test `tests/planning/test_playbook_loader.py::test_loader_picks_by_evidence_type`. Run → RED.
-- [ ] **W1.F.6.b** — Implement `src/verdict/planning/playbook_loader.py::load_playbook_prompt(manifest: EvidenceManifest) -> str`.
-- [ ] **W1.F.6.c** — Commit: `feat(planning): playbook_loader injects methodology by evidence type [W1.F.6]`
+- [x] **W1.F.6.a** — Failing test `tests/planning/test_playbook_loader.py::test_loader_picks_by_evidence_type`. Run → RED.
+- [x] **W1.F.6.b** — Implement `src/verdict/planning/playbook_loader.py::load_playbook_prompt(manifest: EvidenceManifest) -> str`.
+- [x] **W1.F.6.c** — Commit: `feat(planning): playbook_loader injects methodology by evidence type [W1.F.6]`
 
 ### W1.F.7 — Author `src/verdict/planning/prompts/examiner_caveats.md`
-- [ ] **W1.F.7.a** — Failing test `tests/prompts/test_examiner_caveats.py::test_all_seven_caveats_present`. Run → RED.
-- [ ] **W1.F.7.b** — Author per Appendix B.1.
-- [ ] **W1.F.7.c** — Commit: `feat(prompts): examiner_caveats.md — Tier-1 caveats include [W1.F.7]`
+- [x] **W1.F.7.a** — Failing test `tests/prompts/test_examiner_caveats.py::test_all_seven_caveats_present`. Run → RED.
+- [x] **W1.F.7.b** — Author per Appendix B.1.
+- [x] **W1.F.7.c** — Commit: `feat(prompts): examiner_caveats.md — Tier-1 caveats include [W1.F.7]`
 
 ### W1.F.8 — `HuntEvilBaseline` schema + `ProcessBaselineAnomaly` Hypothesis subtype
-- [ ] **W1.F.8.a** — Failing test `tests/schemas/test_hunt_evil.py::test_baseline_loads`. Plus `test_anomaly_maps_to_T1036_005`.
-- [ ] **W1.F.8.b** — Implement `src/verdict/schemas/hunt_evil.py` with both classes.
-- [ ] **W1.F.8.c** — Commit: `feat(schema): HuntEvilBaseline + ProcessBaselineAnomaly (T1036.005) [W1.F.8]`
+- [x] **W1.F.8.a** — Failing test `tests/schemas/test_hunt_evil.py::test_baseline_loads`. Plus `test_anomaly_maps_to_T1036_005`.
+- [x] **W1.F.8.b** — Implement `src/verdict/schemas/hunt_evil.py` with both classes.
+- [x] **W1.F.8.c** — Commit: `feat(schema): HuntEvilBaseline + ProcessBaselineAnomaly (T1036.005) [W1.F.8]`
 
 ### W1.F.9 — Author `src/verdict/knowledge/hunt_evil.yml`
-- [ ] **W1.F.9.a** — Failing test `tests/knowledge/test_hunt_evil_yml.py::test_eight_canonical_processes`. Run → RED.
-- [ ] **W1.F.9.b** — Author per Appendix C.4 — 8 processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss).
-- [ ] **W1.F.9.c** — Commit: `feat(knowledge): hunt_evil.yml — 8 canonical Windows process baselines [W1.F.9]`
+- [x] **W1.F.9.a** — Failing test `tests/knowledge/test_hunt_evil_yml.py::test_eight_canonical_processes`. Run → RED.
+- [x] **W1.F.9.b** — Author per Appendix C.4 — 8 processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss).
+- [x] **W1.F.9.c** — Commit: `feat(knowledge): hunt_evil.yml — 8 canonical Windows process baselines [W1.F.9]`
 
 ### W1.F.10 — Executor system-prompt include
-- [ ] **W1.F.10.a** — Failing test `tests/planning/test_executor_prompt.py::test_includes_caveats_and_hunt_evil`. Assert prompt contains `AMCACHE_LASTMODIFIED_NOT_EXEC` and `svchost.exe`.
-- [ ] **W1.F.10.b** — Implement `src/verdict/planning/executor_prompt.py::render_executor_prompt(role: str) -> str` that composes examiner_caveats.md + relevant hunt_evil entries.
-- [ ] **W1.F.10.c** — Commit: `feat(planning): executor system prompt with caveats + hunt evil [W1.F.10]`
+- [x] **W1.F.10.a** — Failing test `tests/planning/test_executor_prompt.py::test_includes_caveats_and_hunt_evil`. Assert prompt contains `AMCACHE_LASTMODIFIED_NOT_EXEC` and `svchost.exe`.
+- [x] **W1.F.10.b** — Implement `src/verdict/planning/executor_prompt.py::render_executor_prompt(role: str) -> str` that composes examiner_caveats.md + relevant hunt_evil entries.
+- [x] **W1.F.10.c** — Commit: `feat(planning): executor system prompt with caveats + hunt evil [W1.F.10]`
 
 ### W1.F.11 — Apply v4.6 P6 to v4.5 audit doc
 - [ ] **W1.F.11** — Append Tier-1 caveat caveat. Commit: `docs(audit): v4.6 P6 — Tier-1 caveats encoded [W1.F.11]`
@@ -610,24 +610,24 @@ For each tool:
 ## Phase W2.B — Plan-then-Execute LangGraph refactor (Beaver, ~2 days)
 
 ### W2.B.1 — Eight registered nodes
-- [ ] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_planner_critique_is_wired_before_comprehension_gate`. Assert all 8 registered nodes (`planner`, `planner_critique`, `comprehension_gate`, `executor_fanout`, `pivot`, `quorum`, `replan`, `finalize`) and entrypoint/edge wiring exist on the compiled graph.
-- [ ] **W2.B.1.b** — Implement `src/verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `src/verdict/graph/nodes.py` with real minimal node bodies for all eight. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
-- [ ] **W2.B.1.c** — Commit: `feat(graph): eight-node Plan-then-Execute topology [W2.B.1]`
+- [x] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_planner_critique_is_wired_before_comprehension_gate`. Assert all 8 registered nodes (`planner`, `planner_critique`, `comprehension_gate`, `executor_fanout`, `pivot`, `quorum`, `replan`, `finalize`) and entrypoint/edge wiring exist on the compiled graph.
+- [x] **W2.B.1.b** — Implement `src/verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `src/verdict/graph/nodes.py` with real minimal node bodies for all eight. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
+- [x] **W2.B.1.c** — Commit: `feat(graph): eight-node Plan-then-Execute topology [W2.B.1]`
 
 ### W2.B.2 — `comprehension_gate` node (v4.3)
-- [ ] **W2.B.2.a** — Failing test `tests/graph/test_comprehension_gate.py::test_consensus_advances_executor_work` and `test_mismatch_routes_to_clarify`.
-- [ ] **W2.B.2.b** — Implement gate node. Collects `PlanComprehensionEcho`s; validates consensus on `parsed_positive_hypothesis_ids`, `parsed_negative_hypothesis_ids`, `parsed_success_criteria_hash`.
-- [ ] **W2.B.2.c** — Commit: `feat(graph): comprehension_gate validates executor consensus [W2.B.2]`
+- [x] **W2.B.2.a** — Failing test `tests/graph/test_comprehension_gate.py::test_consensus_advances_executor_work` and `test_mismatch_routes_to_clarify`.
+- [x] **W2.B.2.b** — Implement gate node. Collects `PlanComprehensionEcho`s; validates consensus on `parsed_positive_hypothesis_ids`, `parsed_negative_hypothesis_ids`, `parsed_success_criteria_hash`.
+- [x] **W2.B.2.c** — Commit: `feat(graph): comprehension_gate validates executor consensus [W2.B.2]`
 
 ### W2.B.3 — `ComprehensionMismatch` ledger entry on disagreement
-- [ ] **W2.B.3.a** — Failing test: ledger contains structured per-executor diff on mismatch.
-- [ ] **W2.B.3.b** — Implement event type + payload schema.
-- [ ] **W2.B.3.c** — Commit: `feat(ledger): ComprehensionMismatch event with per-executor diff [W2.B.3]`
+- [x] **W2.B.3.a** — Failing test: ledger contains structured per-executor diff on mismatch.
+- [x] **W2.B.3.b** — Implement event type + payload schema.
+- [x] **W2.B.3.c** — Commit: `feat(ledger): ComprehensionMismatch event with per-executor diff [W2.B.3]`
 
 ### W2.B.4 — Reducer pattern for fanout merge + race test
-- [ ] **W2.B.4.a** — Failing test `tests/graph/test_fanout_race.py::test_4_executors_merge_deterministically`. 4 executors, randomized 0–500ms sleep each; assert final state contains all 4 outputs in deterministic order.
-- [ ] **W2.B.4.b** — Implement `src/verdict/graph/reducers.py` with `Annotated[..., reducer]` for `executor_results` field.
-- [ ] **W2.B.4.c** — Commit: `feat(graph): reducer pattern for parallel-executor merge [W2.B.4]`
+- [x] **W2.B.4.a** — Failing test `tests/graph/test_fanout_race.py::test_4_executors_merge_deterministically`. 4 executors, randomized 0–500ms sleep each; assert final state contains all 4 outputs in deterministic order.
+- [x] **W2.B.4.b** — Implement `src/verdict/graph/reducers.py` with `Annotated[..., reducer]` for `executor_results` field.
+- [x] **W2.B.4.c** — Commit: `feat(graph): reducer pattern for parallel-executor merge [W2.B.4]`
 
 ### W2.B.5 — Pin LangGraph version
 - [ ] **W2.B.5** — Pin in `pyproject.toml`. Commit: `chore(deps): pin langgraph version that passes fanout-race test [W2.B.5]`
@@ -657,14 +657,14 @@ For each tool:
 ## Phase W2.D — `planner_critique_node` (Beaver, ~1 day)
 
 ### W2.D.1 — CoVe (Chain-of-Verification, Dhuliawala 2023)
-- [ ] **W2.D.1.a** — Failing test `tests/planning/test_planner_critique.py::test_failed_questions_route_back_to_planner`. Plus `test_all_pass_advances_to_comprehension_gate`.
-- [ ] **W2.D.1.b** — Implement `src/verdict/planning/planner_critique.py`. Same model drafts CoVe questions ABOUT THE PLAN ITSELF (does plan cover most-likely attacker techniques given evidence type? does it have positive AND negative for each artifact family? are success criteria measurable?). Answers them against case_init evidence summary; failed questions route back to planner with hint.
-- [ ] **W2.D.1.c** — Commit: `feat(planning): planner_critique_node CoVe [W2.D.1]`
+- [x] **W2.D.1.a** — Failing test `tests/planning/test_planner_critique.py::test_failed_questions_route_back_to_planner`. Plus `test_all_pass_advances_to_comprehension_gate`.
+- [x] **W2.D.1.b** — Implement `src/verdict/planning/planner_critique.py`. Same model drafts CoVe questions ABOUT THE PLAN ITSELF (does plan cover most-likely attacker techniques given evidence type? does it have positive AND negative for each artifact family? are success criteria measurable?). Answers them against case_init evidence summary; failed questions route back to planner with hint.
+- [x] **W2.D.1.c** — Commit: `feat(planning): planner_critique_node CoVe [W2.D.1]`
 
 ### W2.D.2 — `PlannerCritiqueVerdict` schema + `critique_verdict` ledger event
-- [ ] **W2.D.2.a** — Failing test `tests/planning/test_planner_critique_verdict.py::test_schema_rejects_missing_failed_questions_when_route_back`. Plus `test_ledger_emits_critique_verdict_event_with_route_decision`. Assertions: `PlannerCritiqueVerdict(route="planner", failed_questions=[]).model_validate()` raises `ValidationError`; `ledger.last_entry.event_type == "critique_verdict"` after `planner_critique_node` runs.
-- [ ] **W2.D.2.b** — Wire into LangGraph + ledger.
-- [ ] **W2.D.2.c** — Commit: `feat(graph): planner_critique_node wired between planner + comprehension_gate [W2.D.2]`
+- [x] **W2.D.2.a** — Failing test `tests/planning/test_planner_critique_verdict.py::test_schema_rejects_missing_failed_questions_when_route_back`. Plus `test_ledger_emits_critique_verdict_event_with_route_decision`. Assertions: `PlannerCritiqueVerdict(route="planner", failed_questions=[]).model_validate()` raises `ValidationError`; `ledger.last_entry.event_type == "critique_verdict"` after `planner_critique_node` runs.
+- [x] **W2.D.2.b** — Wire into LangGraph + ledger.
+- [x] **W2.D.2.c** — Commit: `feat(graph): planner_critique_node wired between planner + comprehension_gate [W2.D.2]`
 
 ### W2.D.3 — Planner CoT capture
 - [ ] **W2.D.3.a** — Failing test `tests/planning/test_cot_capture.py::test_gzipped_cot_in_ledger`. Plus `test_8kb_attached_to_langfuse_span`.
