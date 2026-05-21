@@ -312,7 +312,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [x] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
 
 ### W1.A.6 — Microsandbox provider Pattern 1 (per-tool ephemeral microVM)
-- [x] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_per_call_ephemeral_microvm`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
+- [x] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_microsandbox_command_mounts_evidence_readonly`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
 - [x] **W1.A.6.b** — Implement `src/verdict/sandboxes/microsandbox_provider.py` per v4.5 line 461 sketch. Network=False default; `mounts=[ReadOnly(...)]`; SHA-256 stdout.
 - [x] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
 
