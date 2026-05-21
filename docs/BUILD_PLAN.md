@@ -283,9 +283,9 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 ## Phase W1.A — Infrastructure stand-up (Tim, ~2 days)
 
 ### W1.A.1 — `scripts/install.sh` with cloud credential detection
-- [ ] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Launch the credentials helper in a subprocess with only `CLAUDE_CODE_OAUTH_TOKEN` set in that subprocess environment; assert install reports `mode=oauth`. Run → RED.
-- [ ] **W1.A.1.b** — Write credential detection logic (`CLAUDE_CODE_OAUTH_TOKEN` env → interactive `~/.claude/` → `ANTHROPIC_API_KEY` → optional `OPENROUTER_API_KEY`) in `scripts/install.sh` + Python helper `src/verdict/cli/credentials.py`. Run → GREEN. `OPENROUTER_API_KEY` is host-side only for AI-agent fallback; `verdict doctor` must fail if any cloud credential would be passed into a microsandbox env.
-- [ ] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
+- [x] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Launch the credentials helper in a subprocess with only `CLAUDE_CODE_OAUTH_TOKEN` set in that subprocess environment; assert install reports `mode=oauth`. Run → RED.
+- [x] **W1.A.1.b** — Write credential detection logic (`CLAUDE_CODE_OAUTH_TOKEN` env → interactive `~/.claude/` → `ANTHROPIC_API_KEY` → optional `OPENROUTER_API_KEY`) in `scripts/install.sh` + Python helper `src/verdict/cli/credentials.py`. Run → GREEN. `OPENROUTER_API_KEY` is host-side only for AI-agent fallback; `verdict doctor` must fail if any cloud credential would be passed into a microsandbox env.
+- [x] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
 
 ### W1.A.2 — SIFT VM provisioning (manual + scripted)
 - [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation per project's existing `scripts/sift-vm-bootstrap.sh`.
@@ -332,86 +332,86 @@ already landed at main. No further action needed for W1.A.8.
 ### W1.A.9 — Mechanical hard-rule enforcement (Tim, ~3 hours)
 Pulls forward what `CONTRIBUTING.md` already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only.
 
-- [ ] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
-- [ ] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `src/verdict/` and `tests/`.
-- [ ] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
-- [ ] **W1.A.9.d** — Add `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` against the real evaluator once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the workflow must fail with `scorer_not_implemented` rather than returning a passing score.
-- [ ] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
-- [ ] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI gate) [W1.A.9]`
+- [x] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
+- [x] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `src/verdict/` and `tests/`.
+- [x] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
+- [x] **W1.A.9.d** — Add `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` against the real evaluator once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the workflow must fail with `scorer_not_implemented` rather than returning a passing score.
+- [x] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
+- [x] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI gate) [W1.A.9]`
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
 This is the contract every teammate will code against. **Lock by Sunday May 4.** All schema work must reconcile against `docs/ARCHITECTURE.md` §4.
 
 ### W1.B.1 — `ArtifactClass` enum
-- [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_required_members_for_tier_1_caveat_triggers`. Assert all 15 `ArtifactClass` members are present. Run → RED.
-- [ ] **W1.B.1.b** — Implement `src/verdict/schemas/artifact_class.py` per Appendix A.1.
-- [ ] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
+- [x] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_required_members_for_tier_1_caveat_triggers`. Assert all 15 `ArtifactClass` members are present. Run → RED.
+- [x] **W1.B.1.b** — Implement `src/verdict/schemas/artifact_class.py` per Appendix A.1.
+- [x] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
 
 ### W1.B.2 — `CaveatID` enum
-- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_has_seven_tier_1_caveats`. Assert all 7 from the current planned caveat source `src/verdict/planning/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
-- [ ] **W1.B.2.b** — Implement `src/verdict/schemas/caveat_id.py` per Appendix A.2.
-- [ ] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from CLAUDE.md §3.3 Tier-1 caveats [W1.B.2]`
+- [x] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_has_seven_tier_1_caveats`. Assert all 7 from the current planned caveat source `src/verdict/planning/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
+- [x] **W1.B.2.b** — Implement `src/verdict/schemas/caveat_id.py` per Appendix A.2.
+- [x] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from CLAUDE.md §3.3 Tier-1 caveats [W1.B.2]`
 
 ### W1.B.3 — `EvidenceItem` + `EvidenceManifest`
-- [ ] **W1.B.3.a** — Write failing test `tests/schemas/test_evidence.py::test_manifest_hash_is_blake3_of_sorted_pairs`. Run → RED.
-- [ ] **W1.B.3.b** — Implement `src/verdict/schemas/evidence.py` per v4.5 lines 153–168 + Appendix A.3.
-- [ ] **W1.B.3.c** — Commit: `feat(schema): EvidenceItem + EvidenceManifest schemas [W1.B.3]`
+- [x] **W1.B.3.a** — Write failing test `tests/schemas/test_evidence.py::test_manifest_hash_is_blake3_of_sorted_pairs`. Run → RED.
+- [x] **W1.B.3.b** — Implement `src/verdict/schemas/evidence.py` per v4.5 lines 153–168 + Appendix A.3.
+- [x] **W1.B.3.c** — Commit: `feat(schema): EvidenceItem + EvidenceManifest schemas [W1.B.3]`
 
 ### W1.B.4 — `Artifact` + `ToolOutput` base
-- [ ] **W1.B.4.a** — Write failing test `tests/schemas/test_tool_output.py::test_invocation_hash_combines_name_version_args_evidence`. Run → RED.
-- [ ] **W1.B.4.b** — Implement `src/verdict/schemas/tool_output.py` per v4.5 lines 170–193 + Appendix A.4.
-- [ ] **W1.B.4.c** — Commit: `feat(schema): Artifact + ToolOutput base for tool wrapper contract [W1.B.4]`
+- [x] **W1.B.4.a** — Write failing test `tests/schemas/test_tool_output.py::test_invocation_hash_combines_name_version_args_evidence`. Run → RED.
+- [x] **W1.B.4.b** — Implement `src/verdict/schemas/tool_output.py` per v4.5 lines 170–193 + Appendix A.4.
+- [x] **W1.B.4.c** — Commit: `feat(schema): Artifact + ToolOutput base for tool wrapper contract [W1.B.4]`
 
 ### W1.B.5 — `Hypothesis` + `InvestigationPlan` + `PlanComprehensionEcho` + `PlannerCritiqueVerdict`
-- [ ] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_t1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
-- [ ] **W1.B.5.b** — Implement `src/verdict/schemas/plan.py` with all four classes + the `mitre_technique` regex validator (`^T\d{4}(\.\d{3})?$`) + `_negative_hypothesis_quality` validator (deny-list: cosmic/alien/nothing/not-relevant/n-a; require non-None mitre_technique; require non-empty artifact_families).
-- [ ] **W1.B.5.c** — Commit: `feat(schema): Hypothesis + InvestigationPlan + comprehension/critique schemas [W1.B.5]`
+- [x] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_t1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
+- [x] **W1.B.5.b** — Implement `src/verdict/schemas/plan.py` with all four classes + the `mitre_technique` regex validator (`^T\d{4}(\.\d{3})?$`) + `_negative_hypothesis_quality` validator (deny-list: cosmic/alien/nothing/not-relevant/n-a; require non-None mitre_technique; require non-empty artifact_families).
+- [x] **W1.B.5.c** — Commit: `feat(schema): Hypothesis + InvestigationPlan + comprehension/critique schemas [W1.B.5]`
 
 ### W1.B.6 — `Finding` skeleton
-- [ ] **W1.B.6.a** — Write failing test `tests/schemas/test_finding.py::test_finding_round_trips_through_json`. Run → RED.
-- [ ] **W1.B.6.b** — Implement `src/verdict/schemas/finding.py` skeleton: all v4.5 fields plus the new ones (`artifact_classes`, `caveats_acknowledged`).
-- [ ] **W1.B.6.c** — Commit: `feat(schema): Finding skeleton [W1.B.6]`
+- [x] **W1.B.6.a** — Write failing test `tests/schemas/test_finding.py::test_finding_round_trips_through_json`. Run → RED.
+- [x] **W1.B.6.b** — Implement `src/verdict/schemas/finding.py` skeleton: all v4.5 fields plus the new ones (`artifact_classes`, `caveats_acknowledged`).
+- [x] **W1.B.6.c** — Commit: `feat(schema): Finding skeleton [W1.B.6]`
 
 ### W1.B.7 — Patch `Finding.artifact_paths` to `Field(min_length=2)`
-- [ ] **W1.B.7.a** — Failing test: `test_artifact_paths_min_length_2`. Run → RED.
-- [ ] **W1.B.7.b** — Implement.
-- [ ] **W1.B.7.c** — Commit: `feat(schema): require ≥2 artifact paths per Finding (FOR500) [W1.B.7]`
+- [x] **W1.B.7.a** — Failing test: `test_artifact_paths_min_length_2`. Run → RED.
+- [x] **W1.B.7.b** — Implement.
+- [x] **W1.B.7.c** — Commit: `feat(schema): require ≥2 artifact paths per Finding (FOR500) [W1.B.7]`
 
 ### W1.B.8 — `Finding.artifact_classes` field
-- [ ] **W1.B.8.a** — Failing test: `test_artifact_classes_min_length_2`. Run → RED.
-- [ ] **W1.B.8.b** — Implement.
-- [ ] **W1.B.8.c** — Commit: `feat(schema): Finding.artifact_classes min_length=2 [W1.B.8]`
+- [x] **W1.B.8.a** — Failing test: `test_artifact_classes_min_length_2`. Run → RED.
+- [x] **W1.B.8.b** — Implement.
+- [x] **W1.B.8.c** — Commit: `feat(schema): Finding.artifact_classes min_length=2 [W1.B.8]`
 
 ### W1.B.9 — `Finding.caveats_acknowledged` field
-- [ ] **W1.B.9.a** — Failing test: `test_caveats_acknowledged_default_empty`. Run → RED.
-- [ ] **W1.B.9.b** — Implement.
-- [ ] **W1.B.9.c** — Commit: `feat(schema): Finding.caveats_acknowledged field [W1.B.9]`
+- [x] **W1.B.9.a** — Failing test: `test_caveats_acknowledged_default_empty`. Run → RED.
+- [x] **W1.B.9.b** — Implement.
+- [x] **W1.B.9.c** — Commit: `feat(schema): Finding.caveats_acknowledged field [W1.B.9]`
 
 ### W1.B.10 — Unified forensic-corroboration validator
-- [ ] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_available_caveat_required_when_artifact_class_cited` (parametrised over all ArtifactClass caveat triggers). Run → RED.
-- [ ] **W1.B.10.b** — Implement a single `_forensic_corroboration` `@model_validator(mode="after")` that covers both the execution-class two-class requirement and all Tier-1 caveat acknowledgments (including the EVTX_4624 logon-type named exception).
-- [ ] **W1.B.10.c** — Commit: `feat(schema): Finding validators enforce caveat acknowledgment [W1.B.10]`
+- [x] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_available_caveat_required_when_artifact_class_cited` (parametrised over all ArtifactClass caveat triggers). Run → RED.
+- [x] **W1.B.10.b** — Implement a single `_forensic_corroboration` `@model_validator(mode="after")` that covers both the execution-class two-class requirement and all Tier-1 caveat acknowledgments (including the EVTX_4624 logon-type named exception).
+- [x] **W1.B.10.c** — Commit: `feat(schema): Finding validators enforce caveat acknowledgment [W1.B.10]`
 
 ### W1.B.11 — `LedgerEntry` schema
-- [ ] **W1.B.11.a** — Failing test: `test_ledger_entry_three_id_hierarchy`. Assert `case_id`, `langfuse_trace_id`, `langgraph_checkpoint_id` are distinct fields. Plus `test_ledger_entry_records_examination_environment` for `microsandbox_version`/`rootfs_sha256`/`tool_version`/`kernel_version`.
-- [ ] **W1.B.11.b** — Implement `src/verdict/schemas/ledger.py` per v4.5 lines 245–278 plus the v4.4 environment-metadata fields. Add `output_files_sha256: dict[str, str] = {}` field.
-- [ ] **W1.B.11.c** — Commit: `feat(schema): LedgerEntry with three-ID hierarchy + exam-env metadata [W1.B.11]`
+- [x] **W1.B.11.a** — Failing test: `test_ledger_entry_three_id_hierarchy`. Assert `case_id`, `langfuse_trace_id`, `langgraph_checkpoint_id` are distinct fields. Plus `test_ledger_entry_records_examination_environment` for `microsandbox_version`/`rootfs_sha256`/`tool_version`/`kernel_version`.
+- [x] **W1.B.11.b** — Implement `src/verdict/schemas/ledger.py` per v4.5 lines 245–278 plus the v4.4 environment-metadata fields. Add `output_files_sha256: dict[str, str] = {}` field.
+- [x] **W1.B.11.c** — Commit: `feat(schema): LedgerEntry with three-ID hierarchy + exam-env metadata [W1.B.11]`
 
 ### W1.B.12 — `schema_version` discipline + `src/verdict/schemas/version.py`
-- [ ] **W1.B.12.a** — Failing test: `test_schema_version_is_1_on_all_top_level_models`. Loop through `[InvestigationPlan, Finding, LedgerEntry, EvidenceManifest, ToolOutput]`; assert `.schema_version == 1`.
-- [ ] **W1.B.12.b** — Implement: add `schema_version: int = 1` to all five top-level schemas; centralize in `src/verdict/schemas/version.py`.
-- [ ] **W1.B.12.c** — Commit: `feat(schema): schema_version discipline across top-level models [W1.B.12]`
+- [x] **W1.B.12.a** — Failing test: `test_schema_version_is_1_on_all_top_level_models`. Loop through `[InvestigationPlan, Finding, LedgerEntry, EvidenceManifest, ToolOutput]`; assert `.schema_version == 1`.
+- [x] **W1.B.12.b** — Implement: add `schema_version: int = 1` to all five top-level schemas; centralize in `src/verdict/schemas/version.py`.
+- [x] **W1.B.12.c** — Commit: `feat(schema): schema_version discipline across top-level models [W1.B.12]`
 
 ### W1.B.13 — `VerdictStatus` enum
-- [ ] **W1.B.13.a** — Failing test: `test_verdict_status_has_canonical_states`. Assert exactly the six statuses from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. Assert `DRAFT`, `APPROVED`, and `REJECTED` live only on the separate `Finding.review_state` enum.
-- [ ] **W1.B.13.b** — Implement.
-- [ ] **W1.B.13.c** — Commit: `feat(schema): VerdictStatus enum [W1.B.13]`
+- [x] **W1.B.13.a** — Failing test: `test_verdict_status_has_canonical_states`. Assert exactly the six statuses from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. Assert `DRAFT`, `APPROVED`, and `REJECTED` live only on the separate `Finding.review_state` enum.
+- [x] **W1.B.13.b** — Implement.
+- [x] **W1.B.13.c** — Commit: `feat(schema): VerdictStatus enum [W1.B.13]`
 
 ### W1.B.14 — `CaseConclusion` for no-evil terminal cases
-- [ ] **W1.B.14.a** — Failing test `tests/schemas/test_case_conclusion.py::test_no_evil_found_requires_playbook_steps`. Assert `CaseConclusion(status="NO_EVIL_FOUND", playbook_steps_executed=[])` raises validation error, and a conclusion with at least one playbook step plus evidence hashes validates.
-- [ ] **W1.B.14.b** — Implement `src/verdict/schemas/case_conclusion.py` with status values `NO_EVIL_FOUND`, `EVIL_FOUND`, `UNVERIFIABLE`; require `playbook_steps_executed: list[str] = Field(min_length=1)`, `evidence_hashes: dict[Path, str]`, and `rationale: str`. Do not add `NO_EVIL_FOUND` to `VerdictStatus`.
-- [ ] **W1.B.14.c** — Commit: `feat(schema): CaseConclusion for no-evil terminal cases [W1.B.14]`
+- [x] **W1.B.14.a** — Failing test `tests/schemas/test_case_conclusion.py::test_no_evil_found_requires_playbook_steps`. Assert `CaseConclusion(status="NO_EVIL_FOUND", playbook_steps_executed=[])` raises validation error, and a conclusion with at least one playbook step plus evidence hashes validates.
+- [x] **W1.B.14.b** — Implement `src/verdict/schemas/case_conclusion.py` with status values `NO_EVIL_FOUND`, `EVIL_FOUND`, `UNVERIFIABLE`; require `playbook_steps_executed: list[str] = Field(min_length=1)`, `evidence_hashes: dict[Path, str]`, and `rationale: str`. Do not add `NO_EVIL_FOUND` to `VerdictStatus`.
+- [x] **W1.B.14.c** — Commit: `feat(schema): CaseConclusion for no-evil terminal cases [W1.B.14]`
 
 ## Phase W1.C — Verifier strategy seed-derivation fix (Beaver, ~1 hour)
 
