@@ -1192,10 +1192,10 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.6** — 500-word writeup for Devpost summarizing: problem, architecture, three innovations, accuracy results, demo video. References all 6 official judging criteria explicitly per `DEVPOST_COMPLIANCE.md` Part 3. Commit: `docs: Devpost submission writeup [W6.C.6]`
 
 ### W6.C.7 — rendered architecture visual (Devpost-required)
-- [ ] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
+- [x] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
 - [ ] **W6.C.7.b** — Render to SVG + PNG fallback for the final submission package.
-- [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
-- [ ] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
+- [x] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
+- [x] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
 
 ### W6.C.8 — `docs/RELEASE.md` evidence dataset section (Devpost-required)
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (with finding_ids referencing accuracy report). (5) Limitations: Windows-only; no live-response; no Win11/macOS/Linux/network.
