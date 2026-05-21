@@ -173,8 +173,8 @@ test -f pnpm-lock.yaml && pnpm install --frozen-lockfile
 Sanity check:
 ```bash
 uv run pytest -q             # must pass on a clean clone — if it doesn't, that's a P0
-cargo test --workspace -q
-pnpm test
+test -f Cargo.toml && cargo test --workspace -q
+test -f pnpm-lock.yaml && pnpm test
 ```
 
 If the workspace files don't exist yet (we're early in Week 1), clone is enough — the scaffold lands per `BUILD_PLAN.md` Phase W1.A.
