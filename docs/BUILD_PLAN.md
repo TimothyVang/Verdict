@@ -541,9 +541,9 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [x] **W1.G.6.c** — Commit: `feat(ledger): HMAC key TPM-backed or gpg-encrypted [W1.G.6]`
 
 ### W1.G.7 — Evidence manifest with periodic re-hash check
-- [ ] **W1.G.7.a** — Failing test `tests/runtime/test_evidence_recheck.py::test_recheck_every_10_super_steps`. Plus `test_mismatch_writes_ledger_entry_and_halts`.
-- [ ] **W1.G.7.b** — Implement re-hash loop in `src/verdict/runtime/evidence_recheck.py`. Mismatch → `LedgerEntry(event_type="evidence_hash_recheck")` with both hashes + halt with `HashMismatchError`.
-- [ ] **W1.G.7.c** — Commit: `feat(runtime): periodic evidence re-hash check (10 super-steps) [W1.G.7]`
+- [x] **W1.G.7.a** — Failing test `tests/runtime/test_evidence_recheck.py::test_recheck_every_10_super_steps`. Plus `test_mismatch_writes_ledger_entry_and_halts`.
+- [x] **W1.G.7.b** — Implement re-hash loop in `src/verdict/runtime/evidence_recheck.py`. Mismatch → `LedgerEntry(event_type="evidence_hash_recheck")` with both hashes + halt with `HashMismatchError`.
+- [x] **W1.G.7.c** — Commit: `feat(runtime): periodic evidence re-hash check (10 super-steps) [W1.G.7]`
 
 ## Week 1 — acceptance gates
 
