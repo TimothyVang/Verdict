@@ -796,16 +796,16 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 - [ ] **W3.B.2.c** — Commit: `chore(demo): TSI tcpdump demonstration assets [W3.B.2]`
 
 ### W3.B.3 — Ledger redaction pass
-- [ ] **W3.B.3.a** — Failing test: `test_redacts_authorization_header_before_hash`. Plus `auth_user`, `api_key`.
-- [ ] **W3.B.3.b** — Implement `src/verdict/ledger/redaction.py`. Strip + record in `payload_redactions` field.
-- [ ] **W3.B.3.c** — Commit: `feat(ledger): redact auth fields before hash + write [W3.B.3]`
+- [x] **W3.B.3.a** — Failing test: `test_redacts_authorization_header_before_hash`. Plus `auth_user`, `api_key`.
+- [x] **W3.B.3.b** — Implement `src/verdict/ledger/redaction.py`. Strip + record in `payload_redactions` field.
+- [x] **W3.B.3.c** — Commit: `feat(ledger): redact auth fields before hash + write [W3.B.3]`
 
 ## Phase W3.C — Mode lock (Beaver, ~0.5 day)
 
 ### W3.C.1 — Mode-lock enforcement at `case_init`
-- [ ] **W3.C.1.a** — Failing test `tests/runtime/test_mode_lock.py::test_resume_with_different_mode_refuses`. Plus `test_mode_at_case_init_immutable`.
-- [ ] **W3.C.1.b** — Implement: write `mode_at_case_init` to ledger; refuse to advance if resume detects mode mismatch with current autodetect.
-- [ ] **W3.C.1.c** — Commit: `feat(runtime): mode lock at case_init enforced on resume [W3.C.1]`
+- [x] **W3.C.1.a** — Failing test `tests/runtime/test_mode_lock.py::test_resume_with_different_mode_refuses`. Plus `test_mode_at_case_init_immutable`.
+- [x] **W3.C.1.b** — Implement: write `mode_at_case_init` to ledger; refuse to advance if resume detects mode mismatch with current autodetect.
+- [x] **W3.C.1.c** — Commit: `feat(runtime): mode lock at case_init enforced on resume [W3.C.1]`
 
 ### W3.C.2 — `verdict reverify` command
 - [ ] **W3.C.2.a** — Failing test: `verdict reverify <case_id> --mode dual` produces parallel verdict chain without mutating original.
@@ -815,19 +815,19 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 ## Phase W3.D — Pivot + replan + unverifiable_finalize (Beaver, ~1 day)
 
 ### W3.D.1 — `pivot_node` (cheap follow-up)
-- [ ] **W3.D.1.a** — Failing test `tests/graph/test_pivot_node.py::test_adds_one_hypothesis_within_pivot_max_15`. Plus `test_pivot_does_not_re_enter_planner`.
-- [ ] **W3.D.1.b** — Implement. Bounded `pivot_max=15` in `InvestigationPlan.pivot_budget`.
-- [ ] **W3.D.1.c** — Commit: `feat(graph): pivot_node distinct from replan_node (max=15) [W3.D.1]`
+- [x] **W3.D.1.a** — Failing test `tests/graph/test_pivot_node.py::test_adds_one_hypothesis_within_pivot_max_15`. Plus `test_pivot_does_not_re_enter_planner`.
+- [x] **W3.D.1.b** — Implement. Bounded `pivot_max=15` in `InvestigationPlan.pivot_budget`.
+- [x] **W3.D.1.c** — Commit: `feat(graph): pivot_node distinct from replan_node (max=15) [W3.D.1]`
 
 ### W3.D.2 — `replan_max=3` explicit budget on `InvestigationPlan`
-- [ ] **W3.D.2.a** — Failing test: `replan_budget` field defaults to 3.
-- [ ] **W3.D.2.b** — Implement.
-- [ ] **W3.D.2.c** — Commit: `feat(schema): InvestigationPlan.replan_budget=3 explicit [W3.D.2]`
+- [x] **W3.D.2.a** — Failing test: `replan_budget` field defaults to 3.
+- [x] **W3.D.2.b** — Implement.
+- [x] **W3.D.2.c** — Commit: `feat(schema): InvestigationPlan.replan_budget=3 explicit [W3.D.2]`
 
 ### W3.D.3 — `unverifiable_finalize_node`
-- [ ] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`, `test_calls_interrupt`, and `test_resume_does_not_duplicate_exhausted_replan_ledger_entry`.
-- [ ] **W3.D.3.b** — Implement. Use deterministic idempotency key `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`; before writing the ledger entry, check whether that key already exists and skip the write on resume. No non-idempotent side effects may occur before `interrupt()`.
-- [ ] **W3.D.3.c** — Commit: `feat(graph): unverifiable_finalize_node + exhausted_replan event [W3.D.3]`
+- [x] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`, `test_calls_interrupt`, and `test_resume_does_not_duplicate_exhausted_replan_ledger_entry`.
+- [x] **W3.D.3.b** — Implement. Use deterministic idempotency key `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`; before writing the ledger entry, check whether that key already exists and skip the write on resume. No non-idempotent side effects may occur before `interrupt()`.
+- [x] **W3.D.3.c** — Commit: `feat(graph): unverifiable_finalize_node + exhausted_replan event [W3.D.3]`
 
 ### W3.D.4 — Wire `interrupt()` properly
 - [ ] **W3.D.4.a** — Failing test: analyst can `update_state` and resume after interrupt.
@@ -837,9 +837,9 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 ## Phase W3.E — Checkpointing (Beaver, ~1 day)
 
 ### W3.E.1 — `SqliteSaver` with WAL + synchronous=FULL
-- [ ] **W3.E.1.a** — Failing test `tests/graph/test_checkpoint.py::test_pragma_journal_mode_wal`. Plus `test_pragma_synchronous_full`.
-- [ ] **W3.E.1.b** — Implement `src/verdict/graph/checkpoint.py` with `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;`.
-- [ ] **W3.E.1.c** — Commit: `feat(graph): SqliteSaver with WAL + synchronous=FULL [W3.E.1]`
+- [x] **W3.E.1.a** — Failing test `tests/graph/test_checkpoint.py::test_pragma_journal_mode_wal`. Plus `test_pragma_synchronous_full`.
+- [x] **W3.E.1.b** — Implement `src/verdict/graph/checkpoint.py` with `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;`.
+- [x] **W3.E.1.c** — Commit: `feat(graph): SqliteSaver with WAL + synchronous=FULL [W3.E.1]`
 
 ### W3.E.2 — `thread_id = case_id` everywhere
 - [ ] **W3.E.2.a** — Failing test: gateway invocation passes `config={"configurable": {"thread_id": case_id}}`.
