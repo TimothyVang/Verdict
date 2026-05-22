@@ -277,7 +277,7 @@ This is one of the architecture's clearest moats — DKOM/T1014 detection auto-f
 
 ### Hunt Evil baseline
 
-`src/verdict/knowledge/hunt_evil.yml` keyed by process name with expected parent / path / signing / instance count for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` Hypothesis subtype maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
+`src/verdict/knowledge/hunt_evil.yml` keyed by process name with `expected_parent_names`, `expected_path_prefixes`, and `expected_user_names` for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
 
 ---
 
