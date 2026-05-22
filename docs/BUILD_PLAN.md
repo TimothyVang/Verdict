@@ -1194,7 +1194,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 ### W6.C.7 — rendered architecture visual (Devpost-required)
 - [x] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
 - [ ] **W6.C.7.b** — Render to SVG + PNG fallback for the final submission package.
-- [x] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
+- [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
 - [x] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
 
 ### W6.C.8 — `docs/RELEASE.md` evidence dataset section (Devpost-required)
