@@ -122,6 +122,8 @@ By June 14 the repo will have this shape:
 │   │   ├── ledger.py                       # LedgerEntry (W1.B.11)
 │   │   ├── playbook.py                     # Playbook + Step (W1.F.1)
 │   │   ├── hunt_evil.py                    # HuntEvilBaseline + ProcessBaselineAnomaly (W1.F.8)
+│   │   ├── verdict_status.py               # VerdictStatus enum (W1.B.13)
+│   │   ├── case_conclusion.py              # CaseConclusion for no-evil terminal cases (W1.B.14)
 │   │   └── version.py                      # SCHEMA_VERSION constant + migration helpers
 │   ├── verification/
 │   │   ├── strategy.py                     # VerifierStrategy Protocol
@@ -152,7 +154,11 @@ By June 14 the repo will have this shape:
 │   │   ├── topology.py                     # build_graph(mode) → CompiledGraph
 │   │   ├── reducers.py                     # State reducers for fanout merge
 │   │   ├── checkpoint.py                   # SqliteSaver setup + WAL pragmas (W3.E.1)
-│   │   └── interrupt.py                    # interrupt() helpers + unverifiable_finalize wiring (W3.D.4)
+│   │   ├── comprehension_gate.py           # Comprehension gate node (W2.B.2)
+│   │   ├── interrupt.py                    # interrupt() helpers + unverifiable_finalize wiring (W3.D.4)
+│   │   └── wrappers/
+│   │       ├── deny_rule.py                # DenyRuleWrapper Layer 2 immutability (W2.C.1)
+│   │       └── ledger_emitter.py           # LedgerEmitter wrapper (W2.C.3)
 │   ├── tools/
 │   │   ├── base.py                         # ToolWrapper abstract
 │   │   ├── args_validators.py              # ArgsValidator (Pydantic v2; W2.E.1)
