@@ -752,7 +752,7 @@ For each tool:
 
 | Gate | Verification |
 |---|---|
-| All 23 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
+| All 24 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
 | LangGraph compiles in all three modes | `pytest tests/graph/test_topology_compiles.py` green for cloud/airgap/dual |
 | `comprehension_gate` + `planner_critique_node` integrated | Inspect AI smoke run shows both nodes in trace |
 | `executor_work` is composition of 3 wrappers, three owners | `git blame` shows distinct authors on `deny_rule.py`, `tool_executor.py`, `ledger_emitter.py` |
