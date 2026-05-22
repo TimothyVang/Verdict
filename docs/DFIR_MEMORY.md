@@ -31,7 +31,7 @@ Only these operations are allowed:
 
 For persistent classes (`technique`, `pattern`, `meta`):
 
-- At least one `evidence_ref` is required.
+- At least one `evidence_refs` entry is required.
 - `last_validated_at` must be on/after `created_at`.
 - `expiry`, when present, must be after `created_at`.
 - Versioning is monotonic (`version >= 1`) and lineage is retained.
