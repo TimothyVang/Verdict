@@ -392,7 +392,7 @@ Encoded in `docs/RELEASE.md`. Every item must demonstrably pass in the demo reco
 - **3:00 – 4:00** dual mode (new case, mode-locked): three-way verification.
 - **4:00 – 5:00** architecture recap + accuracy tables.
 
-### 11.3 Eight submission docs
+### 11.3 Six submission docs
 
 1. `README.md` — problem statement, architecture, demo link, install, mode reference, license, contributing.
 2. `docs/ARCHITECTURE.md`
