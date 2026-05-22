@@ -343,11 +343,11 @@ Every 10 super-steps, re-hash all `EvidenceItem` files against the manifest. Mis
 
 ---
 
-## 6. Tool surface (12 SIFT tools, 23 wrappers)
+## 6. Tool surface (12 SIFT tools, 24 wrappers)
 
 | Tool family | Wrappers |
 |---|---|
-| Volatility 3 | `windows.{pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (10 typed plugin wrappers; `windows.info` is invoked through the generic vol3 allow-list — see §6 *Tool-call argument validation*) |
+| Volatility 3 | `windows.{info,pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (11 typed plugin wrappers; `vol3.info` is registered as a typed `ExternalToolSpec` in `src/verdict/tools/registry.py`) |
 | Hayabusa | Split: `hayabusa_csv_timeline` (extract) + `hayabusa_filter` (analyst-driven filter by sigma_level + time_range) |
 | Plaso | Split: `plaso_extract` (log2timeline.py → .plaso) + `psort_filter` (psort.py + filter expression) |
 | Sleuth Kit | `mmls`, `fls`, `fsstat` |

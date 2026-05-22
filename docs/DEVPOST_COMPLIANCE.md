@@ -90,7 +90,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - **Explicit scope decision: Windows-DFIR-depth-first.** macOS / Linux / Win11 SRUM-ETW / ESXi / FOR572 network forensics deferred to v2 with named architectural extension points (5th `net_executor` and `live_executor` fanout branches).
-- 23 tool wrappers (10 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
+- 24 tool wrappers (11 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
 - Three evidence types covered with depth: memory image, disk image, triage zip. Three playbook YAMLs encode SANS-canonical sequencing per type.
 - 50 ground-truth indicators across 3 engineered cases (lol-bins, credential theft, ransomware)
 - DKOM/T1014 detection via pslist+psscan divergence — encoded, not LLM-recalled
