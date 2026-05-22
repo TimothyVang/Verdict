@@ -188,7 +188,7 @@ If the workspace files don't exist yet (we're early in Week 1), clone is enough 
 This section is contributor-specific workflow on top of those rules.
 
 ### Branches
-Format: `<type>/<task-id>-<slug>` — e.g. `feat/W1-B-1-artifact-class-enum`. Branch from `main`, rebase before PR, squash on merge only if the branch was a single logical task. Otherwise preserve the TDD red→green commits — they're the audit trail.
+Format: `<type>/<task-id>-<slug>` — e.g. `feat/W1.B.1-artifact-class-enum`. Branch from `main`, rebase before PR, squash on merge only if the branch was a single logical task. Otherwise preserve the TDD red→green commits — they're the audit trail.
 
 ### Commit + push: use `/qc`
 
