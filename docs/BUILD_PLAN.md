@@ -162,6 +162,9 @@ By June 14 the repo will have this shape:
 │   │       └── ledger_emitter.py           # LedgerEmitter wrapper (W2.C.3)
 │   ├── tools/
 │   │   ├── base.py                         # ToolWrapper abstract
+│   │   ├── external.py                     # ExternalToolSpec dataclass
+│   │   ├── parsers.py                      # Tool stdout → ToolOutput parser
+│   │   ├── registry.py                     # TOOL_SPECS registry + helpers
 │   │   ├── args_validators.py              # ArgsValidator (Pydantic v2; W2.E.1)
 │   │   ├── vol3/                           # 10 Volatility plugin wrappers
 │   │   │   ├── pslist.py
