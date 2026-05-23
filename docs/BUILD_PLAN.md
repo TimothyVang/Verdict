@@ -124,6 +124,7 @@ By June 14 the repo will have this shape:
 │   │   ├── hunt_evil.py                    # HuntEvilBaseline + ProcessBaselineAnomaly (W1.F.8)
 │   │   ├── verdict_status.py               # VerdictStatus enum (W1.B.13)
 │   │   ├── case_conclusion.py              # CaseConclusion for no-evil terminal cases (W1.B.14)
+│   │   ├── memory.py                       # MemoryEntry + MemoryUpdateProposal + MemoryType
 │   │   └── version.py                      # SCHEMA_VERSION constant + migration helpers
 │   ├── verification/
 │   │   ├── strategy.py                     # VerifierStrategy Protocol
@@ -201,6 +202,12 @@ By June 14 the repo will have this shape:
 │   │   ├── ls.py / show.py / export.py / validate.py
 │   │   ├── mode.py / gc.py / health.py
 │   │   └── doctor.py                       # Pre-flight checks (W5.A.4)
+│   ├── memory/
+│   │   ├── __init__.py
+│   │   └── store.py                        # SQLite-backed append-only MemoryStore
+│   ├── proof/
+│   │   ├── __init__.py
+│   │   └── cloud.py                        # Cloud-only Claude proof harness
 │   └── adapters/
 │       ├── opencti_mcp.py                  # OpenCTI enrichment (W5.B.1)
 │       ├── velociraptor_mcp.py             # Live-endpoint mode (W5.B.2)
@@ -227,7 +234,11 @@ By June 14 the repo will have this shape:
 │   ├── tools/                              # Each tool wrapper integration test
 │   ├── sandboxes/                          # Microsandbox + TSI tests
 │   ├── ledger/                             # Chain integrity + HMAC tests
+│   ├── memory/                             # MemoryStore tests
 │   ├── observability/                      # Langfuse + OTel tests
+│   ├── policy/                             # No-mocks hook, source-layout, eval-fail-closed gates
+│   ├── proof/                              # Cloud proof harness tests
+│   ├── runtime/                            # Gateway, mode-detect, mode-lock, evidence-recheck tests
 │   ├── cli/                                # CLI tests
 │   ├── chaos/                              # kill-9 chaos tests (W3.E.6)
 │   ├── smoke/                              # Cross-cutting smoke tests
