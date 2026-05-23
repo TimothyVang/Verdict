@@ -54,8 +54,8 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 | Architecture rationale | `docs/ARCHITECTURE.md` |
 | Schema patches + DFIR rule encoding | `docs/ARCHITECTURE.md` §4 |
 | Project-level conventions | `CLAUDE.md` (this repo) |
-| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `src/verdict/planning/prompts/examiner_caveats.md` |
-| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `src/verdict/playbooks/*.yml` |
+| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and `src/verdict/planning/prompts/examiner_caveats.md` |
+| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and `src/verdict/playbooks/*.yml` |
 | Tool surface | `src/verdict/tools/` |
 | Decision history | `git log --oneline` |
 | Why we picked X over Y | v4.5 §"Lock-In Decisions" + v4.5 §"Per-Tool Deep Dives" |
