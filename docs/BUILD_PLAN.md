@@ -166,7 +166,7 @@ By June 14 the repo will have this shape:
 │   │   ├── parsers.py                      # Tool stdout → ToolOutput parser
 │   │   ├── registry.py                     # TOOL_SPECS registry + helpers
 │   │   ├── args_validators.py              # ArgsValidator (Pydantic v2; W2.E.1)
-│   │   ├── vol3/                           # 10 Volatility plugin wrappers
+│   │   ├── vol3/                           # 10 of 11 vol3 plugin wrapper files (vol3.info registered in registry.py)
 │   │   │   ├── pslist.py
 │   │   │   ├── psscan.py                   # NEW (W1.E.1)
 │   │   │   ├── pstree.py
