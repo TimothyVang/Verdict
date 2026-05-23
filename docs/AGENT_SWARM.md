@@ -263,7 +263,7 @@ Body:
 
 ```markdown
 ## Task
-[W1.B.7](BUILD_PLAN.md#L382)
+[W1.B.7](BUILD_PLAN.md#L396)
 
 ## Mode(s) affected
 all  <!-- or cloud / airgap / dual -->
