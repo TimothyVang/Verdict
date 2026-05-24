@@ -33,7 +33,7 @@ Every item must be present or the submission is incomplete.
 
 | Required artifact | Source rule | Where in our doc set | Owner | Status |
 |---|---|---|---|---|
-| **Public repository URL** | "Provide a URL to your code repository" | GitHub repo (TBD: `github.com/<org>/verdict`); set up W6.D.1 | Tim | TODO |
+| **Public repository URL** | "Provide a URL to your code repository" | `github.com/TimothyVang/Verdict`; remaining W6.D.1 tasks: About-section license badge, confirm public visibility | Tim | TODO |
 | **Public + open source** | "The repository must be public and open source" | Repo settings: Public; LICENSE file with MIT | Tim | TODO |
 | **MIT or Apache 2.0 license** | "by including an MIT or Apache 2.0 open source license file" | `LICENSE` file at repo root with MIT text | Tim (W6.C.4) | GATED |
 | **License visible at top of repo (About section)** | "This license should be detectable and visible at the top of the repository page (in the About section)" | GitHub repo About metadata: License = "MIT" badge displayed | Tim (NEW: W6.D.0) | **MISSING — added below** |
