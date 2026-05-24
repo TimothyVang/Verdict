@@ -308,7 +308,7 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [x] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
 
 ### W1.A.2 — SIFT VM provisioning (manual + scripted)
-- [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation per project's existing `scripts/sift-vm-bootstrap.sh`.
+- [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation manually (see SIFT install docs).
 - [ ] **W1.A.2.b** — Smoke test: `vol3 -h` runs inside VM. Verify Python 3.11 present.
 - [ ] **W1.A.2.c** — Commit: `docs(build): SIFT VM provisioning checklist [W1.A.2]`
 
