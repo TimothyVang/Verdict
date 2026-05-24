@@ -110,7 +110,9 @@ By June 14 the repo will have this shape:
 │   ├── __init__.py
 │   ├── runtime/
 │   │   ├── mode_detect.py                  # detect_mode() + Mode enum (W5.A.1)
-│   │   └── gateway.py                      # FastMCP gateway init
+│   │   ├── gateway.py                      # FastMCP gateway init
+│   │   ├── evidence_recheck.py             # periodic evidence re-hash (W1.G.7)
+│   │   └── mode_lock.py                    # mode-lock enforcement on resume (W3.C.1)
 │   ├── schemas/
 │   │   ├── __init__.py
 │   │   ├── artifact_class.py               # ArtifactClass enum (W1.B.1)
