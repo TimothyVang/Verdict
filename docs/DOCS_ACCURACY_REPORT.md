@@ -200,8 +200,8 @@ All 11 punchlist items closed in two passes:
 | C1 | `T1014.001` → `T1014` | ✅ closed | `README.md`, `docs/ARCHITECTURE.md`, `docs/DEVPOST_COMPLIANCE.md` |
 | C2 | "RFC-2119 standard MIT" → "OSI-canonical MIT" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.0.b |
 | C3 | vol3 example version `2.10.0` → `2.28.0` (with build-time pin note) | ✅ closed | `docs/ARCHITECTURE.md` Pattern 1 |
-| H1 | vol3 plugin count: dropped `windows.info` from typed list (10 plugins, matches BUILD_PLAN). Note: `windows.info` is still invokable through the dynamic vol3 allow-list (`§6 Tool-call argument validation`). | ✅ closed | `docs/ARCHITECTURE.md` §6 |
-| H2 | "19 wrappers" → "23 wrappers" (10 vol3 + 2 hayabusa + 2 plaso + 9 other) | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 89 |
+| H1 | vol3 plugin count: `windows.info` reinstated in typed list as registered `ExternalToolSpec` in `src/verdict/tools/registry.py`; count is 11 plugins (info, pslist, psscan, pstree, cmdline, dlllist, malfind, netscan, svcscan, handles, callbacks). | ✅ closed | `docs/ARCHITECTURE.md` §6, `src/verdict/tools/registry.py` |
+| H2 | "19 wrappers" → "24 wrappers" (11 vol3 + 2 hayabusa + 2 plaso + 9 other); count updated after `windows.info` reinstatement in H1. | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 93 |
 | H3 | 9-node count: aligned by removing "executor_work" as a separate node in CLAUDE.md and BUILD_PLAN.md (it's the in-fanout composition); clarified `clarify_node` is a sub-state of `comprehension_gate` in ARCHITECTURE.md §2 | ✅ closed | `CLAUDE.md` §4, `docs/BUILD_PLAN.md` Week 2 critical-path, `docs/ARCHITECTURE.md` §2 |
 | H4 | "12 documentation files" → "16 documentation files" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` line 146 |
 | H5 | Old checklist-count wording → "every checklist item ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a + `docs/BUILD_PLAN.md` W6.D.3 |
