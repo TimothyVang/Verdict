@@ -89,7 +89,7 @@ grep MICROSANDBOX_NETWORK_DEFAULT .env
 # Expect: MICROSANDBOX_NETWORK_DEFAULT=false
 
 # 4. Verdict doctor pre-flight
-verdict doctor   # checks all of the above + SGLang + Langfuse + HMAC key
+verdict doctor   # checks all of the above + SGLang + HMAC key
 ```
 
 ## 5. Install pattern
