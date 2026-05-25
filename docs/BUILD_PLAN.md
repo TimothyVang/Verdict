@@ -188,7 +188,7 @@ By June 14 the repo will have this shape:
 │   │   ├── bulk_extractor.py
 │   │   ├── exiftool.py
 │   │   ├── capa.py
-│   │   └── sanitization.py                 # Prompt-injection scanner (W2.E.4)
+│   │   └── sanitization.py                 # Prompt-injection scanner (W2.E.5)
 │   ├── sandboxes/
 │   │   ├── microsandbox_provider.py        # Pattern 1 ephemeral VM (W1.A.6)
 │   │   ├── tsi_provider.py                 # Pattern 2 TSI enrichment (W3.B.1)
