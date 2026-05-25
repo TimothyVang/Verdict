@@ -12,7 +12,7 @@
 
 ## 1. Why a tandem framework
 
-Sixteen skills under `.claude/skills/` is more than any single task should pull on. Without composition discipline, a generic agent will skip planning, jump to code, and skip the review/commit gate. The framework below pins down **which skill fires when**, **which Verdict hard rule each skill enforces**, and **which subagent_type runs it**, so a session opened against the Verdict charter executes the same loop every time.
+Eighteen skills under `.claude/skills/` is more than any single task should pull on. Without composition discipline, a generic agent will skip planning, jump to code, and skip the review/commit gate. The framework below pins down **which skill fires when**, **which Verdict hard rule each skill enforces**, and **which subagent_type runs it**, so a session opened against the Verdict charter executes the same loop every time.
 
 The composition is a single-pass pipeline. Each phase has a defined input, output, the skill that runs it, and the gate that admits it to the next phase. Iteration happens **inside** a phase (e.g. RED → GREEN → REFACTOR inside test-driven-development), not by jumping back across the pipeline.
 
@@ -112,6 +112,6 @@ The framework is intentionally Phase 0 — skills are vendored and documented, b
 ## 7. Anti-patterns (what NOT to do)
 
 - **Don't edit vendored skill files in place.** All Verdict-specific behavior goes in `verdict-house-rules` so `git pull upstream main` re-vendoring stays mechanical.
-- **Don't pile on more skills.** The Reddit consensus is "2–3 plugins max + a precise CLAUDE.md beats 50 generic plugins". We have 16; that is already at the upper end. New skills require the §3.8 audit gate **and** a clear pipeline-phase justification.
+- **Don't pile on more skills.** The Reddit consensus is "2–3 plugins max + a precise CLAUDE.md beats 50 generic plugins". We have 18; that is already at the upper end. New skills require the §3.8 audit gate **and** a clear pipeline-phase justification.
 - **Don't skip phases.** The pipeline is single-pass on purpose. If you find yourself jumping from phase 1 to phase 7, you're rationalizing vibe-coding.
 - **Don't mock to satisfy a skill.** `test-driven-development` will pass with mocked tests; `verdict-house-rules` will fail the commit. The mock is the bug.

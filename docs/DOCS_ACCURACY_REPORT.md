@@ -167,7 +167,7 @@ These were checked and hold up.
 - **Judging window** Jun 19 – Jul 3 2026, winners ~Jul 8 — ✓ matches.
 - **SANS Institute** as sponsor — ✓ matches.
 - **6 equally weighted judging criteria** — ✓ matches Devpost rules; the prior "5 of 6" framing is correctly called out as wrong (DEVPOST_COMPLIANCE Part 3 intro).
-- **License attributions** for the stack table (`ARCHITECTURE.md` §7) — spot-checked SGLang Apache-2.0, LangGraph MIT, Pydantic MIT, FastMCP Apache-2.0, NeMo Guardrails Apache-2.0, Inspect AI MIT — all match upstream.
+- **License attributions** for the stack table (`ARCHITECTURE.md` §7) — spot-checked SGLang Apache-2.0, LangGraph MIT, Pydantic MIT, FastMCP Apache-2.0, Inspect AI MIT — all match upstream.
 - **License "hard nos"** — Daytona AGPL-3.0, REMnux GPL-3.0 — match upstream.
 - **6-week window math** — May 2 → Jun 14 EOD against a Jun 15 23:45 EDT deadline = ~28h buffer. ✓ correct.
 
@@ -200,13 +200,13 @@ All 11 punchlist items closed in two passes:
 | C1 | `T1014.001` → `T1014` | ✅ closed | `README.md`, `docs/ARCHITECTURE.md`, `docs/DEVPOST_COMPLIANCE.md` |
 | C2 | "RFC-2119 standard MIT" → "OSI-canonical MIT" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.0.b |
 | C3 | vol3 example version `2.10.0` → `2.28.0` (with build-time pin note) | ✅ closed | `docs/ARCHITECTURE.md` Pattern 1 |
-| H1 | vol3 plugin count: dropped `windows.info` from typed list (10 plugins, matches BUILD_PLAN). Note: `windows.info` is still invokable through the dynamic vol3 allow-list (`§6 Tool-call argument validation`). | ✅ closed | `docs/ARCHITECTURE.md` §6 |
-| H2 | "19 wrappers" → "23 wrappers" (10 vol3 + 2 hayabusa + 2 plaso + 9 other) | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 89 |
+| H1 | vol3 plugin count: `windows.info` reinstated in typed list as registered `ExternalToolSpec` in `src/verdict/tools/registry.py`; count is 11 plugins (info, pslist, psscan, pstree, cmdline, dlllist, malfind, netscan, svcscan, handles, callbacks). | ✅ closed | `docs/ARCHITECTURE.md` §6, `src/verdict/tools/registry.py` |
+| H2 | "19 wrappers" → "24 wrappers" (11 vol3 + 2 hayabusa + 2 plaso + 9 other); count updated after `windows.info` reinstatement in H1. | ✅ closed | `docs/ARCHITECTURE.md` §6 header, `docs/DEVPOST_COMPLIANCE.md` line 93 |
 | H3 | 9-node count: aligned by removing "executor_work" as a separate node in CLAUDE.md and BUILD_PLAN.md (it's the in-fanout composition); clarified `clarify_node` is a sub-state of `comprehension_gate` in ARCHITECTURE.md §2 | ✅ closed | `CLAUDE.md` §4, `docs/BUILD_PLAN.md` Week 2 critical-path, `docs/ARCHITECTURE.md` §2 |
 | H4 | "12 documentation files" → "16 documentation files" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` line 146 |
 | H5 | Old checklist-count wording → "every checklist item ticked" | ✅ closed | `docs/DEVPOST_COMPLIANCE.md` W6.D.4.a + `docs/BUILD_PLAN.md` W6.D.3 |
 | H6 | README W2 roadmap "9 vol3 wrappers" reference removed during 2026-05-02 doc refactor | ✅ closed | `README.md` (no current occurrence) |
-| M1 | `blake3` API: `blake3(enc, derive_key_context=...)` constructor pattern (not `instance.derive_key`) | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet |
+| M1 | `blake3` API: keyed-hash mode `blake3(data, key=_SEED_DERIVATION_KEY)` (not `instance.derive_key()`); 32-byte key held in module constant | ✅ closed | `docs/ARCHITECTURE.md` §1 `derive_seeds` snippet; `src/verdict/verification/derive_seeds.py` |
 | M3 | Pattern 2 TSI vs Pattern 1 `network=False`: explicit one-paragraph clarification added | ✅ closed | `docs/ARCHITECTURE.md` Pattern 2 |
 | M4 | `verdict reverify` surfaced in README CLI block with parallel-chain note | ✅ closed | `README.md` Quick reference |
 

@@ -47,7 +47,7 @@ The fork point is before `planner_node`, not at quorum. Reverify reruns the full
 |---|---|
 | `verdict show <case_id>` | Lists all `chain_id` values, modes, statuses, created timestamps, and finding counts |
 | `verdict export <case_id>` | Defaults to `chain_id={case_id}-original`; accepts `--chain-id <id>` or `--chain-id all` |
-| `verdict approve <finding_id>` | If the finding ID exists in more than one chain, fails and requires `--chain-id <id>` |
+| `verdict approve <case_id> <finding_id> --approver <approver>` | If the finding ID exists in more than one chain, fails and requires `--chain-id <id>` |
 | `verdict validate <case_id>` | Validates every chain unless `--chain-id <id>` narrows scope |
 | `verdict resume <case_id>` | Resumes only the latest interrupted chain if unambiguous; otherwise requires `--chain-id <id>` |
 

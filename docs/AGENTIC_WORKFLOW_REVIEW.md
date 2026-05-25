@@ -87,6 +87,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Fix:** Add task to `BUILD_PLAN.md` `W1.A.7` (pre-commit setup): write a ~40-LOC custom AST hook (`scripts/check_no_mocks.py`) that walks all `.py` files under `verdict/` and `tests/` and rejects any of: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `if .*(MOCK|TEST_MODE).*:`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Wire as a `pre-commit` local hook.
 
+**Fix status:** `scripts/check_no_mocks.py` exists and is wired as the `check-no-mocks` hook in `.pre-commit-config.yaml`, scanning `src/verdict tests scripts swarm`.
+
 ---
 
 ## HIGH — must fix before W2.B (LangGraph compile)
@@ -133,7 +135,7 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Claim:** "PIVOT (cheap, `pivot_max=15`): single Hypothesis added on basis of an executor's output. Re-enters `executor_work` only."
 
-**Reality:** When `pivot_node` adds one hypothesis to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`, does the fanout run on (a) all hypotheses including the previous round's, or (b) only the newly added one? Reducer dedup behavior on `case.findings` isn't defined either — same hypothesis run twice could yield two near-identical Finding rows.
+**Reality:** When `pivot_node` adds one hypothesis to `InvestigationPlan.positive_hypotheses` and re-enters `executor_fanout`, does the fanout run on (a) all hypotheses including the previous round's, or (b) only the newly added one? Reducer dedup behavior on `case.findings` isn't defined either — same hypothesis run twice could yield two near-identical Finding rows.
 
 **Fix:** Spec in ARCH §2 Pivot subsection: pivot re-runs the 4 executor branches against the **single new hypothesis only** (not the full hypothesis list). The fanout reducer **appends** results to `case.findings` without deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant: after N pivots, `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts.
 
@@ -184,6 +186,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 **Reality:** No `.pre-commit-config.yaml` exists. Line 140 uses `test -f .pre-commit-config.yaml && uv run pre-commit install --install-hooks` — silently no-ops because the file is missing. Line 220's "hooks installed; green" is currently a lie. The grep gate at line 556 only catches missing prefixes after the fact (does not block bad commits). All §3.7 rules are unenforced.
 
 **Fix:** Pull `.pre-commit-config.yaml` creation into the W1.A.7 acceptance criteria (today it's implicit). Bare-minimum config: (a) `commitizen check` against a regex requiring `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$`; (b) `ruff check --select ALL`; (c) the `scripts/check_no_mocks.py` AST hook from D1; (d) `cargo fmt --check`. Once the file lands, drop the `test -f` short-circuit in `CONTRIBUTING.md` line 140.
+
+**Fix status:** `.pre-commit-config.yaml` now exists at the repo root with `verdict-commit-msg`, `check-no-mocks`, and `ruff-check` local hooks. `CONTRIBUTING.md` no longer guards the `pre-commit install` call with `test -f`.
 
 ---
 
@@ -247,6 +251,8 @@ Finding IDs are prefixed `R*` (runtime workflow) or `D*` (development workflow) 
 
 **Fix:** Stage a real workflow `.github/workflows/eval-hallucination-gate.yml` in W1.A.9 that runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the job must fail closed with `scorer_not_implemented` rather than returning a passing score. W1-W3 may publish an advisory ≤10% trend report; W4+ release gates are hard ≤5%.
 
+**Fix status:** `.github/workflows/eval-hallucination-gate.yml` now exists (landed in W1.A.9). The file runs `inspect eval` against the three per-mode eval tasks and fails closed when the scorer is not yet implemented.
+
 ---
 
 ## LOW — verified accurate (no action)
@@ -269,16 +275,16 @@ The following workflow claims were checked and hold up:
 ## Summary punchlist (priority order)
 
 1. **R1 — RESOLVED** — `VerdictStatus` enum cascade across 4 files now uses CLAUDE.md's six-value list as canonical; engine-quorum-vs-case-verdict distinction lives in CLAUDE.md §3.6.
-2. **R2 + R3** — Add a quorum dispatch table to ARCH §1 covering all three strategies; add empty-set-is-DISAGREEMENT rule.
-3. **R4** — Spec `ModeLockedError` exit-code + stderr in CLAUDE.md §3.4.
-4. **R5** — Add `max_clarify_iterations=2` to ARCH §2 comprehension_gate.
-5. **R7** — Spec pivot state-merge: 4 branches × 1 new hypothesis, append to `case.findings`, no dedup.
-6. **R9** — Add `_unverifiable_relaxes_corroboration` validator branch + `failure_reason` field; cite from ARCH §6.
-7. **D1 + D3** — Pull `.pre-commit-config.yaml` into W1.A.7 acceptance; add `scripts/check_no_mocks.py` AST hook task.
-8. **D2** — BUILD_PLAN sweep: every `*.a` "Failing test" subtask names the literal RED assertion; add RED-line policy to BUILD_PLAN intro.
-9. **R12** — Caveat-trigger-keying note at top of CLAUDE.md §3.3 table.
-10. **R13** — Sub-technique-applies-to-negatives sentence appended to CLAUDE.md §3.5.
-11. **D4** — Stage `.github/workflows/eval-hallucination-gate.yml` fail-closed task in W1.A.9.
+2. **R2 + R3 — RESOLVED** — Quorum dispatch table added to `ARCHITECTURE.md` §1; empty-set-is-DISAGREEMENT rule added at the bottom of the dispatch table.
+3. **R4 — RESOLVED** — `ModeLockedError` exit-code + stderr message specced in `CLAUDE.md` §3.4.
+4. **R5 — RESOLVED** — `max_clarify_iterations=2` and exhaustion-to-CONTESTED path added to `ARCHITECTURE.md` §2 comprehension-gate clarify budget subsection.
+5. **R7 — RESOLVED** — Pivot state-merge contract (4 branches × 1 new hypothesis, append to `case.findings`, no dedup, state invariant) added to `ARCHITECTURE.md` §2.
+6. **R9 — RESOLVED** — `_unverifiable_relaxes_corroboration` validator branch + `failure_reason` field added to `ARCHITECTURE.md` §6 tool-call argument validation subsection.
+7. **D1 + D3 — RESOLVED** — `scripts/check_no_mocks.py` exists and is wired as `check-no-mocks` hook in `.pre-commit-config.yaml`; `CONTRIBUTING.md` no longer guards `pre-commit install` with `test -f`.
+8. **D2 — RESOLVED** — RED-line policy added to `BUILD_PLAN.md` intro; every `*.a` subtask now names a test path and the literal failing assertion.
+9. **R12 — RESOLVED** — Caveat-trigger-keying note (artifact_classes membership; `LOGON_TYPE_3_VS_10` named exception) added at top of `CLAUDE.md` §3.3 table.
+10. **R13 — RESOLVED** — Sub-technique-precision-applies-to-negatives sentence added to `CLAUDE.md` §3.5.
+11. **D4 — RESOLVED** — `.github/workflows/eval-hallucination-gate.yml` now exists (W1.A.9); see Fix status note above.
 12. **R6, R10, R11, R8 — RESOLVED** — `docs/FAILURE_MODES.md` covers branch timeout, sandbox spawn failure, and TSI proxy failure; `docs/CASE_ISOLATION.md` covers reverify chain semantics.
 
-**Estimated fix effort:** ~75 minutes for items 1–11 (in-place edits to 5 existing docs); items 12 are next-turn doc creation already scoped.
+All punchlist items are resolved. No open items remain from this audit pass.

@@ -33,7 +33,7 @@ Every item must be present or the submission is incomplete.
 
 | Required artifact | Source rule | Where in our doc set | Owner | Status |
 |---|---|---|---|---|
-| **Public repository URL** | "Provide a URL to your code repository" | GitHub repo (TBD: `github.com/<org>/verdict`); set up W6.D.1 | Tim | TODO |
+| **Public repository URL** | "Provide a URL to your code repository" | `github.com/TimothyVang/Verdict`; remaining W6.D.1 tasks: About-section license badge, confirm public visibility | Tim | TODO |
 | **Public + open source** | "The repository must be public and open source" | Repo settings: Public; LICENSE file with MIT | Tim | TODO |
 | **MIT or Apache 2.0 license** | "by including an MIT or Apache 2.0 open source license file" | `LICENSE` file at repo root with MIT text | Tim (W6.C.4) | GATED |
 | **License visible at top of repo (About section)** | "This license should be detectable and visible at the top of the repository page (in the About section)" | GitHub repo About metadata: License = "MIT" badge displayed | Tim (NEW: W6.D.0) | **MISSING — added below** |
@@ -46,7 +46,7 @@ Every item must be present or the submission is incomplete.
 | **Demo shows ≥1 self-correction sequence** | "including at least one self-correction sequence" | Air-gap mode hero beat ⓹ — Qwen3-vs-GLM disagreement → CONTESTED → replan → VETTED_AIRGAP. Narrator calls it out: "this is self-correction." | Beaver (W6.A.2) | **MUST verify on every cut** |
 | **Demo on YouTube/Vimeo/Youku, public** | "must be uploaded to and made publicly visible on YouTube, Vimeo, or Youku" | YouTube unlisted-then-public on Jun 14 | Tim (W6.D.3) | GATED |
 | **Demo no third-party trademarks/copyrighted music** | "must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission" | Use royalty-free / CC0 audio. No corporate logos beyond fair-use citation of Volatility/Hayabusa logos for tool identification. | Beaver (W6.A.2) | GATED |
-| **Architecture Diagram (visual file)** | "Include an Architecture Diagram — A clear visual showing how components connect — the agent, SIFT tools, MCP servers, evidence sources, output pipeline" | `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (NOT just ASCII). Shows: Examiner CLI → Gateway → Mode selector → Planner/Verifier → Microsandbox VMs → 12 SIFT tools → Evidence Vault + Ledger + Langfuse. | Tim (NEW: W6.C.7) | **MISSING — added below** |
+| **Architecture Diagram (visual file)** | "Include an Architecture Diagram — A clear visual showing how components connect — the agent, SIFT tools, MCP servers, evidence sources, output pipeline" | `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual (NOT just ASCII). Shows: Examiner CLI → Gateway → Mode selector → Planner/Verifier → Microsandbox VMs → 12 SIFT tools → Evidence Vault + Ledger + Langfuse. | Tim (W6.C.7) | **SVG present** (`docs/ARCHITECTURE_DIAGRAM.svg`); ARCHITECTURE.md embed present; README reference pending W6.C.7.c; PNG fallback pending W6.C.7.b |
 | **Evidence Dataset Documentation** | "Evidence Dataset Documentation — What the agent was tested against, source of the data, and what the agent found" | `docs/RELEASE.md` dataset section covering NIST CFReDS Hacking Case, Honeynet ransomware image, 3 engineered cases, source attribution, and summary findings. | KP (NEW: W6.C.8) | GATED |
 | **Accuracy Report** | "Self-assessment of findings accuracy. False positives, missed artifacts, hallucinated claims identified during testing. Honesty valued over perfection." | `docs/RELEASE.md` accuracy section with per-mode hallucination rate, false positives, missed artifacts, MITRE sub-technique precision, and Qwen3-vs-GLM disagreement correlation. | KP (W5.E.1) | GATED |
 | **Agent Execution Logs** | "Structured logs showing the full agent communication and tool execution sequence... Multi-agent: agent-to-agent message logs with timestamps. Single-agent: tool execution logs with timestamps and token usage. Persistent loop: iteration-over-iteration traces showing how the agent's approach changed. Judges must be able to trace any finding back to the specific tool execution that produced it." | VERDICT is **multi-agent** (Qwen3 + GLM + Claude in dual mode). Required: agent-to-agent logs with timestamps. Plus tool execution logs with timestamps + token usage. Plus replan iteration traces. **Package as `submission/execution-logs/<case_id>.jsonl`** — distilled view of HMAC ledger + Langfuse traces + planner CoT, formatted for judge consumption. NOT just a tar of the raw ledger. | Tim (NEW: W6.C.9) | **MISSING — added below** |
@@ -63,10 +63,10 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - Mode-aware verifier strategy (cloud-only/airgap/dual auto-detected, mode-locked at case_init)
-- Plan-then-Execute LangGraph with 9 nodes including planner_critique_node (CoVe), comprehension_gate, pivot_node, replan_node, unverifiable_finalize_node
+- Plan-then-Execute LangGraph with 8 registered nodes (planner, planner_critique, comprehension_gate, executor_fanout, pivot, quorum, replan, finalize); `unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node
 - Self-correction via cross-engine quorum CONTESTED → replan loop
 - Bounded recovery: pivot_max=15 (cheap), replan_max=3 (expensive), then explicit UNVERIFIABLE + interrupt()
-- Tool-call argument hallucination caught by Pydantic-AI args_validator before sandbox spawn (W2.E.1)
+- Tool-call argument hallucination caught by args_validator (Pydantic v2) before sandbox spawn (W2.E.1)
 
 **Demo segment:** air-gap hero beat ⓹ (Qwen3-vs-GLM disagreement → replan → re-converge).
 
@@ -90,7 +90,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 
 **How VERDICT scores:**
 - **Explicit scope decision: Windows-DFIR-depth-first.** macOS / Linux / Win11 SRUM-ETW / ESXi / FOR572 network forensics deferred to v2 with named architectural extension points (5th `net_executor` and `live_executor` fanout branches).
-- 23 tool wrappers (10 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
+- 24 tool wrappers (11 vol3 plugins + Hayabusa split into csv-timeline+filter + plaso split into extract+filter + 9 Sleuth Kit/EZ Tools/bulk_extractor/exiftool/capa)
 - Three evidence types covered with depth: memory image, disk image, triage zip. Three playbook YAMLs encode SANS-canonical sequencing per type.
 - 50 ground-truth indicators across 3 engineered cases (lol-bins, credential theft, ransomware)
 - DKOM/T1014 detection via pslist+psscan divergence — encoded, not LLM-recalled
@@ -115,7 +115,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - Mode lock at case_init: refuses to advance if resume detects mode mismatch
 - chattr +i on evidence vault at case_init
 - Sanitization scanner on tool output for prompt-injection patterns (IGNORE PREVIOUS, SYSTEM:, etc.)
-- Pydantic-AI args_validator rejects unknown flags before sandbox spawn
+- args_validator (Pydantic v2) rejects unknown flags before sandbox spawn
 - Periodic evidence re-hash check (every 10 super-steps) catches anything that bypasses the three-layer gate
 - HMAC key TPM-backed if /dev/tpmrm0 present, else gpg-encrypted with passphrase
 
@@ -146,7 +146,7 @@ The rules list **six equally weighted** criteria. Earlier doc-set passes claimed
 - `scripts/install.sh` with cloud credential detection (`CLAUDE_CODE_OAUTH_TOKEN`, interactive Claude Code OAuth, `ANTHROPIC_API_KEY`, optional host-side `OPENROUTER_API_KEY`); auto-detects and configures without passing secrets into microVMs
 - `verdict doctor` pre-flight (W5.A.4) reports each component status before first use
 - `docs/RELEASE.md` reproducible-build section verified from a fresh SIFT VM and second VM in W6.C.3
-- Full CLI surface: `verdict {init, resume, reverify, status, ls, show, export, validate, mode, gc, health, doctor}`
+- Full CLI surface: `verdict {doctor, mode, init, run-tool, run-case, resume, reverify, status, ls, show, export, validate, approve, gc, package-check, health}`
 - Consolidated documentation set: README, ARCHITECTURE, DEVPOST_COMPLIANCE, RELEASE, FAILURE_MODES, CASE_ISOLATION, and the docs wiki index
 - Conventional Commits with task ID embedded (e.g. `feat(schema): foo [W1.B.1]`) — git log archeology trivial
 - Architecture diagram as rendered visual (`docs/ARCHITECTURE_DIAGRAM.svg`)
@@ -196,7 +196,7 @@ Three hours before pushing the v-submit tag, verify ALL of the following are TRU
 - [ ] Repo About section shows MIT badge
 - [ ] README.md at repo root with quickstart
 - [ ] `docs/RELEASE.md` reproducible-build section verified from fresh SIFT VM and second VM
-- [ ] `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual present
+- [x] `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual present
 - [ ] `docs/RELEASE.md` documents what we tested against + sources + findings
 - [ ] `docs/RELEASE.md` includes honest false-positive / missed-artifact / hallucination tally per mode
 - [ ] `submission/execution-logs/case_001.jsonl`, `case_002.jsonl`, `case_003.jsonl` distilled execution-log artifacts
@@ -227,10 +227,10 @@ These amendments have been patched into `BUILD_PLAN.md`; they remain here so eve
 - [ ] **W6.D.0.e** — Commit if any docs reference the repo URL: `chore(release): GitHub repo public + MIT badge in About [W6.D.0]`
 
 ### W6.C.7 — `docs/ARCHITECTURE_DIAGRAM.svg` rendered visual
-- [ ] **W6.C.7.a** — Author Mermaid or draw.io source for system diagram covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches; each branch composes DenyRuleWrapper → ToolExecutor → LedgerEmitter as the per-branch `executor_work` sub-state), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs (per-tool), Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services (Velociraptor, OpenCTI, REMnux).
+- [x] **W6.C.7.a** — Author Mermaid or draw.io source for system diagram covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches; each branch composes DenyRuleWrapper → ToolExecutor → LedgerEmitter as the per-branch `executor_work` sub-state), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs (per-tool), Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services (Velociraptor, OpenCTI, REMnux).
 - [ ] **W6.C.7.b** — Render to SVG (preferred — scales) and PNG fallback. Place at `docs/ARCHITECTURE_DIAGRAM.svg` and `docs/ARCHITECTURE_DIAGRAM.png`.
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md.
-- [ ] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM.svg rendered visual [W6.C.7]`
+- [x] **W6.C.7.d** — Commit: `docs: ARCHITECTURE_DIAGRAM.svg rendered visual [W6.C.7]`
 
 ### W6.C.8 — `docs/RELEASE.md` dataset section
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware image, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (summary of findings, with finding_ids referencing the accuracy report). (5) Limitations: Windows-only; no live-response; no Win11-specific; no macOS/Linux.
@@ -244,7 +244,7 @@ These amendments have been patched into `BUILD_PLAN.md`; they remain here so eve
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
 ### W6.C.10 — `docs/RELEASE.md` novelty section
-- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher with T1218 sub-techniques, agentskills.io skill bundle, custom Inspect AI scorers including step_efficiency + mitre_subtechnique_precision + negative_hypothesis_quality + Qwen3-vs-GLM disagreement-correlation analysis). (3) What was pre-existing open source (with license + source URL each: SIFT Workstation, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic + Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher with T1218 sub-techniques, agentskills.io skill bundle, custom Inspect AI scorers including step_efficiency + mitre_subtechnique_precision + negative_hypothesis_quality + Qwen3-vs-GLM disagreement-correlation analysis). (3) What was pre-existing open source (with license + source URL each: SIFT Workstation, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, FastMCP, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README.
 - [ ] **W6.C.10.c** — Commit: `docs(release): document novel contribution [W6.C.10]`
 

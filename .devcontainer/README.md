@@ -18,8 +18,9 @@ or build directly with `docker build -f .devcontainer/Dockerfile .`.
 
 Every component is MIT, Apache-2.0, or BSD — passes CLAUDE.md §3.8.
 
-The 17 skills under `.claude/skills/` and the 6 MCPs in `.mcp.json` come
-along for free (they're just files in the repo + `npx`/`uvx` commands the
+The 18 skills under `.claude/skills/` and the MCPs across `.mcp*.json`
+(1 in the safe-default `.mcp.json`, 6 in `.mcp.cloud.json` / `.mcp.dual.json`)
+come along for free (they're just files in the repo + `npx`/`uvx` commands the
 container can run).
 
 ## What's NOT inside (by design)
@@ -42,7 +43,7 @@ The image carries **no secrets**. `devcontainer.json` uses `${localEnv:VAR}` ref
 |---|---|---|
 | `ANTHROPIC_API_KEY` | host shell or `.env` | preferred cloud credential; container env only — never written to disk inside the image |
 | `OPENROUTER_API_KEY` | host shell or `.env` | optional host-side AI-agent fallback; never passed into microsandboxes |
-| `GITHUB_TOKEN` | host shell | passed to the `github` MCP via `.mcp.json` (already env-var-ref only) |
+| `GITHUB_TOKEN` | host shell | passed to the `github` MCP via `.mcp.cloud.json` / `.mcp.dual.json` (env-var-ref only) |
 | `LANGFUSE_*` | host shell or `.env` | pointed at `host.docker.internal:3000` |
 | `SGLANG_*` | hard-coded to `host.docker.internal:{30000,30001}` | overrides the `.env` defaults of `localhost:*` so the container reaches the host |
 
@@ -113,7 +114,7 @@ openssl rand -base64 32 | gpg --symmetric --output ~/.verdict/key.gpg
 chmod 600 ~/.verdict/key.gpg
 ```
 
-After this, `verdict doctor` (when the CLI lands per `BUILD_PLAN.md` W6) will report green on whatever the host can actually provide.
+After this, `verdict doctor` will report green on whatever the host can actually provide.
 
 ## Rebuilding
 

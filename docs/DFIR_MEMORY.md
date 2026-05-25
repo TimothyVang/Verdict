@@ -1,5 +1,7 @@
 # DFIR Self-Evolving Memory (SANS-Aligned)
 
+> **Wiki:** [Index](README.md) · [Architecture](ARCHITECTURE.md) · [Failure Modes](FAILURE_MODES.md) · [Case Isolation](CASE_ISOLATION.md) · root [CLAUDE.md](../CLAUDE.md)
+
 This document defines VERDICT's memory model for **evidence-first** incident response. It is intentionally conservative: memory is allowed to evolve, but only through governed, auditable mutations.
 
 ## Goals
@@ -29,7 +31,7 @@ Only these operations are allowed:
 
 For persistent classes (`technique`, `pattern`, `meta`):
 
-- At least one `evidence_ref` is required.
+- At least one `evidence_refs` entry is required.
 - `last_validated_at` must be on/after `created_at`.
 - `expiry`, when present, must be after `created_at`.
 - Versioning is monotonic (`version >= 1`) and lineage is retained.

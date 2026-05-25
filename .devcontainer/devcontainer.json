@@ -1,6 +1,6 @@
 // VERDICT dev container — opens any host with Docker into a reproducible
-// toolchain (uv/Python 3.11, Node 20, pnpm, Rust 1.88) plus the 6 MCPs
-// from .mcp.json and the 19 skills under .claude/skills/. See README.md
+// toolchain (uv/Python 3.11, Node 20, pnpm, Rust 1.88) plus the MCPs across
+// .mcp*.json and the 18 skills under .claude/skills/. See README.md
 // in this folder for what is NOT in here (Microsandbox, SGLang) and why.
 {
     "name": "VERDICT dev",

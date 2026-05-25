@@ -38,7 +38,7 @@ A subagent-driven fallback path lives in `scripts/run-swarm.sh` for cases where 
 | Model — `schema/sandbox/tool-wrapper/eval-engineer` | `claude-sonnet-4-6` | Bulk implementation work; mechanical with judgment. ~5× cheaper than Opus, fits §14 budget. |
 | Model — reviewer (TaskCompleted hook) | `claude-sonnet-4-6` | Mechanical pass/fail on lint/test output. Runs as a hook script, not a teammate. |
 | Model — auditor (TaskCompleted hook) | `claude-haiku-4-5` | Pattern-match scan over a diff. Cheapest tier. Runs as a hook script, not a teammate. |
-| Storage (cross-launch state) | SQLite WAL + fsync (`swarm/state.db`) | Same discipline as the runtime ledger (CLAUDE.md §9). Agent Teams' shared task list lives at `~/.claude/tasks/<team>/` and does NOT survive cleanup; persistent state belongs in `swarm/state.db`. |
+| Storage (cross-launch state) | SQLite WAL + fsync (`swarm/swarm.db`) | Same discipline as the runtime ledger (CLAUDE.md §9). Agent Teams' shared task list lives at `~/.claude/tasks/<team>/` and does NOT survive cleanup; persistent state belongs in `swarm/swarm.db`. |
 | Auth | `CLAUDE_CODE_OAUTH_TOKEN` (Pro/Max subscription) | Each teammate is a full Claude Code session inheriting the lead's auth. `ANTHROPIC_API_KEY` is the direct API fallback; `OPENROUTER_API_KEY` is an optional host-side fallback for build-side AI agents if direct Anthropic quota is constrained. |
 | Per-task token ceiling | $20 USD | Tracked in `swarm/state.py:tasks.token_spend_usd`. Worker exceeds → exits `turn_budget_exceeded`. |
 
@@ -263,7 +263,7 @@ Body:
 
 ```markdown
 ## Task
-[W1.B.7](BUILD_PLAN.md#L371)
+[W1.B.7](BUILD_PLAN.md#L396)
 
 ## Mode(s) affected
 all  <!-- or cloud / airgap / dual -->

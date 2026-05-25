@@ -21,7 +21,7 @@ VERDICT detects available infrastructure at startup and selects one of three mod
 | Mode | Trigger | Engines | Verifier strategy | Use case |
 |---|---|---|---|---|
 | **cloud-only** | Internet ✓ + GPU ✗ | Claude Code (Agent SDK) | n=3 self-consistency at temperature=0.7 with three case_id-derived blake3 seeds. ≥2-of-3 → `VETTED_CLOUD`; below → `CONTESTED` (escalates to `replan_node`). **Best-effort vetting, not true verification** — same model shares failure modes. | SOC analyst on corporate laptop |
-| **air-gap-only** | Internet ✗ + GPU ✓ | SGLang serving Qwen3-30B-A3B-Thinking + GLM-4.5-Air | Cross-family quorum: both engines must independently agree on artifact set (Jaccard ≥0.80) and identical MITRE technique. Independence is **partial-not-absolute** (overlapping web pretraining); empirical disagreement-correlation measured in W4.G.1. | DCO operator on classified network |
+| **air-gap-only** | Internet ✗ + GPU ✓ | SGLang serving Qwen3-30B-A3B-Thinking-2507 + GLM-4.5-Air | Cross-family quorum: both engines must independently agree on artifact set (Jaccard ≥0.80) and identical MITRE technique. Independence is **partial-not-absolute** (overlapping web pretraining); empirical disagreement-correlation measured in W4.G.1. | DCO operator on classified network |
 | **dual** | Internet ✓ + GPU ✓ | Claude + Qwen3 + GLM-4.5-Air | Three-way: cloud agrees with at least one local + locals agree with each other. Strongest verification. | Forensic lab |
 
 ### Why diverse seeds matter (cloud-only)
@@ -31,18 +31,12 @@ Same seed + same temperature + same prompt = three identical outputs. Wang et al
 ```python
 from blake3 import blake3
 
+_SEED_DERIVATION_KEY = b"VERDICT self-consistency seeds\0\0"
+
 def derive_seeds(case_id: str) -> tuple[int, int, int]:
-    """Three reproducible-but-diverse seeds per case via blake3 derive_key contexts."""
-    return tuple(
-        int.from_bytes(
-            blake3(
-                case_id.encode(),
-                derive_key_context=f"verdict.seeds.v1.{label}",
-            ).digest(length=4),
-            "big",
-        )
-        for label in ("a", "b", "c")
-    )
+    """Three reproducible-but-diverse seeds per case via keyed blake3."""
+    digest = blake3(case_id.encode(), key=_SEED_DERIVATION_KEY).digest(length=12)
+    return tuple(int.from_bytes(digest[i : i + 4], "big") for i in range(0, 12, 4))
 ```
 
 Reproducibility-with-diversity: re-running the case yields the same three samples (audit-friendly), but the three samples differ from each other (verifier-friendly).
@@ -62,7 +56,7 @@ Reproducibility-with-diversity: re-running the case yields the same three sample
 | `DualLaneCrossEngine` | cloud disagrees with both locals | `CONTESTED` | `replan_node` |
 | `DualLaneCrossEngine` | cloud agrees with 1 local, locals disagree with each other | `CONTESTED` | `replan_node` |
 | any | After `replan_max=3` exhaustion | `EXHAUSTED_REPLAN` | `unverifiable_finalize_node` |
-| any | Tool / sandbox / args exhaustion (see §6 + `FAILURE_MODES.md`) | `UNVERIFIABLE` | `finalize_node` (with `failure_reason` set) |
+| any | Tool / sandbox / args exhaustion (see §6 + `FAILURE_MODES.md`) | `UNVERIFIABLE` | `finalize_node` (`failure_reason` field planned — see §6) |
 
 **Empty-set rule:** if any quorum participant returns `parsed_artifacts=[]` (zero findings — e.g., GLM crashed silently, executor branch timed out per R6), it is treated as DISAGREEMENT for Jaccard / pair-agreement purposes. Empty-set is **never** a null vote that lets the non-empty engine win by default. Otherwise an executor that crashes silently becomes a free pass for the other lane and destroys the cross-engine guarantee.
 
@@ -96,7 +90,7 @@ START
 │                 │  parsed_success_criteria_hash. Mismatch
 │                 │  → clarify sub-state (re-prompts within
 │                 │  the same node, not a separate top-level
-│                 │  node — total node count stays 9).
+│                 │  node — total node count stays 8).
 └────────┬────────┘
          ▼  (fanout — 4 parallel branches)
 ┌─────────────────┐
@@ -142,7 +136,7 @@ Real DFIR pivots 8–15 times per investigation; v4.4 research showed that bound
 
 ### Pivot state-merge contract
 
-When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
+When `pivot_node` adds a hypothesis it appends one entry to `InvestigationPlan.positive_hypotheses` and re-enters `executor_fanout`. The fanout runs the 4 branches against the **single new hypothesis only** (not the full hypothesis list — re-running prior hypotheses would inflate the ledger and double-count for quorum). The fanout reducer **appends** the new findings to `case.findings` with no deduplication; downstream `quorum_node` does the per-hypothesis grouping. State invariant after N pivots: `len(case.findings) ≈ 4 × (initial_hypotheses + N)`, modulo branch timeouts (see `FAILURE_MODES.md`).
 
 ### Interrupt idempotency contract
 
@@ -189,52 +183,71 @@ The differentiator vs. competitors. Schema validators reject sloppy findings bef
 ### Artifact-pair corroboration
 
 ```python
+AVAILABLE_CAVEAT_TRIGGERS = {
+    ArtifactClass.AMCACHE: CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC,
+    ArtifactClass.SHIMCACHE: CaveatID.SHIMCACHE_ORDER_CHANGED_WIN81,
+    ArtifactClass.PREFETCH: CaveatID.PREFETCH_SSD_DISABLED,
+    ArtifactClass.MFT: CaveatID.MFT_SI_STOMPABLE,
+    ArtifactClass.USNJRNL: CaveatID.USNJRNL_WRAPS,
+    ArtifactClass.SYSMON_1: CaveatID.SYSMON_PROCESSGUID_OVER_PID,
+}
+
 class Finding(BaseModel):
     artifact_paths: list[Path] = Field(min_length=2)
     artifact_classes: list[ArtifactClass] = Field(min_length=2)
     caveats_acknowledged: list[CaveatID] = []
     mitre_technique: str | None  # validated against ^T\d{4}(\.\d{3})?$
+    evtx_4624_logon_types: list[int] = []
 
     @model_validator(mode="after")
-    def _execution_claims_need_two_classes(self):
-        is_exec = any(
-            self.mitre_technique and self.mitre_technique.startswith(p)
-            for p in ("T1059", "T1106", "T1204", "T1218", "T1543", "T1547")
+    def _forensic_corroboration(self):
+        # Execution-class techniques need ≥2 distinct artifact classes
+        is_execution = self.mitre_technique and self.mitre_technique.startswith(
+            ("T1059", "T1106", "T1204", "T1218", "T1543", "T1547")
         )
-        if is_exec and len(set(self.artifact_classes)) < 2:
-            raise ValueError(f"execution claim needs ≥2 distinct artifact classes")
-        return self
+        if is_execution and len(set(self.artifact_classes)) < 2:
+            raise ValueError("execution claims require two distinct artifact classes")
 
-    @model_validator(mode="after")
-    def _amcache_caveat_required(self):
-        if ArtifactClass.AMCACHE in self.artifact_classes:
-            if CaveatID.AMCACHE_LASTMODIFIED_NOT_EXEC not in self.caveats_acknowledged:
-                raise ValueError("Finding cites Amcache without LastModified caveat")
+        # Each cited artifact class requires its Tier-1 caveat to be acknowledged
+        acknowledged = set(self.caveats_acknowledged)
+        for artifact_class, required_caveat in AVAILABLE_CAVEAT_TRIGGERS.items():
+            if artifact_class in self.artifact_classes and required_caveat not in acknowledged:
+                raise ValueError(f"{required_caveat.value} must be acknowledged")
+
+        # EVTX_4624 logon-type caveat (named exception — not keyed by artifact class alone)
+        evtx_4624_cited = ArtifactClass.EVTX_4624 in self.artifact_classes
+        evtx_type_requires_caveat = not self.evtx_4624_logon_types or any(
+            t in {3, 10} for t in self.evtx_4624_logon_types
+        )
+        if evtx_4624_cited and evtx_type_requires_caveat:
+            if CaveatID.LOGON_TYPE_3_VS_10 not in acknowledged:
+                raise ValueError(f"{CaveatID.LOGON_TYPE_3_VS_10.value} must be acknowledged")
         return self
 ```
 
 ### CaveatID — Tier-1 examiner caveats from `CLAUDE.md` §3.3
 
 ```python
-class CaveatID(str, Enum):
-    AMCACHE_LASTMODIFIED_NOT_EXEC = "amcache_lastmodified_neq_execution"
-    SHIMCACHE_ORDER_CHANGED_WIN81 = "shimcache_order_lru_pre81_insertion_post81"
-    PREFETCH_SSD_DISABLED = "prefetch_disabled_on_ssd_or_gpo"
-    MFT_SI_STOMPABLE = "mft_si_timestomp_use_fn"
-    USNJRNL_WRAPS = "usnjrnl_wraps_treat_gaps_carefully"
-    LOGON_TYPE_3_VS_10 = "evtx_4624_type3_network_neq_type10_rdp"
-    SYSMON_PROCESSGUID_OVER_PID = "sysmon_processguid_correlation_key_not_pid"
+class CaveatID(StrEnum):
+    AMCACHE_LASTMODIFIED_NOT_EXEC = "AMCACHE_LASTMODIFIED_NOT_EXEC"
+    SHIMCACHE_ORDER_CHANGED_WIN81 = "SHIMCACHE_ORDER_CHANGED_WIN81"
+    PREFETCH_SSD_DISABLED = "PREFETCH_SSD_DISABLED"
+    MFT_SI_STOMPABLE = "MFT_SI_STOMPABLE"
+    USNJRNL_WRAPS = "USNJRNL_WRAPS"
+    LOGON_TYPE_3_VS_10 = "LOGON_TYPE_3_VS_10"
+    SYSMON_PROCESSGUID_OVER_PID = "SYSMON_PROCESSGUID_OVER_PID"
 ```
 
-Loaded into every executor system prompt via `verdict/planning/prompts/examiner_caveats.md`.
+Loaded into every executor system prompt via `src/verdict/planning/prompts/examiner_caveats.md`.
 
 ### ArtifactClass — multi-source corroboration vocabulary
 
 ```python
-class ArtifactClass(str, Enum):
+class ArtifactClass(StrEnum):
     PREFETCH = "prefetch"
     AMCACHE = "amcache"
     SHIMCACHE = "shimcache"
+    EVTX_4624 = "evtx_4624"
     EVTX_4688 = "evtx_4688"
     SYSMON_1 = "sysmon_1"
     NETWORK = "network"
@@ -242,6 +255,7 @@ class ArtifactClass(str, Enum):
     TASK_SCHEDULER = "task_scheduler"
     WMI_SUBSCRIPTION = "wmi_subscription"
     MFT = "mft"
+    USNJRNL = "usnjrnl"
     PROCESS_MEMORY = "process_memory"
     YARA_HIT = "yara_hit"
     SIGMA_HIT = "sigma_hit"
@@ -249,7 +263,7 @@ class ArtifactClass(str, Enum):
 
 ### Playbooks — SANS canonical tool sequencing
 
-Three YAMLs in `verdict/playbooks/` (memory.yml / disk.yml / triage.yml) encode the SANS-canonical sequencing summarized in `CLAUDE.md` §7 and this document's forensic doctrine. Loaded into planner system prompt at case_init based on detected evidence type.
+Three YAMLs in `src/verdict/playbooks/` (memory.yml / disk.yml / triage.yml) encode the SANS-canonical sequencing summarized in `CLAUDE.md` §7 and this document's forensic doctrine. Loaded into planner system prompt at case_init based on detected evidence type.
 
 `memory.yml` example rule (DKOM detection):
 ```yaml
@@ -263,7 +277,7 @@ This is one of the architecture's clearest moats — DKOM/T1014 detection auto-f
 
 ### Hunt Evil baseline
 
-`verdict/knowledge/hunt_evil.yml` keyed by process name with expected parent / path / signing / instance count for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` Hypothesis subtype maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
+`src/verdict/knowledge/hunt_evil.yml` keyed by process name with `expected_parent_names`, `expected_path_prefixes`, and `expected_user_names` for 8 canonical Windows processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss). `ProcessBaselineAnomaly` maps to `T1036.005` (Match Legitimate Name or Location). Catches `scvhost.exe` with parent `cmd.exe` automatically.
 
 ---
 
@@ -273,19 +287,19 @@ This is one of the architecture's clearest moats — DKOM/T1014 detection auto-f
 
 ```python
 class LedgerEntry(BaseModel):
-    entry_id: str                              # ULID
+    entry_id: str                              # "{case_id}:{event_type}:{timestamp_utc}"
     case_id: str                               # ROOT — eternal
     finding_id: str | None
     event_type: Literal[
         "case_init", "tool_call", "finding", "approval", "rejection",
         "mode_lock", "comprehension_check", "critique_verdict",
         "pivot", "exhausted_replan", "evidence_hash_recheck",
-        "sandbox_failure", "planner_cot",
+        "sandbox_failure", "planner_cot", "case_conclusion",
     ]
     timestamp_utc: datetime
 
     # Mode lock
-    mode_at_case_init: Mode
+    mode_at_case_init: str
     verifier_strategy_used: str
 
     # Langfuse cross-references
@@ -299,10 +313,10 @@ class LedgerEntry(BaseModel):
     langgraph_checkpoint_id: str
 
     # Examination-environment metadata (NIST SP 800-86 §5.1.4)
-    microsandbox_version: str | None = None
-    rootfs_sha256: str | None = None
-    tool_version: str | None = None
-    kernel_version: str | None = None
+    microsandbox_version: str
+    rootfs_sha256: str
+    tool_version: str
+    kernel_version: str
 
     # Per-output-file hashes (NIST SP 800-86 §5.1.2)
     output_files_sha256: dict[str, str] = {}
@@ -310,7 +324,7 @@ class LedgerEntry(BaseModel):
     # Ledger chain integrity
     payload: dict
     payload_redactions: list[str] = []
-    prev_entry_hash: str
+    prev_entry_hash: str | None  # None for the first entry in a case
     hmac_sig: str
     schema_version: int = 1
 ```
@@ -329,11 +343,11 @@ Every 10 super-steps, re-hash all `EvidenceItem` files against the manifest. Mis
 
 ---
 
-## 6. Tool surface (12 SIFT tools, 23 wrappers)
+## 6. Tool surface (12 SIFT tools, 24 wrappers)
 
 | Tool family | Wrappers |
 |---|---|
-| Volatility 3 | `windows.{pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (10 typed plugin wrappers; `windows.info` is invoked through the generic vol3 allow-list — see §6 *Tool-call argument validation*) |
+| Volatility 3 | `windows.{info,pslist,psscan,pstree,cmdline,dlllist,malfind,netscan,svcscan,handles,callbacks}` (11 typed plugin wrappers; `vol3.info` is registered as a typed `ExternalToolSpec` in `src/verdict/tools/registry.py`) |
 | Hayabusa | Split: `hayabusa_csv_timeline` (extract) + `hayabusa_filter` (analyst-driven filter by sigma_level + time_range) |
 | Plaso | Split: `plaso_extract` (log2timeline.py → .plaso) + `psort_filter` (psort.py + filter expression) |
 | Sleuth Kit | `mmls`, `fls`, `fsstat` |
@@ -384,14 +398,14 @@ Pattern 2 intentionally allows TSI-mediated egress to a single allowlisted origi
 
 ### Tool-call argument validation
 
-Pydantic-AI `args_validator` runs *before* `microsandbox.spawn`:
+`ArgsValidator` (Pydantic v2, `src/verdict/tools/args_validators.py`) runs *before* `microsandbox.spawn`:
 - vol3: validate plugin against allow-list (parse `vol3 --help` once at startup, hash-pin); `--pid` is positive int; reject unknown flags.
 - plaso: pre-validate filter expression with `psteal --validate-filter` in ephemeral sandbox.
 - Hayabusa: validate timeline-flag combinations against playbook matrix.
 
 On validation failure: raise `ModelRetry`, bounded by `tool_arg_retry_max=2`, then UNVERIFIABLE.
 
-When `tool_arg_retry_max` exhausts, the executor emits `Finding(status=UNVERIFIABLE, artifact_paths=[], caveats_acknowledged=[], failure_reason="tool_args_failed_validation_after_2_retries")`. This would normally fail the `Finding._artifact_paths_min_length=2` and execution-class corroboration validators; the schema exempts UNVERIFIABLE findings via the `_unverifiable_relaxes_corroboration` validator branch — when `Finding.status == UNVERIFIABLE` AND `Finding.failure_reason` is set, `artifact_paths` and `caveats_acknowledged` may be empty. The same exemption covers `failure_reason ∈ {sandbox_spawn_failed, tsi_proxy_unreachable, branch_timeout}` (see `FAILURE_MODES.md`).
+When `tool_arg_retry_max` exhausts, the executor routes the hypothesis to `UNVERIFIABLE`. The current `Finding` schema enforces `min_length=2` on `artifact_paths` and `artifact_classes` for **all** findings; there is no current exemption for UNVERIFIABLE status. **Planned:** add `failure_reason: str | None` field to `Finding` and a `_unverifiable_relaxes_corroboration` model validator that allows empty `artifact_paths`/`caveats_acknowledged` when `status == UNVERIFIABLE` and `failure_reason` is set (values: `tool_args_failed_validation_after_2_retries`, `sandbox_spawn_failed`, `tool_execution_failed`, `tsi_proxy_unreachable`, `branch_timeout`). Until that field lands, UNVERIFIABLE findings from tool/sandbox failures must populate `artifact_paths` with whatever paths were available (see `FAILURE_MODES.md`).
 
 ### No-evil case conclusion
 
@@ -399,7 +413,6 @@ Benign or red-herring cases do not produce a `Finding` with empty artifacts. The
 
 ```python
 class CaseConclusion(BaseModel):
-    case_id: str
     status: Literal["NO_EVIL_FOUND", "EVIL_FOUND", "UNVERIFIABLE"]
     playbook_steps_executed: list[str] = Field(min_length=1)
     evidence_hashes: dict[Path, str]
@@ -410,7 +423,7 @@ class CaseConclusion(BaseModel):
 
 ### Sanitization for prompt injection
 
-`verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
+`src/verdict/tools/sanitization.py` scans tool stdout for prompt-injection patterns (`IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`, common jailbreak suffixes). Detected → `ToolOutput.sanitization_flags` populated; surfaced to planner. Defense against malicious memory images where attacker-controlled strings end up in `vol3.cmdline` output.
 
 ---
 
@@ -424,7 +437,7 @@ class CaseConclusion(BaseModel):
 | Local Model A | Qwen3-30B-A3B-Thinking-2507 | Apache-2.0 |
 | Local Model B (verifier) | GLM-4.5-Air | MIT |
 | Orchestration | LangGraph | MIT |
-| Schema layer | Pydantic v2 + Pydantic-AI | MIT |
+| Schema layer | Pydantic v2 | MIT |
 | MCP gateway | FastMCP 3.x | Apache-2.0 |
 | Sandbox primary | Microsandbox (libkrun microVM; beta, verified per release) | Apache-2.0 |
 | Sandbox secondary | bubblewrap | LGPL-2.0 (linking-clean) |
@@ -432,7 +445,6 @@ class CaseConclusion(BaseModel):
 | Eval harness | Inspect AI | MIT |
 | Tracing | Langfuse self-hosted (core) + OpenLLMetry | MIT + Apache-2.0 |
 | Durable execution | LangGraph SqliteSaver | MIT |
-| Rails | NeMo Guardrails | Apache-2.0 |
 | Skills | agentskills.io standard | open standard |
 
 **Hard nos** (license-incompatible or architecturally rejected): Daytona (AGPL-3.0), REMnux MCP for vendoring (GPL-3.0; network-call only allowed), Llama 4 / Gemma 3 (community licenses, not OSI), Modal (closed), LangSmith / Braintrust (closed), Arize Phoenix (ELv2), AutoGen v0.4 migration (maintenance mode Oct 2025), Microsoft Agent Framework (Azure-coupled, late). AGPL clean-room rewrites do not strip copyright.
@@ -510,7 +522,7 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 
 2. **Schema strictness vs recall tradeoff.** `Finding` validators reject sloppy findings — good for credibility, but each invariant is a place a *legitimate* finding gets rejected for the wrong reason. Mitigation: have `executor_work` *infer* `artifact_classes` deterministically from `artifact_paths` (e.g. paths matching `\Prefetch\*.pf` → `PREFETCH`) so the LLM never has to know the enum exists. Validator-as-projection rather than validator-as-gate.
 
-3. **"No evil found" verdict is unmodeled.** `Finding.artifact_paths min_length=2` rejects null findings. Some engineered cases will be benign-with-red-herrings. Need a `NegativeFinding` schema variant citing playbook *steps executed* rather than artifact paths. Currently a v1 gap.
+3. **"No evil found" verdict — resolved by `CaseConclusion` (see §6).** `Finding.artifact_paths min_length=2` still rejects empty-artifact findings; benign/red-herring cases instead produce `CaseConclusion(status="NO_EVIL_FOUND")` citing completed playbook steps and evidence hashes. No `NegativeFinding` variant is needed.
 
 4. **Plan-then-Execute is fundamentally batch; DFIR is fundamentally adaptive.** `pivot_max=15` recreates ReAct in a more constrained form. If demo runs show 90% sequential pivots, the topology pays overhead for a parallelism that doesn't materialize. Lean the demo narrative on the *audit-trail review story* (sequential is fine; structure is what reviewability needs) rather than runtime parallelism.
 
@@ -530,5 +542,5 @@ These were raised during the v4.4 research and v4.5 system-design review. They'r
 | v4.4 agentic + DFIR research findings (raw) | `docs/spec/02-audit-v4.4.md` |
 | v4.6 schema patches (raw spec) | `docs/spec/04-spec-plan-v4.6.md` |
 | Project-wide build conventions | `../CLAUDE.md` |
-| Tier-1 examiner caveat source | `../CLAUDE.md` §3.3 and planned `../verdict/planning/prompts/examiner_caveats.md` |
-| Tool sequencing playbook source | `../verdict/playbooks/*.yml` and `docs/ARCHITECTURE.md` §4 |
+| Tier-1 examiner caveat source | `../CLAUDE.md` §3.3 and `../src/verdict/planning/prompts/examiner_caveats.md` |
+| Tool sequencing playbook source | `../src/verdict/playbooks/*.yml` and `docs/ARCHITECTURE.md` §4 |

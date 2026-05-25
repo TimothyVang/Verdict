@@ -285,7 +285,8 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │  • OpenLLMetry / Langfuse instrumentation              │
 │  • TSI secret injection + tcpdump demo                 │
 │  • Mode autodetect + verdict CLI                       │
-│  • THREAT_MODEL.md + FAILURE_MODES.md + CLI.md         │
+│  • Threat model (ARCHITECTURE.md §9) + FAILURE_MODES.md│
+│    + CLI reference (RELEASE.md)                        │
 │  • Devpost packaging + submission                      │
 └────────────────────────────────────────────────────────┘
 
@@ -294,7 +295,7 @@ WEEK 6 ── Jun 6-14 ── DEMO + DOCS + SUBMIT
 │           ~22 teammate-days                            │
 │  GIAC: GNFA, GCFA, GMLE · runs HW+local LLMs at home   │
 │                                                        │
-│  • Plan-then-Execute LangGraph topology (9 nodes)      │
+│  • Plan-then-Execute LangGraph topology (8 nodes)      │
 │  • Three verifier strategies (Cloud/Airgap/Dual)       │
 │  • Seed-derivation fix (n=3 actually diverse paths)    │
 │  • planner_critique_node (CoVe)                        │
@@ -560,14 +561,14 @@ Three layers — **toolchain** (host), **services** (lab/cloud), **agent surface
 | **SGLang** serving Qwen3-30B-A3B-Thinking-2507 (Apache-2.0) | Air-gap + dual modes (planner/executor) | `sglang_server_v1 --model-path … --tool-call-parser qwen --port 30000` |
 | **SGLang** serving GLM-4.5-Air (MIT) | Air-gap + dual modes (verifier only) | `sglang_server_v1 --model-path … --tool-call-parser glm --port 30001` |
 | **Anthropic / OpenRouter API** | Cloud + dual modes | `ANTHROPIC_API_KEY` preferred; `OPENROUTER_API_KEY` optional host-side AI-agent fallback. OAuth/API tokens are per-contributor and never enter microVMs. |
-| **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose up -d` |
+| **Langfuse v2 (self-host)** | Trace observability, ledger ↔ trace cross-link | `docker-compose -f infra/langfuse/docker-compose.yml up -d` |
 | **HMAC signing key** | Ledger integrity (CLAUDE.md §3.9) | TPM (`/dev/tpmrm0`) when available, else gpg-encrypted at `~/.verdict/key.gpg` |
 
-`verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, Langfuse healthy, HMAC key resolvable. CI fails closed if it fails.
+`verdict doctor` is the one-command pre-flight: API reachable, SGLang up, microsandbox installed, HMAC key resolvable. CI fails closed if it fails.
 
 ### Skills — `.claude/skills/` (auto-loaded by Claude Code)
 
-17 vendored skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). Skill and MCP licenses are tracked in `docs/SKILLS_LICENSE_AUDIT.md`.
+18 skills compose into a Plan → TDD → Subagent-driven-dev → Review → Commit pipeline (`docs/SKILLS_FRAMEWORK.md`). Skill and MCP licenses are tracked in `docs/SKILLS_LICENSE_AUDIT.md`.
 
 ```
 verdict-house-rules        ← Verdict (custom). Re-states CLAUDE.md §3 hard rules
@@ -592,6 +593,10 @@ using-superpowers          ← obra/superpowers — index of the framework
 
 grill-me                   ← mattpocock/skills — relentless interview on a plan
 grill-with-docs            ← mattpocock/skills — same, but cross-checks ARCH.md
+
+qc                         ← Verdict (custom). Quick-commit + docs-sweep + push.
+                              Drafts Conventional Commit per §3.7, commits, sweeps
+                              docs/ for drift triggered by the diff, then pushes.
 ```
 
 ### MCPs — mode-scoped configs (MIT/Apache-2.0 only)
@@ -637,7 +642,7 @@ export GITHUB_TOKEN="ghp_..."
 
 # Required for air-gap / dual mode (after SGLang is up)
 export SGLANG_BASE_URL="http://localhost:30000"
-export SGLANG_VERIFIER_BASE_URL="http://localhost:30001"
+export SGLANG_GLM_BASE_URL="http://localhost:30001"
 
 # Required: microsandbox network closed by default
 export MICROSANDBOX_NETWORK_DEFAULT=false
@@ -655,7 +660,7 @@ Full template in `.env.example`. **Never** commit `.env` — `.gitignore` covers
 ```bash
 bash scripts/bootstrap-dev.sh   # toolchain (uv, rustup, nvm, microsandbox), pinned versions, idempotent
 uv sync                         # Python deps
-docker-compose up -d            # Langfuse v2
+docker-compose -f infra/langfuse/docker-compose.yml up -d  # Langfuse v2
 verdict doctor                  # pre-flight: all of the above must be green
 ```
 

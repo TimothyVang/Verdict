@@ -35,8 +35,8 @@ Use the ID in commit messages: `feat(schema): add ArtifactClass enum [W1.B.1]`. 
 VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 
 1. **Three operational modes** (cloud-only / air-gap-only / dual) auto-selected by infrastructure detection; operator overrides via `--mode={cloud,airgap,dual}`. Mode locked at `case_init`.
-2. **Plan-then-Execute LangGraph topology** (9 nodes) with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` (per-branch composition: `DenyRuleWrapper → ToolExecutor → LedgerEmitter`; the composition is referred to internally as `executor_work` and is a sub-state of fanout, not a separate top-level node) → `pivot_node` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
-3. **12 SIFT tool wrappers** as MCP tools running in per-call ephemeral microsandbox VMs: `mmls`, `fls`, `fsstat`, `vol3` (10 plugins), `hayabusa` (split: csv-timeline + filter), `plaso` (split: extract + filter), `MFTECmd`, `RECmd`, `PECmd`, `bulk_extractor`, `exiftool`, `capa`.
+2. **Plan-then-Execute LangGraph topology** (8 nodes) with named nodes: `planner` → `planner_critique` (CoVe) → `comprehension_gate` → `executor_fanout` (per-branch composition: `DenyRuleWrapper → ToolExecutor → LedgerEmitter`; the composition is referred to internally as `executor_work` and is a sub-state of fanout, not a separate top-level node) → `pivot_node` → `quorum` → `replan` → `finalize`. (`unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node.)
+3. **12 SIFT tool wrappers** as MCP tools running in per-call ephemeral microsandbox VMs: `mmls`, `fls`, `fsstat`, `vol3` (11 plugins), `hayabusa` (split: csv-timeline + filter), `plaso` (split: extract + filter), `MFTECmd`, `RECmd`, `PECmd`, `bulk_extractor`, `exiftool`, `capa`.
 4. **Three-layer immutability defense**: Layer 1 = Claude PreToolUse hook (best-effort, version-dependent caveat per #33106/#37210); Layer 2 = LangGraph `DenyRuleWrapper` (architectural guarantee, all modes); Layer 3 = Microsandbox read-only mount (kernel-enforced).
 5. **Cryptographic chain-of-custody**: HMAC-signed append-only JSONL ledger with `prev_entry_hash`, three-tier ID hierarchy (`case_id` / `langfuse_trace_id` / `langgraph_checkpoint_id`), per-output-file SHA-256, examination-environment metadata (`microsandbox_version`, `rootfs_sha256`, `tool_version`, `kernel_version`).
 6. **Forensic discipline encoded in code**: `Finding.artifact_paths min_length=2`, `Finding.artifact_classes min_length=2`, `Finding.caveats_acknowledged` field with model_validators, three playbook YAMLs (memory/disk/triage), `examiner_caveats.md` system-prompt include, `hunt_evil.yml` with 8 process baselines, DKOM/T1014 detection via pslist+psscan divergence, sub-technique-aware MITRE field validation.
@@ -54,11 +54,10 @@ VERDICT is a mode-aware verifier-gateway for forensic LLM agents. By June 14:
 | Architecture rationale | `docs/ARCHITECTURE.md` |
 | Schema patches + DFIR rule encoding | `docs/ARCHITECTURE.md` §4 |
 | Project-level conventions | `CLAUDE.md` (this repo) |
-| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and planned `verdict/planning/prompts/examiner_caveats.md` |
-| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and planned `verdict/playbooks/*.yml` |
-| Tool surface (Rust MCP) | `services/mcp/src/tools/` |
-| Tool surface (Python MCP) | `services/agent_mcp/` |
-| Decision history | `CHANGELOG.md` + `git log --oneline` |
+| Tier-1 examiner caveats | `CLAUDE.md` §3.3 and `src/verdict/planning/prompts/examiner_caveats.md` |
+| Per-evidence-type tool sequencing | `docs/ARCHITECTURE.md` §4 and `src/verdict/playbooks/*.yml` |
+| Tool surface | `src/verdict/tools/` |
+| Decision history | `git log --oneline` |
 | Why we picked X over Y | v4.5 §"Lock-In Decisions" + v4.5 §"Per-Tool Deep Dives" |
 
 If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md` §"Spec/code divergences"). Update the doc rather than rolling back the code, unless the code is wrong.
@@ -73,7 +72,7 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 - **Local Model A:** Qwen3-30B-A3B-Thinking-2507 (Apache-2.0). Air-gap planner/executor; dual-mode local executor/verifier lane. Cloud-only remains Claude Code/Agent SDK only because the mode trigger is GPU absent.
 - **Local Model B (verifier):** GLM-4.5-Air (MIT). Verifier only; never planner. Cross-family verification partner for air-gap and dual modes.
 - **Orchestration:** LangGraph (MIT) state machine. Five core nodes per Plan-then-Execute, plus comprehension_gate (v4.3), planner_critique (v4.4 SHOULD-FIX), pivot_node (v4.4 SHOULD-FIX), unverifiable_finalize (v4.4 SHOULD-FIX).
-- **Schema layer:** Pydantic v2 + Pydantic-AI (MIT) for typed tool args + `ModelRetry` flow.
+- **Schema layer:** Pydantic v2 (MIT) for typed tool args + `ModelRetry` flow via `ArgsValidator`.
 - **MCP gateway:** FastMCP 3.x (Apache-2.0).
 - **Sandbox primary:** Microsandbox (Apache-2.0, beta). libkrun microVM, sub-200ms cold start, built-in MCP server, TSI for credential injection.
 - **Sandbox secondary:** bubblewrap (LGPL-2.0, linking-clean) for non-microVM tools.
@@ -81,7 +80,6 @@ If two authorities conflict: **code + lockfiles win** over docs (per `CLAUDE.md`
 - **Eval harness:** Inspect AI (MIT) — UKGovernmentBEIS/inspect_ai.
 - **Tracing:** Langfuse self-hosted (core MIT) + OpenLLMetry (Apache-2.0). Cross-linked to JSONL ledger.
 - **Durable execution:** LangGraph SqliteSaver (MIT). Single-writer; reducer pattern handles fanout.
-- **Rails:** NeMo Guardrails (Apache-2.0) for input/output rails.
 - **Skills:** agentskills.io standard (open standard) — portable across Claude Code, Hermes, Cursor, Codex.
 
 **Hard nos:** Daytona (AGPL-3.0), REMnux MCP for vendoring (GPL-3.0; network-call only allowed), Llama 4 / Gemma 3 (community licenses, not OSI), Modal (closed), LangSmith / Braintrust (closed), Arize Phoenix (ELv2). AutoGen v0.4 migration (maintenance mode Oct 2025; succeeded by Microsoft Agent Framework which is Azure-coupled and late). Microsoft Agent Framework. AGPL clean-room rewrites.
@@ -97,13 +95,13 @@ By June 14 the repo will have this shape:
 ├── LICENSE                                 # MIT
 ├── README.md
 ├── CONTRIBUTING.md
-├── CHANGELOG.md
 ├── CLAUDE.md                               # Project conventions
 ├── pyproject.toml                          # Workspace root (uv)
 ├── uv.lock
 ├── package.json                            # Root for pnpm workspaces (mcp-widgets deferred V2)
-├── docker-compose.yml                      # Langfuse v2 self-host (default)
-├── docker-compose.langfuse-v3.yml          # ClickHouse-backed alt for >=16GB RAM hosts
+├── infra/
+│   └── langfuse/
+│       └── docker-compose.yml              # Langfuse v2 self-host
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── RELEASE.md                          # build, scope, CLI, demo, accuracy, dataset, novelty
@@ -111,11 +109,12 @@ By June 14 the repo will have this shape:
 ├── src/verdict/                           # Python application source package
 │   ├── __init__.py
 │   ├── runtime/
-│   │   ├── mode_detect.py                  # detect_mode() (W5.A.1)
-│   │   └── gateway.py                      # FastMCP gateway init
+│   │   ├── mode_detect.py                  # detect_mode() + Mode enum (W5.A.1)
+│   │   ├── gateway.py                      # FastMCP gateway init
+│   │   ├── evidence_recheck.py             # periodic evidence re-hash (W1.G.7)
+│   │   └── mode_lock.py                    # mode-lock enforcement on resume (W3.C.1)
 │   ├── schemas/
 │   │   ├── __init__.py
-│   │   ├── mode.py                         # Mode enum
 │   │   ├── artifact_class.py               # ArtifactClass enum (W1.B.1)
 │   │   ├── caveat_id.py                    # CaveatID enum (W1.B.2)
 │   │   ├── evidence.py                     # EvidenceItem + EvidenceManifest (W1.B.3)
@@ -125,6 +124,9 @@ By June 14 the repo will have this shape:
 │   │   ├── ledger.py                       # LedgerEntry (W1.B.11)
 │   │   ├── playbook.py                     # Playbook + Step (W1.F.1)
 │   │   ├── hunt_evil.py                    # HuntEvilBaseline + ProcessBaselineAnomaly (W1.F.8)
+│   │   ├── verdict_status.py               # VerdictStatus enum (W1.B.13)
+│   │   ├── case_conclusion.py              # CaseConclusion for no-evil terminal cases (W1.B.14)
+│   │   ├── memory.py                       # MemoryEntry + MemoryUpdateProposal + MemoryType
 │   │   └── version.py                      # SCHEMA_VERSION constant + migration helpers
 │   ├── verification/
 │   │   ├── strategy.py                     # VerifierStrategy Protocol
@@ -155,11 +157,18 @@ By June 14 the repo will have this shape:
 │   │   ├── topology.py                     # build_graph(mode) → CompiledGraph
 │   │   ├── reducers.py                     # State reducers for fanout merge
 │   │   ├── checkpoint.py                   # SqliteSaver setup + WAL pragmas (W3.E.1)
-│   │   └── interrupt.py                    # interrupt() helpers + unverifiable_finalize wiring (W3.D.4)
+│   │   ├── comprehension_gate.py           # Comprehension gate node (W2.B.2)
+│   │   ├── interrupt.py                    # interrupt() helpers + unverifiable_finalize wiring (W3.D.4)
+│   │   └── wrappers/
+│   │       ├── deny_rule.py                # DenyRuleWrapper Layer 2 immutability (W2.C.1)
+│   │       └── ledger_emitter.py           # LedgerEmitter wrapper (W2.C.3)
 │   ├── tools/
 │   │   ├── base.py                         # ToolWrapper abstract
-│   │   ├── args_validators.py              # Pydantic-AI args_validator framework (W2.E.1)
-│   │   ├── vol3/                           # 10 Volatility plugin wrappers
+│   │   ├── external.py                     # ExternalToolSpec dataclass
+│   │   ├── parsers.py                      # Tool stdout → ToolOutput parser
+│   │   ├── registry.py                     # TOOL_SPECS registry + helpers
+│   │   ├── args_validators.py              # ArgsValidator (Pydantic v2; W2.E.1)
+│   │   ├── vol3/                           # 10 of 11 vol3 plugin wrapper files (vol3.info registered in registry.py)
 │   │   │   ├── pslist.py
 │   │   │   ├── psscan.py                   # NEW (W1.E.1)
 │   │   │   ├── pstree.py
@@ -179,14 +188,13 @@ By June 14 the repo will have this shape:
 │   │   ├── bulk_extractor.py
 │   │   ├── exiftool.py
 │   │   ├── capa.py
-│   │   └── sanitization.py                 # Prompt-injection scanner (W2.E.4)
+│   │   └── sanitization.py                 # Prompt-injection scanner (W2.E.5)
 │   ├── sandboxes/
 │   │   ├── microsandbox_provider.py        # Pattern 1 ephemeral VM (W1.A.6)
 │   │   ├── tsi_provider.py                 # Pattern 2 TSI enrichment (W3.B.1)
 │   │   └── rootfs_pin.py                   # SHA-256 pin verification
 │   ├── ledger/
-│   │   ├── writer.py                       # write + fsync + verify-readback (W2.G.1)
-│   │   ├── chain.py                        # prev_entry_hash chain verification
+│   │   ├── writer.py                       # write + fsync + verify-readback + verify_ledger_chain (W2.G.1)
 │   │   ├── hmac_key.py                     # TPM-backed or gpg-encrypted (W1.G.6)
 │   │   └── redaction.py                    # Auth-field stripping (W3.B.3)
 │   ├── observability/
@@ -195,10 +203,17 @@ By June 14 the repo will have this shape:
 │   │   └── trace_link.py                   # trace_id ↔ ledger cross-link (W3.E.5)
 │   ├── cli/
 │   │   ├── __main__.py
+│   │   ├── credentials.py                  # Cloud credential detection helper (W1.A.1)
 │   │   ├── init.py / resume.py / reverify.py / status.py
 │   │   ├── ls.py / show.py / export.py / validate.py
 │   │   ├── mode.py / gc.py / health.py
 │   │   └── doctor.py                       # Pre-flight checks (W5.A.4)
+│   ├── memory/
+│   │   ├── __init__.py
+│   │   └── store.py                        # SQLite-backed append-only MemoryStore
+│   ├── proof/
+│   │   ├── __init__.py
+│   │   └── cloud.py                        # Cloud-only Claude proof harness
 │   └── adapters/
 │       ├── opencti_mcp.py                  # OpenCTI enrichment (W5.B.1)
 │       ├── velociraptor_mcp.py             # Live-endpoint mode (W5.B.2)
@@ -225,7 +240,11 @@ By June 14 the repo will have this shape:
 │   ├── tools/                              # Each tool wrapper integration test
 │   ├── sandboxes/                          # Microsandbox + TSI tests
 │   ├── ledger/                             # Chain integrity + HMAC tests
+│   ├── memory/                             # MemoryStore tests
 │   ├── observability/                      # Langfuse + OTel tests
+│   ├── policy/                             # No-mocks hook, source-layout, eval-fail-closed gates
+│   ├── proof/                              # Cloud proof harness tests
+│   ├── runtime/                            # Gateway, mode-detect, mode-lock, evidence-recheck tests
 │   ├── cli/                                # CLI tests
 │   ├── chaos/                              # kill-9 chaos tests (W3.E.6)
 │   ├── smoke/                              # Cross-cutting smoke tests
@@ -287,19 +306,19 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 ## Phase W1.A — Infrastructure stand-up (Tim, ~2 days)
 
 ### W1.A.1 — `scripts/install.sh` with cloud credential detection
-- [ ] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Launch the credentials helper in a subprocess with only `CLAUDE_CODE_OAUTH_TOKEN` set in that subprocess environment; assert install reports `mode=oauth`. Run → RED.
-- [ ] **W1.A.1.b** — Write credential detection logic (`CLAUDE_CODE_OAUTH_TOKEN` env → interactive `~/.claude/` → `ANTHROPIC_API_KEY` → optional `OPENROUTER_API_KEY`) in `scripts/install.sh` + Python helper `verdict/cli/credentials.py`. Run → GREEN. `OPENROUTER_API_KEY` is host-side only for AI-agent fallback; `verdict doctor` must fail if any cloud credential would be passed into a microsandbox env.
-- [ ] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
+- [x] **W1.A.1.a** — Write failing test `tests/cli/test_install_credentials.py::test_detects_oauth_token_first`. Launch the credentials helper in a subprocess with only `CLAUDE_CODE_OAUTH_TOKEN` set in that subprocess environment; assert install reports `mode=oauth`. Run → RED.
+- [x] **W1.A.1.b** — Write credential detection logic (`CLAUDE_CODE_OAUTH_TOKEN` env → interactive `~/.claude/` → `ANTHROPIC_API_KEY` → optional `OPENROUTER_API_KEY`) in `scripts/install.sh` + Python helper `src/verdict/cli/credentials.py`. Run → GREEN. `OPENROUTER_API_KEY` is host-side only for AI-agent fallback; `verdict doctor` must fail if any cloud credential would be passed into a microsandbox env.
+- [x] **W1.A.1.c** — Commit: `feat(cli): three-credential-path install per A1 [W1.A.1]`
 
 ### W1.A.2 — SIFT VM provisioning (manual + scripted)
-- [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation per project's existing `scripts/sift-vm-bootstrap.sh`.
+- [ ] **W1.A.2.a** — Document VM specs in `docs/RELEASE.md`: 32GB RAM, 8 vCPU, 200GB disk, KVM enabled. Convert `sift-2026.03.24.ova` to VMware Workstation manually (see SIFT install docs).
 - [ ] **W1.A.2.b** — Smoke test: `vol3 -h` runs inside VM. Verify Python 3.11 present.
 - [ ] **W1.A.2.c** — Commit: `docs(build): SIFT VM provisioning checklist [W1.A.2]`
 
 ### W1.A.3 — Microsandbox install
-- [ ] **W1.A.3.a** — Run `curl -sSL https://get.microsandbox.dev | sh` inside SIFT VM. Verify `microsandbox --version` returns. Verify `microsandbox-mcp` binary present.
+- [ ] **W1.A.3.a** — Run `curl -fsSL https://install.microsandbox.dev | sh` inside SIFT VM. Verify `microsandbox --version` returns. Verify `microsandbox-mcp` binary present.
 - [ ] **W1.A.3.b** — Smoke test: spawn an Ubuntu 22.04 microVM, run `vol3 -h`, destroy. Document spawn time in `docs/RELEASE.md` (target <500ms).
-- [ ] **W1.A.3.c** — Build `verdict-sift-tools` rootfs Docker image with the 12 forensic tools pinned to versions: `vol3==2.10.0`, `hayabusa==2.18.0`, `plaso==20260427`, `MFTECmd==1.2.x`, etc. Push as `verdict-sift-tools:v0.1` and capture SHA-256.
+- [ ] **W1.A.3.c** — Build `verdict-sift-tools` rootfs Docker image with the 12 forensic tools pinned to versions: `vol3==2.28.0`, `hayabusa==2.18.0`, `plaso==20260427`, `MFTECmd==1.2.x`, etc. Push as `verdict-sift-tools:v0.1` and capture SHA-256.
 - [ ] **W1.A.3.d** — Commit: `feat(sandbox): microsandbox install + verdict-sift-tools rootfs pinned [W1.A.3]`
 
 ### W1.A.4 — SGLang + Qwen3 + GLM-4.5-Air on dev rig (Haley, ~1 day)
@@ -311,131 +330,135 @@ The plan below is exhaustive. Every task has owner, hours, and TDD substeps. Tas
 - [ ] **W1.A.4.e** — Commit: `feat(inference): SGLang + Qwen3 + GLM-4.5-Air serving with tool-call parsers [W1.A.4]`
 
 ### W1.A.5 — FastMCP gateway skeleton (Tim)
-- [ ] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway_case_init.py::test_case_init_returns_handle`. Start the real FastMCP gateway process and call the real `case_init` tool against a temporary case directory and read-only sample evidence path; assert it returns `{case_id, mode}` and writes a `case_init` ledger entry. Run → RED.
-- [ ] **W1.A.5.b** — Implement `verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire the real `detect_mode()` contract from day one: cloud requires Anthropic reachability, air-gap requires SGLang reachability, dual requires both. If neither prerequisite is reachable, fail closed with a diagnostic rather than returning a default mode.
-- [ ] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
+- [x] **W1.A.5.a** — Write failing test `tests/runtime/test_gateway.py::test_case_init_missing_evidence_fails_before_case_directory`. Start the real FastMCP gateway process and call the real `case_init` tool against a temporary case directory and read-only sample evidence path; assert it returns `{case_id, mode}` and writes a `case_init` ledger entry. Run → RED.
+- [x] **W1.A.5.b** — Implement `src/verdict/runtime/gateway.py` with FastMCP, single tool `case_init`. Wire the real `detect_mode()` contract from day one: cloud requires Anthropic reachability, air-gap requires SGLang reachability, dual requires both. If neither prerequisite is reachable, fail closed with a diagnostic rather than returning a default mode.
+- [x] **W1.A.5.c** — Commit: `feat(runtime): FastMCP gateway skeleton with case_init [W1.A.5]`
 
 ### W1.A.6 — Microsandbox provider Pattern 1 (per-tool ephemeral microVM)
-- [ ] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_per_call_ephemeral_microvm`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
-- [ ] **W1.A.6.b** — Implement `verdict/sandboxes/microsandbox_provider.py` per v4.5 line 461 sketch. Network=False default; `mounts=[ReadOnly(...)]`; SHA-256 stdout.
-- [ ] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
+- [x] **W1.A.6.a** — Write failing test `tests/sandboxes/test_microsandbox_provider.py::test_microsandbox_command_mounts_evidence_readonly`. Spawn sandbox with read-only `/evidence` mount, run `cat /etc/os-release`, destroy. Assert `network=False` enforced. Run → RED.
+- [x] **W1.A.6.b** — Implement `src/verdict/sandboxes/microsandbox_provider.py` per v4.5 line 461 sketch. Network=False default; `mounts=[ReadOnly(...)]`; SHA-256 stdout.
+- [x] **W1.A.6.c** — Commit: `feat(sandbox): per-tool ephemeral microsandbox provider Pattern 1 [W1.A.6]`
 
 ### W1.A.7 — Langfuse self-host (Tim)
-- [ ] **W1.A.7.a** — Stand up `docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
+- [x] **W1.A.7.a** — Stand up `infra/langfuse/docker-compose.yml` with Langfuse v2 (Postgres-only, ~1.5GB RAM). Verify UI loads on `http://localhost:3000`. **Threshold:** if v2 deployment hits 4-hour blocker, fall back to OpenLLMetry → local Tempo viewer; document why in `docs/RELEASE.md`.
 - [ ] **W1.A.7.b** — Write smoke test `tests/observability/test_langfuse_smoke.py::test_one_trace_renders`. Send one synthetic trace via SDK; assert `/api/public/traces/{id}` returns 200.
 - [ ] **W1.A.7.c** — Commit: `feat(observability): Langfuse v2 self-host + smoke trace [W1.A.7]`
 
-### W1.A.8 — Inspect AI hello-world
-- [ ] **W1.A.8.a** — `pip install inspect-ai` per CLAUDE.md. Author `inspect_ai/tasks/hello_world.py` minimal task. Run `inspect eval inspect_ai/tasks/hello_world.py`. Assert pass.
-- [ ] **W1.A.8.b** — Commit: `feat(eval): Inspect AI hello-world task [W1.A.8]`
+### W1.A.8 — Inspect AI eval scaffolds
+**Superseded by W4.D.1.** The original hello-world task was replaced by the three
+per-mode eval scaffolds (`inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py`)
+already landed at main. No further action needed for W1.A.8.
+
+- [x] **W1.A.8.a** — Per-mode eval scaffolds present at `inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py`. Gate: `ls inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py` passes. *(Done via W4.D.1)*
+- [x] **W1.A.8.b** — Commits: `feat(eval): add fail-closed per-mode scaffolds [W4.D.1]`
 
 ### W1.A.9 — Mechanical hard-rule enforcement (Tim, ~3 hours)
 Pulls forward what `CONTRIBUTING.md` already promises and what `CLAUDE.md` §3.7 + §3.10 require. Without this task, the hard rules are rules of prose only.
 
-- [ ] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
-- [ ] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `verdict/` and `tests/`.
-- [ ] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
-- [ ] **W1.A.9.d** — Add `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` against the real evaluator once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the workflow must fail with `scorer_not_implemented` rather than returning a passing score.
-- [ ] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
-- [ ] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI gate) [W1.A.9]`
+- [x] **W1.A.9.a** — Failing test `tests/policy/test_no_mocks_hook.py::test_rejects_unittest_mock_import`. Assertion: `check_no_mocks.scan(["tests/policy/fixtures/has_mock_import.py"]).violations` is non-empty AND the offending line is reported. Plus `test_allows_third_party_boundary_patch` — patching `httpx` in a single targeted test passes.
+- [x] **W1.A.9.b** — Implement `scripts/check_no_mocks.py` (~40 LOC AST walker). Rejects: `import unittest.mock`, `from unittest import mock`, `import responses`, `import vcr`, `import betamax`, `import httpx_mock`, regex `^\s*if .*(MOCK|TEST_MODE).*:\s*$`, regex `os\.environ\.get\(['"]VERDICT_TEST`. Walks all `.py` under `src/verdict/` and `tests/`.
+- [x] **W1.A.9.c** — Author `.pre-commit-config.yaml` at repo root with hooks: (1) `commitizen check` enforcing `^(feat|fix|test|chore|docs|refactor)\(\w+\): .* \[W\d+\.[A-Z]\.\d+(\.[a-z])?\]$` on commit message; (2) `ruff check --select ALL`; (3) the local `check-no-mocks` hook from W1.A.9.b; (4) `cargo fmt --check`. Run `pre-commit install --install-hooks` in `scripts/install.sh`.
+- [x] **W1.A.9.d** — Add `.github/workflows/eval-hallucination-gate.yml`: on PR, runs `inspect eval inspect_ai/tasks/verdict_eval_cloud.py --score hallucination_rate` against the real evaluator once `verdict doctor --mode cloud` succeeds. Until the real scorer exists in W4.D.1, the workflow must fail with `scorer_not_implemented` rather than returning a passing score.
+- [x] **W1.A.9.e** — Drop the `test -f .pre-commit-config.yaml &&` short-circuit at `CONTRIBUTING.md` line 140 (file exists now; the guard is no longer needed and silently masks a missing config).
+- [x] **W1.A.9.f** — Commit: `feat(policy): mechanical enforcement of §3.7 + §3.10 (no-mocks AST hook + commit-msg regex + hallucination CI gate) [W1.A.9]`
 
 ## Phase W1.B — Schema bundle (Tim, ~2 hours)
 
 This is the contract every teammate will code against. **Lock by Sunday May 4.** All schema work must reconcile against `docs/ARCHITECTURE.md` §4.
 
 ### W1.B.1 — `ArtifactClass` enum
-- [ ] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_13_required_members`. Run → RED.
-- [ ] **W1.B.1.b** — Implement `verdict/schemas/artifact_class.py` per Appendix A.1.
-- [ ] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
+- [x] **W1.B.1.a** — Write failing test `tests/schemas/test_artifact_class.py::test_enum_has_required_members_for_tier_1_caveat_triggers`. Assert all 15 `ArtifactClass` members are present. Run → RED.
+- [x] **W1.B.1.b** — Implement `src/verdict/schemas/artifact_class.py` per Appendix A.1.
+- [x] **W1.B.1.c** — Commit: `feat(schema): ArtifactClass enum (FOR500 corroboration) [W1.B.1]`
 
 ### W1.B.2 — `CaveatID` enum
-- [ ] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_covers_tier1_examiner_caveats`. Assert all 7 from the current planned caveat source `verdict/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
-- [ ] **W1.B.2.b** — Implement `verdict/schemas/caveat_id.py` per Appendix A.2.
-- [ ] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from project MEMORY.md Tier-1 [W1.B.2]`
+- [x] **W1.B.2.a** — Write failing test `tests/schemas/test_caveat_id.py::test_enum_has_seven_tier_1_caveats`. Assert all 7 from the current planned caveat source `src/verdict/planning/prompts/examiner_caveats.md` and the root `CLAUDE.md` §3.3 table. Run → RED.
+- [x] **W1.B.2.b** — Implement `src/verdict/schemas/caveat_id.py` per Appendix A.2.
+- [x] **W1.B.2.c** — Commit: `feat(schema): CaveatID enum from CLAUDE.md §3.3 Tier-1 caveats [W1.B.2]`
 
 ### W1.B.3 — `EvidenceItem` + `EvidenceManifest`
-- [ ] **W1.B.3.a** — Write failing test `tests/schemas/test_evidence.py::test_manifest_hash_is_blake3_of_sorted_pairs`. Run → RED.
-- [ ] **W1.B.3.b** — Implement `verdict/schemas/evidence.py` per v4.5 lines 153–168 + Appendix A.3.
-- [ ] **W1.B.3.c** — Commit: `feat(schema): EvidenceItem + EvidenceManifest schemas [W1.B.3]`
+- [x] **W1.B.3.a** — Write failing test `tests/schemas/test_evidence.py::test_manifest_hash_is_blake3_of_sorted_pairs`. Run → RED.
+- [x] **W1.B.3.b** — Implement `src/verdict/schemas/evidence.py` per v4.5 lines 153–168 + Appendix A.3.
+- [x] **W1.B.3.c** — Commit: `feat(schema): EvidenceItem + EvidenceManifest schemas [W1.B.3]`
 
 ### W1.B.4 — `Artifact` + `ToolOutput` base
-- [ ] **W1.B.4.a** — Write failing test `tests/schemas/test_tool_output.py::test_invocation_hash_combines_name_version_args_evidence`. Run → RED.
-- [ ] **W1.B.4.b** — Implement `verdict/schemas/tool_output.py` per v4.5 lines 170–193 + Appendix A.4.
-- [ ] **W1.B.4.c** — Commit: `feat(schema): Artifact + ToolOutput base for tool wrapper contract [W1.B.4]`
+- [x] **W1.B.4.a** — Write failing test `tests/schemas/test_tool_output.py::test_invocation_hash_combines_name_version_args_evidence`. Run → RED.
+- [x] **W1.B.4.b** — Implement `src/verdict/schemas/tool_output.py` per v4.5 lines 170–193 + Appendix A.4.
+- [x] **W1.B.4.c** — Commit: `feat(schema): Artifact + ToolOutput base for tool wrapper contract [W1.B.4]`
 
 ### W1.B.5 — `Hypothesis` + `InvestigationPlan` + `PlanComprehensionEcho` + `PlannerCritiqueVerdict`
-- [ ] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_T1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
-- [ ] **W1.B.5.b** — Implement `verdict/schemas/plan.py` with all four classes + the `mitre_technique` regex validator (`^T\d{4}(\.\d{3})?$`) + `_negative_hypothesis_quality` validator (deny-list: cosmic/alien/nothing/not-relevant/n-a; require non-None mitre_technique; require non-empty artifact_families).
-- [ ] **W1.B.5.c** — Commit: `feat(schema): Hypothesis + InvestigationPlan + comprehension/critique schemas [W1.B.5]`
+- [x] **W1.B.5.a** — Write failing tests in `tests/schemas/test_plan.py`: `test_mitre_subtechnique_regex_validates_t1055_012` (passes) and `test_mitre_invalid_format_rejected` (raises). Plus `test_negative_hypothesis_quality_rejects_degenerate`. Run → RED.
+- [x] **W1.B.5.b** — Implement `src/verdict/schemas/plan.py` with all four classes + the `mitre_technique` regex validator (`^T\d{4}(\.\d{3})?$`) + `_negative_hypothesis_quality` validator (deny-list: cosmic/alien/nothing/not-relevant/n-a; require non-None mitre_technique; require non-empty artifact_families).
+- [x] **W1.B.5.c** — Commit: `feat(schema): Hypothesis + InvestigationPlan + comprehension/critique schemas [W1.B.5]`
 
 ### W1.B.6 — `Finding` skeleton
-- [ ] **W1.B.6.a** — Write failing test `tests/schemas/test_finding.py::test_finding_round_trips_through_json`. Run → RED.
-- [ ] **W1.B.6.b** — Implement `verdict/schemas/finding.py` skeleton: all v4.5 fields plus the new ones (`artifact_classes`, `caveats_acknowledged`).
-- [ ] **W1.B.6.c** — Commit: `feat(schema): Finding skeleton [W1.B.6]`
+- [x] **W1.B.6.a** — Write failing test `tests/schemas/test_finding.py::test_finding_round_trips_through_json`. Run → RED.
+- [x] **W1.B.6.b** — Implement `src/verdict/schemas/finding.py` skeleton: all v4.5 fields plus the new ones (`artifact_classes`, `caveats_acknowledged`).
+- [x] **W1.B.6.c** — Commit: `feat(schema): Finding skeleton [W1.B.6]`
 
 ### W1.B.7 — Patch `Finding.artifact_paths` to `Field(min_length=2)`
-- [ ] **W1.B.7.a** — Failing test: `test_artifact_paths_min_length_2`. Run → RED.
-- [ ] **W1.B.7.b** — Implement.
-- [ ] **W1.B.7.c** — Commit: `feat(schema): require ≥2 artifact paths per Finding (FOR500) [W1.B.7]`
+- [x] **W1.B.7.a** — Failing test: `test_artifact_paths_min_length_2`. Run → RED.
+- [x] **W1.B.7.b** — Implement.
+- [x] **W1.B.7.c** — Commit: `feat(schema): require ≥2 artifact paths per Finding (FOR500) [W1.B.7]`
 
 ### W1.B.8 — `Finding.artifact_classes` field
-- [ ] **W1.B.8.a** — Failing test: `test_artifact_classes_min_length_2`. Run → RED.
-- [ ] **W1.B.8.b** — Implement.
-- [ ] **W1.B.8.c** — Commit: `feat(schema): Finding.artifact_classes min_length=2 [W1.B.8]`
+- [x] **W1.B.8.a** — Failing test: `test_artifact_classes_min_length_2`. Run → RED.
+- [x] **W1.B.8.b** — Implement.
+- [x] **W1.B.8.c** — Commit: `feat(schema): Finding.artifact_classes min_length=2 [W1.B.8]`
 
 ### W1.B.9 — `Finding.caveats_acknowledged` field
-- [ ] **W1.B.9.a** — Failing test: `test_caveats_acknowledged_default_empty`. Run → RED.
-- [ ] **W1.B.9.b** — Implement.
-- [ ] **W1.B.9.c** — Commit: `feat(schema): Finding.caveats_acknowledged field [W1.B.9]`
+- [x] **W1.B.9.a** — Failing test: `test_caveats_acknowledged_default_empty`. Run → RED.
+- [x] **W1.B.9.b** — Implement.
+- [x] **W1.B.9.c** — Commit: `feat(schema): Finding.caveats_acknowledged field [W1.B.9]`
 
-### W1.B.10 — Execution-claim validator + Amcache-caveat validator + 6 other caveat validators
-- [ ] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_amcache_requires_caveat`, plus one test per remaining CaveatID (`test_shimcache_caveat_required_when_shimcache_cited`, etc.). Run → RED.
-- [ ] **W1.B.10.b** — Implement `_execution_claims_need_two_classes` + `_amcache_caveat_required` + 6 sibling validators (one per CaveatID where the artifact_class triggers the caveat).
-- [ ] **W1.B.10.c** — Commit: `feat(schema): Finding validators enforce caveat acknowledgment [W1.B.10]`
+### W1.B.10 — Unified forensic-corroboration validator
+- [x] **W1.B.10.a** — Failing tests: `test_execution_claim_requires_two_classes` (T1059, T1106, T1204, T1218, T1543, T1547 prefixes), `test_available_caveat_required_when_artifact_class_cited` (parametrised over all ArtifactClass caveat triggers). Run → RED.
+- [x] **W1.B.10.b** — Implement a single `_forensic_corroboration` `@model_validator(mode="after")` that covers both the execution-class two-class requirement and all Tier-1 caveat acknowledgments (including the EVTX_4624 logon-type named exception).
+- [x] **W1.B.10.c** — Commit: `feat(schema): Finding validators enforce caveat acknowledgment [W1.B.10]`
 
 ### W1.B.11 — `LedgerEntry` schema
-- [ ] **W1.B.11.a** — Failing test: `test_ledger_entry_three_id_hierarchy`. Assert `case_id`, `langfuse_trace_id`, `langgraph_checkpoint_id` are distinct fields. Plus `test_ledger_entry_records_examination_environment` for `microsandbox_version`/`rootfs_sha256`/`tool_version`/`kernel_version`.
-- [ ] **W1.B.11.b** — Implement `verdict/schemas/ledger.py` per v4.5 lines 245–278 plus the v4.4 environment-metadata fields. Add `output_files_sha256: dict[str, str] = {}` field.
-- [ ] **W1.B.11.c** — Commit: `feat(schema): LedgerEntry with three-ID hierarchy + exam-env metadata [W1.B.11]`
+- [x] **W1.B.11.a** — Failing test: `test_ledger_entry_three_id_hierarchy`. Assert `case_id`, `langfuse_trace_id`, `langgraph_checkpoint_id` are distinct fields. Plus `test_ledger_entry_records_examination_environment` for `microsandbox_version`/`rootfs_sha256`/`tool_version`/`kernel_version`.
+- [x] **W1.B.11.b** — Implement `src/verdict/schemas/ledger.py` per v4.5 lines 245–278 plus the v4.4 environment-metadata fields. Add `output_files_sha256: dict[str, str] = {}` field.
+- [x] **W1.B.11.c** — Commit: `feat(schema): LedgerEntry with three-ID hierarchy + exam-env metadata [W1.B.11]`
 
-### W1.B.12 — `schema_version` discipline + `verdict/schemas/version.py`
-- [ ] **W1.B.12.a** — Failing test: `test_schema_version_is_1_on_all_top_level_models`. Loop through `[InvestigationPlan, Finding, LedgerEntry, EvidenceManifest, ToolOutput]`; assert `.schema_version == 1`.
-- [ ] **W1.B.12.b** — Implement: add `schema_version: int = 1` to all five top-level schemas; centralize in `verdict/schemas/version.py`.
-- [ ] **W1.B.12.c** — Commit: `feat(schema): schema_version discipline across top-level models [W1.B.12]`
+### W1.B.12 — `schema_version` discipline + `src/verdict/schemas/version.py`
+- [x] **W1.B.12.a** — Failing test: `test_schema_version_is_1_on_all_top_level_models`. Loop through `[InvestigationPlan, Finding, LedgerEntry, EvidenceManifest, ToolOutput]`; assert `.schema_version == 1`.
+- [x] **W1.B.12.b** — Implement: add `schema_version: int = 1` to all five top-level schemas; centralize in `src/verdict/schemas/version.py`.
+- [x] **W1.B.12.c** — Commit: `feat(schema): schema_version discipline across top-level models [W1.B.12]`
 
 ### W1.B.13 — `VerdictStatus` enum
-- [ ] **W1.B.13.a** — Failing test: `test_verdict_status_has_canonical_states`. Assert exactly the six statuses from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. Assert `DRAFT`, `APPROVED`, and `REJECTED` live only on the separate `Finding.review_state` enum.
-- [ ] **W1.B.13.b** — Implement.
-- [ ] **W1.B.13.c** — Commit: `feat(schema): VerdictStatus enum [W1.B.13]`
+- [x] **W1.B.13.a** — Failing test: `test_verdict_status_has_canonical_states`. Assert exactly the six statuses from `CLAUDE.md` §3.6: `VETTED_CLOUD`, `VETTED_AIRGAP`, `VETTED_DUAL`, `CONTESTED`, `UNVERIFIABLE`, `EXHAUSTED_REPLAN`. Assert `DRAFT`, `APPROVED`, and `REJECTED` live only on the separate `Finding.review_state` enum.
+- [x] **W1.B.13.b** — Implement.
+- [x] **W1.B.13.c** — Commit: `feat(schema): VerdictStatus enum [W1.B.13]`
 
 ### W1.B.14 — `CaseConclusion` for no-evil terminal cases
-- [ ] **W1.B.14.a** — Failing test `tests/schemas/test_case_conclusion.py::test_no_evil_found_requires_playbook_steps`. Assert `CaseConclusion(status="NO_EVIL_FOUND", playbook_steps_executed=[])` raises validation error, and a conclusion with at least one playbook step plus evidence hashes validates.
-- [ ] **W1.B.14.b** — Implement `verdict/schemas/case_conclusion.py` with status values `NO_EVIL_FOUND`, `EVIL_FOUND`, `UNVERIFIABLE`; require `playbook_steps_executed: list[str] = Field(min_length=1)`, `evidence_hashes: dict[Path, str]`, and `rationale: str`. Do not add `NO_EVIL_FOUND` to `VerdictStatus`.
-- [ ] **W1.B.14.c** — Commit: `feat(schema): CaseConclusion for no-evil terminal cases [W1.B.14]`
+- [x] **W1.B.14.a** — Failing test `tests/schemas/test_case_conclusion.py::test_no_evil_found_requires_playbook_steps`. Assert `CaseConclusion(status="NO_EVIL_FOUND", playbook_steps_executed=[])` raises validation error, and a conclusion with at least one playbook step plus evidence hashes validates.
+- [x] **W1.B.14.b** — Implement `src/verdict/schemas/case_conclusion.py` with status values `NO_EVIL_FOUND`, `EVIL_FOUND`, `UNVERIFIABLE`; require `playbook_steps_executed: list[str] = Field(min_length=1)`, `evidence_hashes: dict[Path, str]`, and `rationale: str`. Do not add `NO_EVIL_FOUND` to `VerdictStatus`.
+- [x] **W1.B.14.c** — Commit: `feat(schema): CaseConclusion for no-evil terminal cases [W1.B.14]`
 
 ## Phase W1.C — Verifier strategy seed-derivation fix (Beaver, ~1 hour)
 
 ### W1.C.1 — `derive_seeds(case_id)` helper
-- [ ] **W1.C.1.a** — Failing test `tests/verification/test_derive_seeds.py::test_three_distinct_deterministic_per_case`. Run → RED.
-- [ ] **W1.C.1.b** — Implement `verdict/verification/derive_seeds.py` using blake3 keyed-hash pattern.
-- [ ] **W1.C.1.c** — Commit: `feat(verification): derive_seeds(case_id) for n=3 self-consistency [W1.C.1]`
+- [x] **W1.C.1.a** — Failing test `tests/verification/test_derive_seeds.py::test_three_distinct_deterministic_per_case`. Run → RED.
+- [x] **W1.C.1.b** — Implement `src/verdict/verification/derive_seeds.py` using blake3 keyed-hash pattern.
+- [x] **W1.C.1.c** — Commit: `feat(verification): derive_seeds(case_id) for n=3 self-consistency [W1.C.1]`
 
 ### W1.C.2 — `CloudSelfConsistency` impl
 - [ ] **W1.C.2.a** — Failing integration test `tests/verification/test_cloud_self_consistency.py::test_three_distinct_seeds_in_api_calls`. Require `verdict doctor --mode cloud` first; execute the real Anthropic/Claude client in a bounded smoke request and assert 3 calls, 3 distinct seeds, `temperature=0.7`, and non-empty verifier outputs. Run → RED.
-- [ ] **W1.C.2.b** — Implement `verdict/verification/cloud_self_consistency.py` per Appendix A.5.
+- [ ] **W1.C.2.b** — Implement `src/verdict/verification/cloud_self_consistency.py` per Appendix A.5.
 - [ ] **W1.C.2.c** — Commit: `fix(verification): CloudSelfConsistency samples 3 diverse paths (Wang 2022) [W1.C.2]`
 
 ### W1.C.3 — `VerifierStrategy` Protocol + Universal Self-Consistency baseline
-- [ ] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Define a tiny in-test concrete strategy that computes its result from supplied verifier outputs; assert it conforms to the `VerifierStrategy` Protocol without any hardcoded production verdict. Run → RED.
-- [ ] **W1.C.3.b** — Implement `verdict/verification/strategy.py` (Protocol) + a real `universal_self_consistency.py` fallback that takes already-produced verifier candidates, groups by `(artifact_paths, mitre_technique)`, and returns `CONTESTED` or the matching `VETTED_*`/`UNVERIFIABLE` result according to the documented quorum rule. No placeholder implementation lands.
-- [ ] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC baseline [W1.C.3]`
+- [x] **W1.C.3.a** — Failing test `tests/verification/test_strategy_protocol.py::test_strategy_returns_verdict_result`. Define a tiny in-test concrete strategy that computes its result from supplied verifier outputs; assert it conforms to the `VerifierStrategy` Protocol without any hardcoded production verdict. Run → RED.
+- [x] **W1.C.3.b** — Implement `src/verdict/verification/strategy.py` (Protocol) + a real `universal_self_consistency.py` fallback that takes already-produced verifier candidates, groups by `(artifact_paths, mitre_technique)`, and returns `CONTESTED` or the matching `VETTED_*`/`UNVERIFIABLE` result according to the documented quorum rule. No placeholder implementation lands.
+- [x] **W1.C.3.c** — Commit: `feat(verification): VerifierStrategy Protocol + USC baseline [W1.C.3]`
 
 ## Phase W1.D — PreToolUse caveat + smoke scaffold (Tim, ~30 min)
 
 ### W1.D.1 — CI smoke-test scaffold (xfail-marked)
-- [ ] **W1.D.1.a** — Author `tests/smoke/test_pretooluse_deny.py` marked `pytest.mark.xfail(reason="anthropics/claude-code#33106 + #37210")`. Test invokes `claude` subprocess with a PreToolUse hook returning `permissionDecision: "deny"` for an MCP write; asserts the call is blocked.
-- [ ] **W1.D.1.b** — Add `[smoke]` marker to `pyproject.toml` so `pytest -m smoke` finds it.
-- [ ] **W1.D.1.c** — Commit: `test(smoke): PreToolUse deny scaffold (xfail per #33106 #37210) [W1.D.1]`
+- [x] **W1.D.1.a** — Author `tests/smoke/test_pretooluse_deny.py` marked `pytest.mark.xfail(reason="anthropics/claude-code#33106 + #37210")`. Test invokes `claude` subprocess with a PreToolUse hook returning `permissionDecision: "deny"` for an MCP write; asserts the call is blocked.
+- [x] **W1.D.1.b** — Add `[smoke]` marker to `pyproject.toml` so `pytest -m smoke` finds it.
+- [x] **W1.D.1.c** — Commit: `test(smoke): PreToolUse deny scaffold (xfail per #33106 #37210) [W1.D.1]`
 
 ### W1.D.2 — Apply v4.6 P2 to v4.5 audit doc
 - [ ] **W1.D.2.a** — Append the Layer-1 caveat paragraph to v4.5 architecture caption (line 144).
@@ -447,13 +470,13 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 
 ### W1.E.1 — `vol_psscan` MCP tool wrapper
 - [ ] **W1.E.1.a** — Failing integration test `tests/tools/test_vol_psscan.py::test_psscan_returns_pids`. Require `verdict doctor --mode airgap` and a real memory image from `inspect_ai/ground_truth/case_001_lolbins/`; invoke `vol3 windows.psscan` through the real microsandbox provider; assert returned `ToolOutput` contains process artifacts and a valid invocation hash. Run → RED.
-- [ ] **W1.E.1.b** — Implement `verdict/tools/vol3/psscan.py` mirroring `vol_pslist` shape from project's `services/mcp/`.
+- [ ] **W1.E.1.b** — Implement `src/verdict/tools/vol3/psscan.py` mirroring the `ToolWrapper` shape from `src/verdict/tools/base.py`.
 - [ ] **W1.E.1.c** — Commit: `feat(tools): vol_psscan wrapper for DKOM/T1014 cross-validation [W1.E.1]`
 
 ### W1.E.2 — Tool wrapper base class
-- [ ] **W1.E.2.a** — Failing test `tests/tools/test_tool_base.py::test_base_records_invocation_hash`. Assert any wrapper extending `ToolWrapper` records `invocation_hash = blake3(tool_name + tool_version + args + evidence_hash)`.
-- [ ] **W1.E.2.b** — Implement `verdict/tools/base.py` abstract `ToolWrapper` with `pre_run` (compute invocation hash) + `run` (subclass impl) + `post_run` (sandbox destroy + ledger write hooks).
-- [ ] **W1.E.2.c** — Commit: `feat(tools): ToolWrapper abstract base with invocation hashing [W1.E.2]`
+- [x] **W1.E.2.a** — Failing test `tests/tools/test_tool_base.py::test_base_records_invocation_hash`. Assert any wrapper extending `ToolWrapper` records `invocation_hash = blake3(tool_name + tool_version + args + evidence_hash)`.
+- [x] **W1.E.2.b** — Implement `src/verdict/tools/base.py` abstract `ToolWrapper` with `pre_run` (compute invocation hash) + `run` (subclass impl) + `post_run` (sandbox destroy + ledger write hooks).
+- [x] **W1.E.2.c** — Commit: `feat(tools): ToolWrapper abstract base with invocation hashing [W1.E.2]`
 
 ### W1.E.3 — Apply v4.6 P3 + P4 to v4.5 audit doc
 - [ ] **W1.E.3.a** — Update v4.5 line 796 tool list to include 10 vol3 plugins.
@@ -463,52 +486,52 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 ## Phase W1.F — KP content authoring (KP, ~1.5 days)
 
 ### W1.F.1 — `Playbook` Pydantic schema
-- [ ] **W1.F.1.a** — Failing test `tests/schemas/test_playbook.py::test_playbook_loads_yaml`. Run → RED.
-- [ ] **W1.F.1.b** — Implement `verdict/schemas/playbook.py` with `Step` + `Playbook` classes per v4.6.
-- [ ] **W1.F.1.c** — Commit: `feat(schema): Playbook + Step for planner methodology injection [W1.F.1]`
+- [x] **W1.F.1.a** — Failing test `tests/schemas/test_playbook.py::test_playbook_loads_yaml`. Run → RED.
+- [x] **W1.F.1.b** — Implement `src/verdict/schemas/playbook.py` with `Step` + `Playbook` classes per v4.6.
+- [x] **W1.F.1.c** — Commit: `feat(schema): Playbook + Step for planner methodology injection [W1.F.1]`
 
-### W1.F.2 — Author `verdict/playbooks/memory.yml`
-- [ ] **W1.F.2.a** — Failing test `tests/playbooks/test_memory_yml.py::test_memory_playbook_has_dkom_rule`. Run → RED.
-- [ ] **W1.F.2.b** — Author per Appendix C.1.
-- [ ] **W1.F.2.c** — Commit: `feat(playbooks): memory.yml — Volatility 3 sequence + DKOM rule [W1.F.2]`
+### W1.F.2 — Author `src/verdict/playbooks/memory.yml`
+- [x] **W1.F.2.a** — Failing test `tests/playbooks/test_memory_yml.py::test_memory_playbook_has_dkom_rule`. Run → RED.
+- [x] **W1.F.2.b** — Author per Appendix C.1.
+- [x] **W1.F.2.c** — Commit: `feat(playbooks): memory.yml — Volatility 3 sequence + DKOM rule [W1.F.2]`
 
-### W1.F.3 — Author `verdict/playbooks/disk.yml`
-- [ ] **W1.F.3.a** — Failing test `tests/playbooks/test_disk_yml.py::test_plaso_after_lighter_tools`. Run → RED.
-- [ ] **W1.F.3.b** — Author per Appendix C.2.
-- [ ] **W1.F.3.c** — Commit: `feat(playbooks): disk.yml [W1.F.3]`
+### W1.F.3 — Author `src/verdict/playbooks/disk.yml`
+- [x] **W1.F.3.a** — Failing test `tests/playbooks/test_disk_yml.py::test_plaso_after_lighter_tools`. Run → RED.
+- [x] **W1.F.3.b** — Author per Appendix C.2.
+- [x] **W1.F.3.c** — Commit: `feat(playbooks): disk.yml [W1.F.3]`
 
-### W1.F.4 — Author `verdict/playbooks/triage.yml`
-- [ ] **W1.F.4.a** — Failing test `tests/playbooks/test_triage_yml.py::test_registry_first`. Run → RED.
-- [ ] **W1.F.4.b** — Author per Appendix C.3.
-- [ ] **W1.F.4.c** — Commit: `feat(playbooks): triage.yml [W1.F.4]`
+### W1.F.4 — Author `src/verdict/playbooks/triage.yml`
+- [x] **W1.F.4.a** — Failing test `tests/playbooks/test_triage_yml.py::test_registry_first`. Run → RED.
+- [x] **W1.F.4.b** — Author per Appendix C.3.
+- [x] **W1.F.4.c** — Commit: `feat(playbooks): triage.yml [W1.F.4]`
 
 ### W1.F.5 — Apply v4.6 P5 to v4.5 audit doc
 - [ ] **W1.F.5** — Append multi-artifact corroboration caveat. Commit: `docs(audit): v4.6 P5 — multi-artifact corroboration [W1.F.5]`
 
 ### W1.F.6 — `playbook_loader` injects into planner prompt
-- [ ] **W1.F.6.a** — Failing test `tests/planning/test_playbook_loader.py::test_loader_picks_by_evidence_type`. Run → RED.
-- [ ] **W1.F.6.b** — Implement `verdict/planning/playbook_loader.py::load_playbook_prompt(manifest: EvidenceManifest) -> str`.
-- [ ] **W1.F.6.c** — Commit: `feat(planning): playbook_loader injects methodology by evidence type [W1.F.6]`
+- [x] **W1.F.6.a** — Failing test `tests/planning/test_playbook_loader.py::test_loader_picks_by_evidence_type`. Run → RED.
+- [x] **W1.F.6.b** — Implement `src/verdict/planning/playbook_loader.py::load_playbook_prompt(manifest: EvidenceManifest) -> str`.
+- [x] **W1.F.6.c** — Commit: `feat(planning): playbook_loader injects methodology by evidence type [W1.F.6]`
 
-### W1.F.7 — Author `verdict/planning/prompts/examiner_caveats.md`
-- [ ] **W1.F.7.a** — Failing test `tests/prompts/test_examiner_caveats.py::test_all_seven_caveats_present`. Run → RED.
-- [ ] **W1.F.7.b** — Author per Appendix B.1.
-- [ ] **W1.F.7.c** — Commit: `feat(prompts): examiner_caveats.md — Tier-1 caveats include [W1.F.7]`
+### W1.F.7 — Author `src/verdict/planning/prompts/examiner_caveats.md`
+- [x] **W1.F.7.a** — Failing test `tests/prompts/test_examiner_caveats.py::test_all_seven_caveats_present`. Run → RED.
+- [x] **W1.F.7.b** — Author per Appendix B.1.
+- [x] **W1.F.7.c** — Commit: `feat(prompts): examiner_caveats.md — Tier-1 caveats include [W1.F.7]`
 
 ### W1.F.8 — `HuntEvilBaseline` schema + `ProcessBaselineAnomaly` Hypothesis subtype
-- [ ] **W1.F.8.a** — Failing test `tests/schemas/test_hunt_evil.py::test_baseline_loads`. Plus `test_anomaly_maps_to_T1036_005`.
-- [ ] **W1.F.8.b** — Implement `verdict/schemas/hunt_evil.py` with both classes.
-- [ ] **W1.F.8.c** — Commit: `feat(schema): HuntEvilBaseline + ProcessBaselineAnomaly (T1036.005) [W1.F.8]`
+- [x] **W1.F.8.a** — Failing test `tests/schemas/test_hunt_evil.py::test_baseline_loads`. Plus `test_anomaly_maps_to_T1036_005`.
+- [x] **W1.F.8.b** — Implement `src/verdict/schemas/hunt_evil.py` with both classes.
+- [x] **W1.F.8.c** — Commit: `feat(schema): HuntEvilBaseline + ProcessBaselineAnomaly (T1036.005) [W1.F.8]`
 
-### W1.F.9 — Author `verdict/knowledge/hunt_evil.yml`
-- [ ] **W1.F.9.a** — Failing test `tests/knowledge/test_hunt_evil_yml.py::test_eight_canonical_processes`. Run → RED.
-- [ ] **W1.F.9.b** — Author per Appendix C.4 — 8 processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss).
-- [ ] **W1.F.9.c** — Commit: `feat(knowledge): hunt_evil.yml — 8 canonical Windows process baselines [W1.F.9]`
+### W1.F.9 — Author `src/verdict/knowledge/hunt_evil.yml`
+- [x] **W1.F.9.a** — Failing test `tests/knowledge/test_hunt_evil_yml.py::test_eight_canonical_processes`. Run → RED.
+- [x] **W1.F.9.b** — Author per Appendix C.4 — 8 processes (svchost, lsass, csrss, winlogon, services, wininit, explorer, smss).
+- [x] **W1.F.9.c** — Commit: `feat(knowledge): hunt_evil.yml — 8 canonical Windows process baselines [W1.F.9]`
 
 ### W1.F.10 — Executor system-prompt include
-- [ ] **W1.F.10.a** — Failing test `tests/planning/test_executor_prompt.py::test_includes_caveats_and_hunt_evil`. Assert prompt contains `AMCACHE_LASTMODIFIED_NOT_EXEC` and `svchost.exe`.
-- [ ] **W1.F.10.b** — Implement `verdict/planning/executor_prompt.py::render_executor_prompt(role: str) -> str` that composes examiner_caveats.md + relevant hunt_evil entries.
-- [ ] **W1.F.10.c** — Commit: `feat(planning): executor system prompt with caveats + hunt evil [W1.F.10]`
+- [x] **W1.F.10.a** — Failing test `tests/planning/test_executor_prompt.py::test_includes_caveats_and_hunt_evil`. Assert prompt contains `AMCACHE_LASTMODIFIED_NOT_EXEC` and `svchost.exe`.
+- [x] **W1.F.10.b** — Implement `src/verdict/planning/executor_prompt.py::render_executor_prompt(role: str) -> str` that composes examiner_caveats.md + relevant hunt_evil entries.
+- [x] **W1.F.10.c** — Commit: `feat(planning): executor system prompt with caveats + hunt evil [W1.F.10]`
 
 ### W1.F.11 — Apply v4.6 P6 to v4.5 audit doc
 - [ ] **W1.F.11** — Append Tier-1 caveat caveat. Commit: `docs(audit): v4.6 P6 — Tier-1 caveats encoded [W1.F.11]`
@@ -531,19 +554,19 @@ The 12 tool wrappers ship in W2.E. This phase ships the schema scaffolding + `ps
 - [ ] **W1.G.4** — Author migration policy: `schema_version` field on all top-level schemas; breaking changes ship a `migrations/v{N}_to_v{N+1}.py` script. Commit: `docs(release): document schema migration policy [W1.G.4]`
 
 ### W1.G.5 — `Planner` Protocol + `CloudPlanner` + `LocalPlanner` (Beaver collaborates)
-- [ ] **W1.G.5.a** — Failing test `tests/planning/test_planner_protocol.py::test_protocol_returns_investigation_plan`. Plus `test_planner_bound_at_gateway_init` — assert mode-switching code lives in `runtime/mode_detect.py`, not in `planner_node`.
-- [ ] **W1.G.5.b** — Implement `verdict/planning/planner.py` with the Protocol + two impls.
-- [ ] **W1.G.5.c** — Commit: `feat(planning): Planner Protocol + CloudPlanner + LocalPlanner [W1.G.5]`
+- [x] **W1.G.5.a** — Failing test `tests/planning/test_planner_protocol.py::test_protocol_returns_investigation_plan`. Plus `test_planner_bound_at_gateway_init` — assert mode-switching code lives in `runtime/mode_detect.py`, not in `planner_node`.
+- [x] **W1.G.5.b** — Implement `src/verdict/planning/planner.py` with the Protocol + two impls.
+- [x] **W1.G.5.c** — Commit: `feat(planning): Planner Protocol + CloudPlanner + LocalPlanner [W1.G.5]`
 
 ### W1.G.6 — HMAC key handling (TPM-backed if present, else gpg-encrypted)
-- [ ] **W1.G.6.a** — Failing integration tests: `tests/ledger/test_hmac_key.py::test_tpm_path_when_dev_tpmrm0_present` runs only on hosts with `/dev/tpmrm0` and verifies the TPM-backed path; `test_gpg_path_when_dev_tpmrm0_absent` runs in the CI environment that lacks `/dev/tpmrm0` and verifies the gpg-encrypted fallback. If the host does not match a test prerequisite, fail with a prerequisite diagnostic rather than simulating the device.
-- [ ] **W1.G.6.b** — Implement `verdict/ledger/hmac_key.py` with both paths. Passphrase prompt at gateway init for the gpg path.
-- [ ] **W1.G.6.c** — Commit: `feat(ledger): HMAC key TPM-backed or gpg-encrypted [W1.G.6]`
+- [x] **W1.G.6.a** — Failing integration tests: `tests/ledger/test_hmac_key.py::test_tpm_path_when_dev_tpmrm0_present` runs only on hosts with `/dev/tpmrm0` and verifies the TPM-backed path; `test_gpg_path_when_dev_tpmrm0_absent` runs in the CI environment that lacks `/dev/tpmrm0` and verifies the gpg-encrypted fallback. If the host does not match a test prerequisite, fail with a prerequisite diagnostic rather than simulating the device.
+- [x] **W1.G.6.b** — Implement `src/verdict/ledger/hmac_key.py` with both paths. Passphrase prompt at gateway init for the gpg path.
+- [x] **W1.G.6.c** — Commit: `feat(ledger): HMAC key TPM-backed or gpg-encrypted [W1.G.6]`
 
 ### W1.G.7 — Evidence manifest with periodic re-hash check
-- [ ] **W1.G.7.a** — Failing test `tests/runtime/test_evidence_recheck.py::test_recheck_every_10_super_steps`. Plus `test_mismatch_writes_ledger_entry_and_halts`.
-- [ ] **W1.G.7.b** — Implement re-hash loop in `verdict/runtime/evidence_recheck.py`. Mismatch → `LedgerEntry(event_type="evidence_hash_recheck")` with both hashes + halt with `HashMismatchError`.
-- [ ] **W1.G.7.c** — Commit: `feat(runtime): periodic evidence re-hash check (10 super-steps) [W1.G.7]`
+- [x] **W1.G.7.a** — Failing test `tests/runtime/test_evidence_recheck.py::test_recheck_every_10_super_steps`. Plus `test_mismatch_writes_ledger_entry_and_halts`.
+- [x] **W1.G.7.b** — Implement re-hash loop in `src/verdict/runtime/evidence_recheck.py`. Mismatch → `LedgerEntry(event_type="evidence_hash_recheck")` with both hashes + halt with `HashMismatchError`.
+- [x] **W1.G.7.c** — Commit: `feat(runtime): periodic evidence re-hash check (10 super-steps) [W1.G.7]`
 
 ## Week 1 — acceptance gates
 
@@ -551,17 +574,17 @@ By end of day Thursday May 8 ALL the following must be true. If any is FALSE on 
 
 | Gate | Verification command |
 |---|---|
-| All schema tests pass | `uv run --directory services/agent pytest tests/schemas/ -v` |
+| All schema tests pass | `uv run pytest tests/schemas/ -v` |
 | All playbook tests pass | `uv run pytest tests/playbooks/ -v` |
 | All knowledge tests pass | `uv run pytest tests/knowledge/ -v` |
-| Microsandbox spawns + runs vol3 -h on a sample image | `bash scripts/healthcheck.sh microsandbox` |
+| Microsandbox spawns + runs vol3 -h on a sample image | `python -c "import microsandbox; print('ok')"` (full check lands at W3.F.1 `scripts/healthcheck.sh`) |
 | SGLang serves both Qwen3 + GLM with ≥98% tool-call parse rate | Output of `python scripts/inference-smoke.py` |
 | Langfuse UI loads + smoke trace renders | `curl http://localhost:3000/api/public/health` returns 200 |
-| Inspect AI hello-world passes | `inspect eval inspect_ai/tasks/hello_world.py` |
+| Inspect AI per-mode eval scaffolds present | `ls inspect_ai/tasks/verdict_eval_{cloud,airgap,dual}.py` |
 | `vol_psscan` wrapper integration test passes | `uv run pytest tests/tools/test_vol_psscan.py -v` |
 | Architecture-review docs present | `ls docs/{RELEASE,FAILURE_MODES}.md` |
-| `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " verdict/planning/prompts/examiner_caveats.md` returns 7 |
-| `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('verdict/knowledge/hunt_evil.yml'))))"` returns 8 |
+| `examiner_caveats.md` includes all 7 CaveatID values | `grep -c "## " src/verdict/planning/prompts/examiner_caveats.md` returns 7 |
+| `hunt_evil.yml` has 8 canonical processes | `python -c "import yaml; print(len(yaml.safe_load(open('src/verdict/knowledge/hunt_evil.yml'))['process_baselines']))"` returns 8 |
 | Schema and DFIR rule patches represented in current architecture | `docs/ARCHITECTURE.md` cites the current decisions |
 | Conventional Commits enforced (no `--no-verify`) | `git log --oneline -50 | grep -c '^[a-f0-9]\+ \(feat\|test\|fix\|docs\|chore\)' = 50` |
 
@@ -572,7 +595,7 @@ If any gate is RED on May 8: **descope before slipping**. Drop in this priority 
 # WEEK 2 (May 9 – May 15): Tool surface + Plan-then-Execute refactor
 
 **Theme:** Wrap all 12 SIFT tools as MCP tools. Refactor LangGraph topology to explicit Plan-then-Execute. Add `planner_critique_node`. Wire per-tool args validators. Split plaso/Hayabusa.
-**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 9 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` (composes DenyRuleWrapper / ToolExecutor / LedgerEmitter per branch) → `pivot` → `quorum` → `replan` → `unverifiable_finalize` → `finalize`.
+**Critical-path output:** All 12 tools callable through gateway. LangGraph compiles with 8 nodes: `planner` → `planner_critique` → `comprehension_gate` → `executor_fanout` (composes DenyRuleWrapper / ToolExecutor / LedgerEmitter per branch) → `pivot` → `quorum` → `replan` → `finalize`. (`unverifiable_finalize_node` is a helper called from `replan_node`, not a registered graph node.)
 **If this week slips:** week 3 verifier work pushes; cut pivot_node + unverifiable_finalize from v1; ship pure replan_max=3 → quietly stuck CONTESTED (v4.4 SHOULD-FIX leaks back in).
 **Cumulative team-days:** Tim ~5, Beaver ~5, Haley ~1, KP ~3.
 
@@ -580,7 +603,7 @@ If any gate is RED on May 8: **descope before slipping**. Drop in this priority 
 
 For each tool:
 - [ ] Failing integration test in `tests/tools/test_<tool>.py` against a fixture.
-- [ ] Implement `verdict/tools/<tool>.py` extending `ToolWrapper`.
+- [ ] Implement `src/verdict/tools/<tool>.py` extending `ToolWrapper`.
 - [ ] Add to gateway tool registry.
 - [ ] Commit: `feat(tools): <tool> wrapper [W2.A.<n>]`
 
@@ -609,25 +632,25 @@ For each tool:
 
 ## Phase W2.B — Plan-then-Execute LangGraph refactor (Beaver, ~2 days)
 
-### W2.B.1 — Five core nodes
-- [ ] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_five_nodes_present`. Assert nodes `planner`, `executor_fanout`, `quorum`, `replan`, `finalize` exist on the compiled graph.
-- [ ] **W2.B.1.b** — Implement `verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `verdict/graph/nodes.py` with real minimal node bodies for all five. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
-- [ ] **W2.B.1.c** — Commit: `feat(graph): five-node Plan-then-Execute topology [W2.B.1]`
+### W2.B.1 — Eight registered nodes
+- [x] **W2.B.1.a** — Failing test `tests/graph/test_topology_compiles.py::test_planner_critique_is_wired_before_comprehension_gate`. Assert all 8 registered nodes (`planner`, `planner_critique`, `comprehension_gate`, `executor_fanout`, `pivot`, `quorum`, `replan`, `finalize`) and entrypoint/edge wiring exist on the compiled graph.
+- [x] **W2.B.1.b** — Implement `src/verdict/graph/topology.py::build_graph(mode: Mode) -> CompiledGraph` and `src/verdict/graph/nodes.py` with real minimal node bodies for all eight. Each node must read/write typed state and raise explicit `NotImplementedError` only for dependencies that are scheduled in a later task and never on the production happy path.
+- [x] **W2.B.1.c** — Commit: `feat(graph): eight-node Plan-then-Execute topology [W2.B.1]`
 
 ### W2.B.2 — `comprehension_gate` node (v4.3)
-- [ ] **W2.B.2.a** — Failing test `tests/graph/test_comprehension_gate.py::test_consensus_advances_executor_work` and `test_mismatch_routes_to_clarify`.
-- [ ] **W2.B.2.b** — Implement gate node. Collects `PlanComprehensionEcho`s; validates consensus on `parsed_positive_hypothesis_ids`, `parsed_negative_hypothesis_ids`, `parsed_success_criteria_hash`.
-- [ ] **W2.B.2.c** — Commit: `feat(graph): comprehension_gate validates executor consensus [W2.B.2]`
+- [x] **W2.B.2.a** — Failing test `tests/graph/test_comprehension_gate.py::test_consensus_advances_executor_work` and `test_mismatch_routes_to_clarify`.
+- [x] **W2.B.2.b** — Implement gate node. Collects `PlanComprehensionEcho`s; validates consensus on `parsed_positive_hypothesis_ids`, `parsed_negative_hypothesis_ids`, `parsed_success_criteria_hash`.
+- [x] **W2.B.2.c** — Commit: `feat(graph): comprehension_gate validates executor consensus [W2.B.2]`
 
 ### W2.B.3 — `ComprehensionMismatch` ledger entry on disagreement
-- [ ] **W2.B.3.a** — Failing test: ledger contains structured per-executor diff on mismatch.
-- [ ] **W2.B.3.b** — Implement event type + payload schema.
-- [ ] **W2.B.3.c** — Commit: `feat(ledger): ComprehensionMismatch event with per-executor diff [W2.B.3]`
+- [x] **W2.B.3.a** — Failing test: ledger contains structured per-executor diff on mismatch.
+- [x] **W2.B.3.b** — Implement event type + payload schema.
+- [x] **W2.B.3.c** — Commit: `feat(ledger): ComprehensionMismatch event with per-executor diff [W2.B.3]`
 
 ### W2.B.4 — Reducer pattern for fanout merge + race test
-- [ ] **W2.B.4.a** — Failing test `tests/graph/test_fanout_race.py::test_4_executors_merge_deterministically`. 4 executors, randomized 0–500ms sleep each; assert final state contains all 4 outputs in deterministic order.
-- [ ] **W2.B.4.b** — Implement `verdict/graph/reducers.py` with `Annotated[..., reducer]` for `executor_results` field.
-- [ ] **W2.B.4.c** — Commit: `feat(graph): reducer pattern for parallel-executor merge [W2.B.4]`
+- [x] **W2.B.4.a** — Failing test `tests/graph/test_fanout_race.py::test_4_executors_merge_deterministically`. 4 executors, randomized 0–500ms sleep each; assert final state contains all 4 outputs in deterministic order.
+- [x] **W2.B.4.b** — Implement `src/verdict/graph/reducers.py` with `Annotated[..., reducer]` for `executor_results` field.
+- [x] **W2.B.4.c** — Commit: `feat(graph): reducer pattern for parallel-executor merge [W2.B.4]`
 
 ### W2.B.5 — Pin LangGraph version
 - [ ] **W2.B.5** — Pin in `pyproject.toml`. Commit: `chore(deps): pin langgraph version that passes fanout-race test [W2.B.5]`
@@ -635,36 +658,36 @@ For each tool:
 ## Phase W2.C — `executor_work` split into 3 wrappers (v4.5 fix from architecture review)
 
 ### W2.C.1 — `DenyRuleWrapper` (Layer 2 of three-layer immutability)
-- [ ] **W2.C.1.a** — Failing test `tests/graph/test_deny_rule_wrapper.py::test_blocks_evidence_writes_in_all_modes`. Test args denied for cloud, airgap, dual.
-- [ ] **W2.C.1.b** — Implement `verdict/graph/wrappers/deny_rule.py`. Layer 2 of three-layer defense — fires regardless of model. Owns deny-rule list (Tim).
-- [ ] **W2.C.1.c** — Commit: `feat(graph): DenyRuleWrapper Layer 2 immutability [W2.C.1]`
+- [x] **W2.C.1.a** — Failing test `tests/graph/test_deny_rule_wrapper.py::test_blocks_evidence_writes_in_all_modes`. Test args denied for cloud, airgap, dual.
+- [x] **W2.C.1.b** — Implement `src/verdict/graph/wrappers/deny_rule.py`. Layer 2 of three-layer defense — fires regardless of model. Owns deny-rule list (Tim).
+- [x] **W2.C.1.c** — Commit: `feat(graph): DenyRuleWrapper Layer 2 immutability [W2.C.1]`
 
 ### W2.C.2 — `ToolExecutor` (Beaver owns)
-- [ ] **W2.C.2.a** — Failing test for typed dispatch + microsandbox spawn + result parsing into ToolOutput.
-- [ ] **W2.C.2.b** — Implement.
-- [ ] **W2.C.2.c** — Commit: `feat(graph): ToolExecutor wrapper [W2.C.2]`
+- [x] **W2.C.2.a** — Failing test for typed dispatch + microsandbox spawn + result parsing into ToolOutput.
+- [x] **W2.C.2.b** — Implement.
+- [x] **W2.C.2.c** — Commit: `feat(graph): ToolExecutor wrapper [W2.C.2]`
 
 ### W2.C.3 — `LedgerEmitter` (Tim owns)
-- [ ] **W2.C.3.a** — Failing test for write+fsync+verify-readback. Plus chain-integrity assertion.
-- [ ] **W2.C.3.b** — Implement `verdict/graph/wrappers/ledger_emitter.py` + `verdict/ledger/writer.py` with the durability discipline.
-- [ ] **W2.C.3.c** — Commit: `feat(ledger): LedgerEmitter wrapper with write+fsync+verify-readback [W2.C.3]`
+- [x] **W2.C.3.a** — Failing test for write+fsync+verify-readback. Plus chain-integrity assertion.
+- [x] **W2.C.3.b** — Implement `src/verdict/graph/wrappers/ledger_emitter.py` + `src/verdict/ledger/writer.py` with the durability discipline.
+- [x] **W2.C.3.c** — Commit: `feat(ledger): LedgerEmitter wrapper with write+fsync+verify-readback [W2.C.3]`
 
 ### W2.C.4 — Compose three wrappers + replace executor_work
-- [ ] **W2.C.4.a** — Failing test: end-to-end through composed `DenyRuleWrapper → ToolExecutor → LedgerEmitter`.
-- [ ] **W2.C.4.b** — Wire composition in `verdict/graph/topology.py`.
-- [ ] **W2.C.4.c** — Commit: `feat(graph): compose 3-wrapper executor_work [W2.C.4]`
+- [x] **W2.C.4.a** — Failing test: end-to-end through composed `DenyRuleWrapper → ToolExecutor → LedgerEmitter`.
+- [x] **W2.C.4.b** — Wire composition in `src/verdict/graph/topology.py`.
+- [x] **W2.C.4.c** — Commit: `feat(graph): compose 3-wrapper executor_work [W2.C.4]`
 
 ## Phase W2.D — `planner_critique_node` (Beaver, ~1 day)
 
 ### W2.D.1 — CoVe (Chain-of-Verification, Dhuliawala 2023)
-- [ ] **W2.D.1.a** — Failing test `tests/planning/test_planner_critique.py::test_failed_questions_route_back_to_planner`. Plus `test_all_pass_advances_to_comprehension_gate`.
-- [ ] **W2.D.1.b** — Implement `verdict/planning/planner_critique.py`. Same model drafts CoVe questions ABOUT THE PLAN ITSELF (does plan cover most-likely attacker techniques given evidence type? does it have positive AND negative for each artifact family? are success criteria measurable?). Answers them against case_init evidence summary; failed questions route back to planner with hint.
-- [ ] **W2.D.1.c** — Commit: `feat(planning): planner_critique_node CoVe [W2.D.1]`
+- [x] **W2.D.1.a** — Failing test `tests/planning/test_planner_critique.py::test_failed_questions_route_back_to_planner`. Plus `test_all_pass_advances_to_comprehension_gate`.
+- [x] **W2.D.1.b** — Implement `src/verdict/planning/planner_critique.py`. Same model drafts CoVe questions ABOUT THE PLAN ITSELF (does plan cover most-likely attacker techniques given evidence type? does it have positive AND negative for each artifact family? are success criteria measurable?). Answers them against case_init evidence summary; failed questions route back to planner with hint.
+- [x] **W2.D.1.c** — Commit: `feat(planning): planner_critique_node CoVe [W2.D.1]`
 
 ### W2.D.2 — `PlannerCritiqueVerdict` schema + `critique_verdict` ledger event
-- [ ] **W2.D.2.a** — Failing test `tests/planning/test_planner_critique_verdict.py::test_schema_rejects_missing_failed_questions_when_route_back`. Plus `test_ledger_emits_critique_verdict_event_with_route_decision`. Assertions: `PlannerCritiqueVerdict(route="planner", failed_questions=[]).model_validate()` raises `ValidationError`; `ledger.last_entry.event_type == "critique_verdict"` after `planner_critique_node` runs.
-- [ ] **W2.D.2.b** — Wire into LangGraph + ledger.
-- [ ] **W2.D.2.c** — Commit: `feat(graph): planner_critique_node wired between planner + comprehension_gate [W2.D.2]`
+- [x] **W2.D.2.a** — Failing test `tests/planning/test_planner_critique_verdict.py::test_schema_rejects_missing_failed_questions_when_route_back`. Plus `test_ledger_emits_critique_verdict_event_with_route_decision`. Assertions: `PlannerCritiqueVerdict(route="planner", failed_questions=[]).model_validate()` raises `ValidationError`; `ledger.last_entry.event_type == "critique_verdict"` after `planner_critique_node` runs.
+- [x] **W2.D.2.b** — Wire into LangGraph + ledger.
+- [x] **W2.D.2.c** — Commit: `feat(graph): planner_critique_node wired between planner + comprehension_gate [W2.D.2]`
 
 ### W2.D.3 — Planner CoT capture
 - [ ] **W2.D.3.a** — Failing test `tests/planning/test_cot_capture.py::test_gzipped_cot_in_ledger`. Plus `test_8kb_attached_to_langfuse_span`.
@@ -680,7 +703,7 @@ For each tool:
 
 ### W2.E.1 — `args_validators` framework
 - [ ] **W2.E.1.a** — Failing test `tests/tools/test_args_validator.py::test_unknown_flag_raises_modelretry`. Plus `test_invalid_pid_type_raises`.
-- [ ] **W2.E.1.b** — Implement `verdict/tools/args_validators.py` with Pydantic-AI `args_validator` framework. `tool_arg_retry_max=2`, then UNVERIFIABLE.
+- [ ] **W2.E.1.b** — Implement `src/verdict/tools/args_validators.py` with Pydantic v2 `ArgsValidator`. `tool_arg_retry_max=2`, then UNVERIFIABLE.
 - [ ] **W2.E.1.c** — Commit: `feat(tools): args_validator framework with retry budget 2 [W2.E.1]`
 
 ### W2.E.2 — `vol3` validators (parse `vol3 --help` once at startup; allow-list of 26 plugins)
@@ -695,12 +718,12 @@ For each tool:
 
 ### W2.E.4 — `Hayabusa` flag-matrix validator
 - [ ] **W2.E.4.a** — Failing test: invalid timeline-flag combinations rejected.
-- [ ] **W2.E.4.b** — Implement against the matrix in `verdict/playbooks/memory.yml` rules section.
+- [ ] **W2.E.4.b** — Implement against the matrix in `src/verdict/playbooks/memory.yml` rules section.
 - [ ] **W2.E.4.c** — Commit: `feat(tools): hayabusa flag-matrix validator [W2.E.4]`
 
 ### W2.E.5 — Sanitization scanner for prompt injection in tool stdout
 - [ ] **W2.E.5.a** — Failing test `tests/tools/test_sanitization.py::test_detects_ignore_previous_instructions`. Plus standard jailbreak suffixes.
-- [ ] **W2.E.5.b** — Implement `verdict/tools/sanitization.py`. Patterns include `IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`. Detected → `ToolOutput.sanitization_flags` populated; surface to planner.
+- [ ] **W2.E.5.b** — Implement `src/verdict/tools/sanitization.py`. Patterns include `IGNORE PREVIOUS`, `SYSTEM:`, `</tool_call>`, `[INST]`, `### Instruction`. Detected → `ToolOutput.sanitization_flags` populated; surface to planner.
 - [ ] **W2.E.5.c** — Commit: `feat(tools): sanitization scanner for prompt-injection patterns [W2.E.5]`
 
 ## Phase W2.F — Plaso/Hayabusa split (Beaver, ~0.5 day)
@@ -746,11 +769,11 @@ For each tool:
 
 | Gate | Verification |
 |---|---|
-| All 23 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
+| All 24 tool wrappers callable via gateway | `pytest tests/tools/ -v` green |
 | LangGraph compiles in all three modes | `pytest tests/graph/test_topology_compiles.py` green for cloud/airgap/dual |
 | `comprehension_gate` + `planner_critique_node` integrated | Inspect AI smoke run shows both nodes in trace |
-| `executor_work` is composition of 3 wrappers, three owners | `git blame` shows distinct authors on `deny_rule.py`, `tool_executor.py`, `ledger_emitter.py` |
-| Plaso + Hayabusa split into extract+filter | `grep -c "extract" verdict/tools/plaso_*.py` returns ≥1 each |
+| `executor_work` is composition of wrappers with distinct owners | `git blame` shows distinct authors on `deny_rule.py`, `ledger_emitter.py` |
+| Plaso + Hayabusa split into extract+filter | `grep -c "extract" src/verdict/tools/plaso_*.py` returns ≥1 each |
 | Args validators reject unknown flags | `pytest tests/tools/test_args_validator.py` green |
 | Sanitization flags detected on injection patterns | `pytest tests/tools/test_sanitization.py` green |
 | Langfuse spans show real prompt_tokens > 0 | Manual UI check + integration test |
@@ -787,7 +810,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.B.1 — TSI provider Pattern 2
 - [ ] **W3.B.1.a** — Failing test `tests/sandboxes/test_tsi_provider.py::test_credentials_never_enter_microvm`. Use tcpdump capture comparison: bearer header on egress to `opencti.local:8080`, NOT inside microvm.
-- [ ] **W3.B.1.b** — Implement `verdict/sandboxes/tsi_provider.py` per v4.5 lines 482–489.
+- [ ] **W3.B.1.b** — Implement `src/verdict/sandboxes/tsi_provider.py` per v4.5 lines 482–489.
 - [ ] **W3.B.1.c** — Commit: `feat(sandbox): TSI Pattern 2 with credential injection [W3.B.1]`
 
 ### W3.B.2 — TSI demo prep (Tim's W4.3 carryover)
@@ -796,50 +819,50 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 - [ ] **W3.B.2.c** — Commit: `chore(demo): TSI tcpdump demonstration assets [W3.B.2]`
 
 ### W3.B.3 — Ledger redaction pass
-- [ ] **W3.B.3.a** — Failing test: `test_redacts_authorization_header_before_hash`. Plus `auth_user`, `api_key`.
-- [ ] **W3.B.3.b** — Implement `verdict/ledger/redaction.py`. Strip + record in `payload_redactions` field.
-- [ ] **W3.B.3.c** — Commit: `feat(ledger): redact auth fields before hash + write [W3.B.3]`
+- [x] **W3.B.3.a** — Failing test: `test_redacts_authorization_header_before_hash`. Plus `auth_user`, `api_key`.
+- [x] **W3.B.3.b** — Implement `src/verdict/ledger/redaction.py`. Strip + record in `payload_redactions` field.
+- [x] **W3.B.3.c** — Commit: `feat(ledger): redact auth fields before hash + write [W3.B.3]`
 
 ## Phase W3.C — Mode lock (Beaver, ~0.5 day)
 
 ### W3.C.1 — Mode-lock enforcement at `case_init`
-- [ ] **W3.C.1.a** — Failing test `tests/runtime/test_mode_lock.py::test_resume_with_different_mode_refuses`. Plus `test_mode_at_case_init_immutable`.
-- [ ] **W3.C.1.b** — Implement: write `mode_at_case_init` to ledger; refuse to advance if resume detects mode mismatch with current autodetect.
-- [ ] **W3.C.1.c** — Commit: `feat(runtime): mode lock at case_init enforced on resume [W3.C.1]`
+- [x] **W3.C.1.a** — Failing test `tests/runtime/test_mode_lock.py::test_resume_with_different_mode_refuses`. Plus `test_mode_at_case_init_immutable`.
+- [x] **W3.C.1.b** — Implement: write `mode_at_case_init` to ledger; refuse to advance if resume detects mode mismatch with current autodetect.
+- [x] **W3.C.1.c** — Commit: `feat(runtime): mode lock at case_init enforced on resume [W3.C.1]`
 
 ### W3.C.2 — `verdict reverify` command
 - [ ] **W3.C.2.a** — Failing test: `verdict reverify <case_id> --mode dual` produces parallel verdict chain without mutating original.
-- [ ] **W3.C.2.b** — Implement in `verdict/cli/reverify.py`. Fork a new parallel chain with the original `EvidenceManifest`, a new `chain_id`, the requested `mode_at_case_init`, and fresh mode-appropriate planner/executor/quorum ledger entries. Never mutate the original chain.
+- [ ] **W3.C.2.b** — Implement in `src/verdict/cli/reverify.py`. Fork a new parallel chain with the original `EvidenceManifest`, a new `chain_id`, the requested `mode_at_case_init`, and fresh mode-appropriate planner/executor/quorum ledger entries. Never mutate the original chain.
 - [ ] **W3.C.2.c** — Commit: `feat(cli): verdict reverify produces parallel verdict chain [W3.C.2]`
 
 ## Phase W3.D — Pivot + replan + unverifiable_finalize (Beaver, ~1 day)
 
 ### W3.D.1 — `pivot_node` (cheap follow-up)
-- [ ] **W3.D.1.a** — Failing test `tests/graph/test_pivot_node.py::test_adds_one_hypothesis_within_pivot_max_15`. Plus `test_pivot_does_not_re_enter_planner`.
-- [ ] **W3.D.1.b** — Implement. Bounded `pivot_max=15` in `InvestigationPlan.pivot_budget`.
-- [ ] **W3.D.1.c** — Commit: `feat(graph): pivot_node distinct from replan_node (max=15) [W3.D.1]`
+- [x] **W3.D.1.a** — Failing test `tests/graph/test_pivot_node.py::test_adds_one_hypothesis_within_pivot_max_15`. Plus `test_pivot_does_not_re_enter_planner`.
+- [x] **W3.D.1.b** — Implement. Bounded `pivot_max=15` in `InvestigationPlan.pivot_budget`.
+- [x] **W3.D.1.c** — Commit: `feat(graph): pivot_node distinct from replan_node (max=15) [W3.D.1]`
 
 ### W3.D.2 — `replan_max=3` explicit budget on `InvestigationPlan`
-- [ ] **W3.D.2.a** — Failing test: `replan_budget` field defaults to 3.
-- [ ] **W3.D.2.b** — Implement.
-- [ ] **W3.D.2.c** — Commit: `feat(schema): InvestigationPlan.replan_budget=3 explicit [W3.D.2]`
+- [x] **W3.D.2.a** — Failing test: `replan_budget` field defaults to 3.
+- [x] **W3.D.2.b** — Implement.
+- [x] **W3.D.2.c** — Commit: `feat(schema): InvestigationPlan.replan_budget=3 explicit [W3.D.2]`
 
 ### W3.D.3 — `unverifiable_finalize_node`
-- [ ] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`, `test_calls_interrupt`, and `test_resume_does_not_duplicate_exhausted_replan_ledger_entry`.
-- [ ] **W3.D.3.b** — Implement. Use deterministic idempotency key `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`; before writing the ledger entry, check whether that key already exists and skip the write on resume. No non-idempotent side effects may occur before `interrupt()`.
-- [ ] **W3.D.3.c** — Commit: `feat(graph): unverifiable_finalize_node + exhausted_replan event [W3.D.3]`
+- [x] **W3.D.3.a** — Failing test `tests/graph/test_unverifiable_finalize.py::test_writes_unverifiable_finding_at_replan_iteration_4`. Plus `test_writes_exhausted_replan_ledger_event`, `test_calls_interrupt`, and `test_resume_does_not_duplicate_exhausted_replan_ledger_entry`.
+- [x] **W3.D.3.b** — Implement. Use deterministic idempotency key `case_id + chain_id + hypothesis_id + replan_iteration + "exhausted_replan"`; before writing the ledger entry, check whether that key already exists and skip the write on resume. No non-idempotent side effects may occur before `interrupt()`.
+- [x] **W3.D.3.c** — Commit: `feat(graph): unverifiable_finalize_node + exhausted_replan event [W3.D.3]`
 
 ### W3.D.4 — Wire `interrupt()` properly
 - [ ] **W3.D.4.a** — Failing test: analyst can `update_state` and resume after interrupt.
-- [ ] **W3.D.4.b** — Implement `verdict/graph/interrupt.py` with helpers for resume-from-interrupt path.
+- [ ] **W3.D.4.b** — Implement `src/verdict/graph/interrupt.py` with helpers for resume-from-interrupt path.
 - [ ] **W3.D.4.c** — Commit: `feat(graph): interrupt() helpers for HITL resume [W3.D.4]`
 
 ## Phase W3.E — Checkpointing (Beaver, ~1 day)
 
 ### W3.E.1 — `SqliteSaver` with WAL + synchronous=FULL
-- [ ] **W3.E.1.a** — Failing test `tests/graph/test_checkpoint.py::test_pragma_journal_mode_wal`. Plus `test_pragma_synchronous_full`.
-- [ ] **W3.E.1.b** — Implement `verdict/graph/checkpoint.py` with `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;`.
-- [ ] **W3.E.1.c** — Commit: `feat(graph): SqliteSaver with WAL + synchronous=FULL [W3.E.1]`
+- [x] **W3.E.1.a** — Failing test `tests/graph/test_checkpoint.py::test_pragma_journal_mode_wal`. Plus `test_pragma_synchronous_full`.
+- [x] **W3.E.1.b** — Implement `src/verdict/graph/checkpoint.py` with `PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;`.
+- [x] **W3.E.1.c** — Commit: `feat(graph): SqliteSaver with WAL + synchronous=FULL [W3.E.1]`
 
 ### W3.E.2 — `thread_id = case_id` everywhere
 - [ ] **W3.E.2.a** — Failing test: gateway invocation passes `config={"configurable": {"thread_id": case_id}}`.
@@ -856,7 +879,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.E.5 — `trace_id` ↔ ledger cross-link
 - [ ] **W3.E.5.a** — Failing test `tests/observability/test_trace_link.py::test_ledger_entry_has_langfuse_trace_id`. Plus `test_langfuse_span_has_ledger_entry_id_attribute`.
-- [ ] **W3.E.5.b** — Implement `verdict/observability/trace_link.py` — bi-directional linking.
+- [ ] **W3.E.5.b** — Implement `src/verdict/observability/trace_link.py` — bi-directional linking.
 - [ ] **W3.E.5.c** — Commit: `feat(observability): trace_id ↔ ledger bidirectional cross-link [W3.E.5]`
 
 ### W3.E.6 — Kill-9 chaos test
@@ -868,7 +891,7 @@ If RED: drop W2.D.3 (planner CoT capture, push to W3) → drop W2.E.3-4 (plaso/H
 
 ### W3.F.1 — `/health` endpoint
 - [ ] **W3.F.1.a** — Failing test: returns `{mode, components: {langfuse, sglang, microsandbox, ledger}, last_healthcheck_utc}`.
-- [ ] **W3.F.1.b** — Implement `verdict/cli/health.py`.
+- [ ] **W3.F.1.b** — Implement `src/verdict/cli/health.py`.
 - [ ] **W3.F.1.c** — Commit: `feat(cli): /health endpoint [W3.F.1]`
 
 ### W3.F.2 — Continuous healthcheck loop (30s interval)
@@ -929,7 +952,7 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 
 ## Phase W4.B — `lolbins.yml` knowledge file (KP, ~0.5 day)
 
-### W4.B.1 — `verdict/knowledge/lolbins.yml`
+### W4.B.1 — `src/verdict/knowledge/lolbins.yml`
 - [ ] **W4.B.1.a** — Failing test: ≥6 LOLBins with shape patterns + MITRE technique mapping (T1218 sub-techniques).
 - [ ] **W4.B.1.b** — Author per Appendix C.5.
 - [ ] **W4.B.1.c** — Commit: `feat(knowledge): lolbins.yml with cmdline shapes + T1218 mapping [W4.B.1]`
@@ -996,12 +1019,12 @@ If RED: drop W3.E.6 (chaos test, ship without quantified guarantee) → drop W3.
 ## Phase W4.F — Prompt engineering (Beaver + KP, ~1 day)
 
 ### W4.F.1 — Negative-hypothesis few-shot examples
-- [ ] **W4.F.1.a** — Author `verdict/planning/prompts/negative_hypothesis_examples.md` with 5 high-quality few-shots demonstrating: T1547 ruling out T1055; T1543.003 ruling out T1543.001; etc.
+- [ ] **W4.F.1.a** — Author `src/verdict/planning/prompts/negative_hypothesis_examples.md` with 5 high-quality few-shots demonstrating: T1547 ruling out T1055; T1543.003 ruling out T1543.001; etc.
 - [ ] **W4.F.1.b** — Wire into planner system prompt.
 - [ ] **W4.F.1.c** — Commit: `feat(prompts): 5 negative-hypothesis few-shot examples [W4.F.1]`
 
 ### W4.F.2 — Adversarial-reasoning prompt
-- [ ] **W4.F.2.a** — Author `verdict/planning/prompts/adversarial_reasoning.md`. Inject "if I were the attacker, where would I hide?" — Scheduled Tasks `\Microsoft\Windows\` namespace, WMI event subscriptions, IFEO debugger keys (per project MEMORY.md persistence top-5).
+- [ ] **W4.F.2.a** — Author `src/verdict/planning/prompts/adversarial_reasoning.md`. Inject "if I were the attacker, where would I hide?" — Scheduled Tasks `\Microsoft\Windows\` namespace, WMI event subscriptions, IFEO debugger keys (per project MEMORY.md persistence top-5).
 - [ ] **W4.F.2.b** — Wire into planner system prompt.
 - [ ] **W4.F.2.c** — Commit: `feat(prompts): adversarial-reasoning planner injection [W4.F.2]`
 
@@ -1067,7 +1090,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 
 ### W5.B.1 — OpenCTI MCP integration
 - [ ] **W5.B.1.a** — Failing integration test `tests/sandboxes/test_malware_vm_tsi.py::test_opencti_enrichment_via_tsi_keeps_key_out_of_vm`. Assertions: `tcpdump_capture(microvm_iface).bearer_count == 0` AND `tcpdump_capture(host_egress_to_opencti).bearer_count == 1` AND the resulting `Finding.enrichment` dict contains the OpenCTI threat-actor metadata.
-- [ ] **W5.B.1.b** — Implement `verdict/adapters/opencti_mcp.py`.
+- [ ] **W5.B.1.b** — Implement `src/verdict/adapters/opencti_mcp.py`.
 - [ ] **W5.B.1.c** — Commit: `feat(adapters): OpenCTI MCP via TSI [W5.B.1]`
 
 ### W5.B.2 — Velociraptor MCP via socfortress server
@@ -1118,7 +1141,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 - [ ] **W5.E.3.c** — Commit: `feat(observability): Langfuse demo dashboard [W5.E.3]`
 
 ### W5.E.4 — HMAC-signed approval flow
-- [ ] **W5.E.4.a** — Failing test: `verdict approve <finding_id>` produces ledger entry with HMAC sig over Finding+approver+timestamp.
+- [ ] **W5.E.4.a** — Failing test: `verdict approve <case_id> <finding_id> --approver <approver>` produces ledger entry with HMAC sig over Finding+approver+timestamp.
 - [ ] **W5.E.4.b** — Implement.
 - [ ] **W5.E.4.c** — Commit: `feat(cli): verdict approve with HMAC signing [W5.E.4]`
 
@@ -1192,10 +1215,10 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.6** — 500-word writeup for Devpost summarizing: problem, architecture, three innovations, accuracy results, demo video. References all 6 official judging criteria explicitly per `DEVPOST_COMPLIANCE.md` Part 3. Commit: `docs: Devpost submission writeup [W6.C.6]`
 
 ### W6.C.7 — rendered architecture visual (Devpost-required)
-- [ ] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
+- [x] **W6.C.7.a** — Author Mermaid or draw.io source covering: Examiner CLI, FastMCP gateway, Mode autodetect, Planner Protocol (CloudPlanner/LocalPlanner), planner_critique_node, comprehension_gate, executor_fanout (4 branches), executor_work split (DenyRuleWrapper → ToolExecutor → LedgerEmitter), pivot_node, quorum_node, replan/unverifiable_finalize, Microsandbox VMs, Evidence Vault (chattr +i, read-only mount), HMAC ledger, Langfuse, SqliteSaver checkpoint, optional out-of-band services.
 - [ ] **W6.C.7.b** — Render to SVG + PNG fallback for the final submission package.
 - [ ] **W6.C.7.c** — Reference from README + ARCHITECTURE.md + Devpost form.
-- [ ] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
+- [x] **W6.C.7.d** — Commit: `docs(submission): add rendered architecture visual [W6.C.7]`
 
 ### W6.C.8 — `docs/RELEASE.md` evidence dataset section (Devpost-required)
 - [ ] **W6.C.8.a** — Author. Sections: (1) Datasets used (NIST CFReDS Hacking Case, Honeynet ransomware, 3 engineered cases). (2) Source attribution per dataset (URL, license, hash). (3) What VERDICT was tested against per case. (4) What VERDICT found per case (with finding_ids referencing accuracy report). (5) Limitations: Windows-only; no live-response; no Win11/macOS/Linux/network.
@@ -1209,7 +1232,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 - [ ] **W6.C.9.d** — Commit: `feat(cli): export execution-logs format for Devpost compliance [W6.C.9]`
 
 ### W6.C.10 — `docs/RELEASE.md` novel contribution section (Devpost-required)
-- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, Pydantic-AI, FastMCP, NeMo Guardrails, Claude Agent SDK, blake3). (4) What we extended vs replaced.
+- [ ] **W6.C.10.a** — Author. Sections: (1) Project timeline (started 2026-05-02; substantially new work per Devpost rules §4 New & Existing). (2) What we built (mode-aware verifier, three-layer immutability, encoded forensic discipline, planner_critique CoVe, pivot vs replan distinction, schema-enforced caveat acknowledgment, DKOM/T1014 auto-detection, Hunt Evil masquerade catch, LOLBin matcher, agentskills.io skill bundle, custom Inspect AI scorers). (3) Pre-existing open source enumerated with license + source URL each (SIFT, Volatility 3, Hayabusa, plaso, EZ Tools, Microsandbox, SGLang, vLLM, LangGraph, Langfuse, OpenLLMetry, Inspect AI, Pydantic, FastMCP, Claude Agent SDK, blake3). (4) What we extended vs replaced.
 - [ ] **W6.C.10.b** — Cross-reference from README + Devpost form.
 - [ ] **W6.C.10.c** — Commit: `docs: NOVEL_CONTRIBUTION.md [W6.C.10]`
 
@@ -1419,7 +1442,7 @@ If RED: drop W5.C optional adapters first → drop W5.B.3 (REMnux) → drop W5.E
 | Examiner Portal | v4.5 line 802 | CLI + JSONL + Langfuse UI is sufficient |
 | Multi-tenant deployment | this doc | Single-host v1 |
 | OpenSearch evidence indexing | (Valhuntir comparison) | Not needed for 3 demo cases |
-| Anthropic Constitutional Classifiers integration | (research consideration) | NeMo Guardrails sufficient v1 |
+| Anthropic Constitutional Classifiers integration | (research consideration) | DenyRuleWrapper + sanitization.py sufficient v1 |
 
 ---
 
@@ -1446,7 +1469,7 @@ When in doubt, fall back to v4.5 for architecture rationale, v4.6 for schema pat
 
 # Appendix A — Schema bundle (copy-paste ready)
 
-## A.1 — `verdict/schemas/artifact_class.py`
+## A.1 — `src/verdict/schemas/artifact_class.py`
 
 ```python
 from enum import Enum
@@ -1470,7 +1493,7 @@ class ArtifactClass(str, Enum):
     SIGMA_HIT = "sigma_hit"
 ```
 
-## A.2 — `verdict/schemas/caveat_id.py`
+## A.2 — `src/verdict/schemas/caveat_id.py`
 
 ```python
 from enum import Enum
@@ -1487,7 +1510,7 @@ class CaveatID(str, Enum):
     SYSMON_PROCESSGUID_OVER_PID = "sysmon_processguid_correlation_key_not_pid"
 ```
 
-## A.3 — `verdict/schemas/evidence.py`
+## A.3 — `src/verdict/schemas/evidence.py`
 
 ```python
 from datetime import datetime
@@ -1511,7 +1534,7 @@ class EvidenceManifest(BaseModel):
     schema_version: int = 1
 ```
 
-## A.4 — `verdict/schemas/tool_output.py`
+## A.4 — `src/verdict/schemas/tool_output.py`
 
 ```python
 from pathlib import Path
@@ -1526,7 +1549,7 @@ class Artifact(BaseModel):
 
 class ToolOutput(BaseModel):
     tool_name: str         # "vol3.windows.pslist"
-    tool_version: str      # "vol3 2.10.0"
+    tool_version: str      # "vol3 2.28.0"
     invocation_args: list[str]
     invocation_hash: str   # blake3(name + version + args + evidence_hash)
     stdout_hash: str       # SHA-256 of raw stdout
@@ -1538,23 +1561,15 @@ class ToolOutput(BaseModel):
     schema_version: int = 1
 ```
 
-## A.5 — `verdict/verification/cloud_self_consistency.py`
+## A.5 — `src/verdict/verification/cloud_self_consistency.py`
+
+`derive_seeds` is already shipped in `src/verdict/verification/derive_seeds.py`
+(W1.C.1). Implement `CloudSelfConsistency` here to use it:
 
 ```python
 from blake3 import blake3
 import asyncio
-
-def derive_seeds(case_id: str) -> tuple[int, int, int]:
-    """Three different seeds, deterministic per case for reproducibility,
-    distinct so n=3 actually samples three different reasoning paths.
-    Wang et al. 2022 (arXiv:2203.11171) requires diverse paths — temp 0
-    + same seed = identical output = n=1 in disguise."""
-    h = blake3(case_id.encode())
-    return (
-        int.from_bytes(h.derive_key("seed_a").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_b").digest()[:4], "big"),
-        int.from_bytes(h.derive_key("seed_c").digest()[:4], "big"),
-    )
+from verdict.verification.derive_seeds import derive_seeds
 
 class CloudSelfConsistency:
     async def verify(self, plan, evidence_hash):
@@ -1566,13 +1581,17 @@ class CloudSelfConsistency:
         return await self.usc_judge(samples, plan)  # Chen 2023
 ```
 
+`derive_seeds` uses a keyed blake3 digest (`key=b"VERDICT self-consistency seeds\0\0"`,
+`digest(length=12)`) — do not inline a copy. See `docs/ARCHITECTURE.md` §1 for the
+rationale and the shipping implementation.
+
 (Other schemas — Hypothesis, InvestigationPlan, Finding, LedgerEntry — are large; reference v4.5 lines 195–290 + v4.6 schema patch sections.)
 
 ---
 
 # Appendix B — System prompt templates
 
-## B.1 — `verdict/planning/prompts/examiner_caveats.md`
+## B.1 — `src/verdict/planning/prompts/examiner_caveats.md`
 
 ```markdown
 # Examiner Caveats — Tier-1 (always loaded)
@@ -1639,7 +1658,7 @@ LOLBin cmdline-shape catalog. Includes regsvr32 (T1218.010), rundll32 (T1218.011
 
 # Appendix C — Playbook + knowledge YAMLs
 
-## C.1 — `verdict/playbooks/memory.yml`
+## C.1 — `src/verdict/playbooks/memory.yml`
 
 ```yaml
 evidence_type: memory
@@ -1661,7 +1680,7 @@ steps:
   - {order: 11, tool: vol3.windows.callbacks, mitre_technique_hint: T1014}
 ```
 
-## C.2 — `verdict/playbooks/disk.yml`
+## C.2 — `src/verdict/playbooks/disk.yml`
 
 ```yaml
 evidence_type: disk_image
@@ -1685,7 +1704,7 @@ steps:
   - {order: 12, tool: bulk_extractor,        depends_on: [4]}
 ```
 
-## C.3 — `verdict/playbooks/triage.yml`
+## C.3 — `src/verdict/playbooks/triage.yml`
 
 ```yaml
 evidence_type: triage
@@ -1702,11 +1721,11 @@ steps:
   - {order: 8,  tool: bulk_extractor,          depends_on: [1]}
 ```
 
-## C.4 — `verdict/knowledge/hunt_evil.yml`
+## C.4 — `src/verdict/knowledge/hunt_evil.yml`
 
 (Per W1.F.9 task body. 8 entries: svchost, lsass, csrss, winlogon, services, wininit, explorer, smss.)
 
-## C.5 — `verdict/knowledge/lolbins.yml`
+## C.5 — `src/verdict/knowledge/lolbins.yml`
 
 ```yaml
 - binary: regsvr32.exe

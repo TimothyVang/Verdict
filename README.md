@@ -41,7 +41,7 @@ Source code lives under `src/verdict/`. The outer `Verdict/` directory is the re
    │  1. Plans the investigation   │   "Where would evil hide?"
    │  2. Runs forensic tools       │   vol3, hayabusa, plaso, MFTECmd...
    │  3. Two models cross-check    │   Qwen3 vs GLM-4.5-Air
-   │  4. Quorum decides verdict    │   VERIFIED / CONTESTED / UNVERIFIABLE
+   │  4. Quorum decides verdict    │   VETTED_* / CONTESTED / UNVERIFIABLE
    │  5. HMAC-signs the audit log  │   Tamper-evident chain
    └───────────────────────────────┘
                  │
@@ -103,7 +103,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
        │  ⓶ Hunt Evil masquerade (scvhost.exe parent=cmd.exe)
        │  ⓷ Amcache caveat acknowledged in rationale
        │  ⓸ Pivot in action (1 pivot, 0 replans)
-       │  ⓹ Disagreement → CONTESTED → replan → VERIFIED ★ (Devpost-required self-correction)
+       │  ⓹ Disagreement → CONTESTED → replan → VETTED_AIRGAP ★ (Devpost-required self-correction)
        │  ⓺ TSI tcpdump proof (key never enters VM)
        │  ⓻ Kill -9 + verdict resume
 3:00 ─┤ DUAL MODE (60s) — three-way verification → VETTED_DUAL
@@ -116,7 +116,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
 ## Mapped to the 6 Devpost judging criteria
 
 1. **Autonomous Execution Quality** *(tiebreaker)* — Mode-aware verifier strategy. Plan-then-Execute with planner_critique CoVe + comprehension_gate + pivot vs replan + unverifiable_finalize. Self-correction via cross-engine quorum.
-2. **IR Accuracy** — Artifact-pair rule, Tier-1 caveats, MITRE sub-techniques, VETTED_CLOUD vs VERIFIED honesty, Hunt Evil masquerade, DKOM auto-detection. Five Inspect AI scorers per mode.
+2. **IR Accuracy** — Artifact-pair rule, Tier-1 caveats, MITRE sub-techniques, honest VETTED_CLOUD framing (same-model self-consistency ≠ true cross-family verification), Hunt Evil masquerade, DKOM auto-detection. Five Inspect AI scorers per mode.
 3. **Breadth and Depth of Analysis** — "Depth on fewer types beats shallow coverage of many" — Devpost rubric line we lean on directly. Windows-DFIR-depth-first; v2 extension points named (5th `net_executor` + `live_executor` branches).
 4. **Constraint Implementation** — Three-layer immutability (PreToolUse + DenyRule + microsandbox kernel mount). HMAC ledger. TSI. Mode lock at case_init. **Architectural, not prompt.**
 5. **Audit Trail Quality** — HMAC ledger ↔ Langfuse bidirectional. Three-tier ID hierarchy. Per-output-file SHA-256. Examination-environment metadata (NIST SP 800-86).
@@ -130,7 +130,7 @@ Roles: Tim (infra, ledger, ops), Beaver (orchestration, verifiers), Haley (infer
 
 ```
 RISK #1 — Microsandbox hits a blocker week 4+
-  Likelihood: MEDIUM (pre-1.0; latest 0.1.x).  Impact: HIGH (kills TSI hero shot).
+  Likelihood: MEDIUM (pre-1.0; pinned 0.4.x line).  Impact: HIGH (kills TSI hero shot).
   Mitigation: Test it HARD in week 2, not week 4.
 
 RISK #2 — Case 001 doesn't disagree by end of week 4
@@ -213,7 +213,7 @@ Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) Step 0–7 for the full human-at-key
 ### CLI surface (one-liner)
 
 ```
-verdict {doctor, mode, init, resume, reverify, status, ls, show, export, validate, approve, gc, health}
+verdict {doctor, mode, init, run-tool, run-case, resume, reverify, status, ls, show, export, validate, approve, gc, package-check, health}
 ```
 
 `verdict reverify <case_id> --mode <cloud|airgap|dual>` re-runs verification under a new mode and writes a *parallel* verdict chain — the original ledger is never mutated. Full CLI reference in `CLAUDE.md` §10.2; flag spec in `docs/BUILD_PLAN.md` W3.C.2.

@@ -44,6 +44,7 @@ Code wins over docs. If code is right and a doc is wrong, fix the doc — don't 
 | [`DEVPOST_COMPLIANCE.md`](DEVPOST_COMPLIANCE.md) | Submission rule-to-artifact mapping. Every Devpost requirement traced to the file/commit that satisfies it. | Before any submission packaging; before any merge that touches a submission deliverable. |
 | [`FAILURE_MODES.md`](FAILURE_MODES.md) | Runtime failure matrix: sandbox spawn, tool errors, fanout timeout, TSI failure, ledger write failures, and UNVERIFIABLE semantics. | Before implementing error paths or explaining graceful degradation to judges. |
 | [`CASE_ISOLATION.md`](CASE_ISOLATION.md) | Case, chain, checkpoint, reverify, export, approval, and mode-lock boundaries. | Before implementing `verdict reverify`, `resume`, `export`, `approve`, or `validate`. |
+| [`DFIR_MEMORY.md`](DFIR_MEMORY.md) | VERDICT's self-evolving memory model — evidence-first mutation rules, memory layers (case / technique / pattern / meta), and governance constraints. | Before implementing anything under `src/verdict/memory/`. |
 
 ### Release deliverables
 
@@ -76,6 +77,12 @@ Each of these explicitly subordinates itself to `BUILD_PLAN.md` and `../CLAUDE.m
 |------|------|--------------|
 | [`hackathon/RULES.md`](hackathon/RULES.md) | Official SANS *FIND EVIL!* 2026 rules, scraped from Devpost on 2026-05-02. | Before any submission decision — these are the upstream of `DEVPOST_COMPLIANCE.md`. |
 | [`hackathon/OVERVIEW.md`](hackathon/OVERVIEW.md) | Hackathon overview + resource links (judge bios, prize structure, timeline). | Context-setting; not load-bearing. |
+
+### Internal working plans
+
+| File | Role | When to read |
+|------|------|--------------|
+| [`superpowers/plans/2026-05-04-cloud-proof-harness.md`](superpowers/plans/2026-05-04-cloud-proof-harness.md) | Implementation plan for the cloud-only Claude Agent SDK v0 proof path. Agentic worker task checklist with acceptance gates. | Before implementing anything under `src/verdict/planning/` or `src/verdict/proof/`. |
 
 ### Frozen archive (audit history)
 
