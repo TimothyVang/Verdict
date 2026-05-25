@@ -1141,7 +1141,7 @@ If RED: drop W4.B (LOLBin catalog → push to W5) → drop W4.F.2 (adversarial r
 - [ ] **W5.E.3.c** — Commit: `feat(observability): Langfuse demo dashboard [W5.E.3]`
 
 ### W5.E.4 — HMAC-signed approval flow
-- [ ] **W5.E.4.a** — Failing test: `verdict approve <finding_id>` produces ledger entry with HMAC sig over Finding+approver+timestamp.
+- [ ] **W5.E.4.a** — Failing test: `verdict approve <case_id> <finding_id> --approver <approver>` produces ledger entry with HMAC sig over Finding+approver+timestamp.
 - [ ] **W5.E.4.b** — Implement.
 - [ ] **W5.E.4.c** — Commit: `feat(cli): verdict approve with HMAC signing [W5.E.4]`
 
