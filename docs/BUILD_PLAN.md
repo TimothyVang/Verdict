@@ -203,6 +203,7 @@ By June 14 the repo will have this shape:
 │   │   └── trace_link.py                   # trace_id ↔ ledger cross-link (W3.E.5)
 │   ├── cli/
 │   │   ├── __main__.py
+│   │   ├── credentials.py                  # Cloud credential detection helper (W1.A.1)
 │   │   ├── init.py / resume.py / reverify.py / status.py
 │   │   ├── ls.py / show.py / export.py / validate.py
 │   │   ├── mode.py / gc.py / health.py
